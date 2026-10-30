@@ -17,7 +17,11 @@ import {
 } from "lucide-react";
 import { MediaAsset } from "@/db/schema";
 import { CopyButton } from "./copy-button";
-import { actionDeleteAssetPermanently } from "@/lib/dashboard-actions";
+import {
+  actionSoftDeleteAsset,
+  actionDeleteAssetPermanently,
+} from "@/lib/dashboard-actions";
+import { DeleteAssetDialog } from "./delete-asset-dialog";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 
@@ -36,7 +40,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [qrModalAsset, setQrModalAsset] = React.useState<MediaAsset | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = React.useState("");
-  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [assetToDelete, setAssetToDelete] = React.useState<MediaAsset | null>(null);
 
   // Filter logic
   const filteredAssets = React.useMemo(() => {
@@ -62,23 +66,25 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
     });
   }, [assets, selectedApp, selectedFolder, mediaTypeFilter, search]);
 
-  const handleDelete = async (id: string, assetId: string) => {
-    if (
-      !confirm(
-        `Are you sure you want to permanently delete asset '${assetId}'? The physical file will be immediately erased from cloud storage and the public URL will become invalid.`
-      )
-    ) {
-      return;
-    }
+  const handleConfirmSoftDelete = async (id: string, assetId: string) => {
     try {
-      setDeletingId(id);
+      await actionSoftDeleteAsset(id);
+      setAssets((prev) => prev.filter((a) => a.id !== id));
+      toast.success(`Asset '${assetId}' moved to trash. Retained for 30 days.`);
+    } catch {
+      toast.error("Failed to move asset to trash.");
+      throw new Error("Failed to soft delete");
+    }
+  };
+
+  const handleConfirmPermanentDelete = async (id: string, assetId: string) => {
+    try {
       await actionDeleteAssetPermanently(id);
       setAssets((prev) => prev.filter((a) => a.id !== id));
-      toast.success(`Asset '${assetId}' permanently erased from storage and database.`);
+      toast.success(`Asset '${assetId}' permanently erased from cloud storage and database.`);
     } catch {
-      toast.error("Failed to delete asset.");
-    } finally {
-      setDeletingId(null);
+      toast.error("Failed to delete asset permanently.");
+      throw new Error("Failed to permanently delete");
     }
   };
 
@@ -317,16 +323,11 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
 
                     <button
                       type="button"
-                      onClick={() => handleDelete(asset.id, asset.assetId)}
-                      disabled={deletingId === asset.id}
-                      title="Move to Trash"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer disabled:opacity-50"
+                      onClick={() => setAssetToDelete(asset)}
+                      title="Delete Asset"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
                     >
-                      {deletingId === asset.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-red-500" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -415,9 +416,9 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     </a>
                     <button
                       type="button"
-                      onClick={() => handleDelete(asset.id, asset.assetId)}
-                      disabled={deletingId === asset.id}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                      onClick={() => setAssetToDelete(asset)}
+                      title="Delete Asset"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -479,6 +480,15 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
           </div>
         </div>
       )}
+
+      {/* Modern Shadcn-Style Delete Confirmation Dialog */}
+      <DeleteAssetDialog
+        asset={assetToDelete}
+        isOpen={Boolean(assetToDelete)}
+        onClose={() => setAssetToDelete(null)}
+        onSoftDelete={handleConfirmSoftDelete}
+        onPermanentDelete={handleConfirmPermanentDelete}
+      />
     </div>
   );
 }
