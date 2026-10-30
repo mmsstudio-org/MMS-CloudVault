@@ -1,3 +1,7 @@
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+dotenv.config();
+
 import { db } from "./index";
 import { siteSettings, apiKeys, adminUsers } from "./schema";
 import { eq } from "drizzle-orm";
@@ -31,12 +35,12 @@ export async function seedDatabase() {
 
   if (existingKey.length === 0) {
     await db.insert(apiKeys).values({
-      appName: "MMS Studio Web Portal",
+      appName: "MMS CloudVault Web Portal",
       appId: "mms-portal",
       secretKey: "mms_sec_demo_portal_2026",
       isActive: true,
     });
-    console.log("✅ Seeded demo API key for MMS Studio Web Portal.");
+    console.log("✅ Seeded demo API key for MMS CloudVault Web Portal.");
   } else {
     console.log("ℹ️ API key for mms-portal already exists.");
   }

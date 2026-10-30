@@ -9,6 +9,8 @@
     "lint": "eslint",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx src/db/seed.ts",
+    "db:reset": "tsx src/db/reset.ts",
+    "db:fresh": "tsx src/db/reset.ts && drizzle-kit push && tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
