@@ -9,7 +9,7 @@ import {
   Music,
   Headphones,
 } from "lucide-react";
-import { actionManualUpload } from "@/lib/dashboard-actions";
+import { useRouter } from "next/navigation";
 import { CopyButton } from "./copy-button";
 import { toast } from "sonner";
 import { MediaAsset } from "@/db/schema";
@@ -20,6 +20,7 @@ interface UploadFormProps {
 }
 
 export function UploadForm({ apps, existingFolders }: UploadFormProps) {
+  const router = useRouter();
   const [file, setFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const [selectedApp, setSelectedApp] = React.useState(apps[0]?.appId || "main-app");
@@ -105,8 +106,18 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       formData.append("title", title.trim());
       formData.append("folder", finalFolder || "general");
 
-      const res = await actionManualUpload(formData);
+      const response = await fetch("/api/dashboard/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const res = await response.json();
+      if (!response.ok || !res.success) {
+        throw new Error(res.error || "Upload failed.");
+      }
+
       setUploadedResult(res);
+      router.refresh();
       toast.success(
         res.isReplaced
           ? "Asset successfully replaced existing image!"
