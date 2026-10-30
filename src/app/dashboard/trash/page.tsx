@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 
 export default async function TrashPage() {
   const trash = await getTrashAssets();
+  const serverNow = Date.now();
 
   return (
     <div className="space-y-6">
@@ -21,7 +22,7 @@ export default async function TrashPage() {
         </p>
       </div>
 
-      <TrashManagerView initialTrash={trash} />
+      <TrashManagerView initialTrash={trash} serverNow={serverNow} />
     </div>
   );
 }

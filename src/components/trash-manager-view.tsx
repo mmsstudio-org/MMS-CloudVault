@@ -22,16 +22,20 @@ import { toast } from "sonner";
 
 interface TrashManagerViewProps {
   initialTrash: MediaAsset[];
+  serverNow?: number;
 }
 
-export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
+export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerViewProps) {
   const [trash, setTrash] = React.useState<MediaAsset[]>(initialTrash);
   const [isPurging, setIsPurging] = React.useState(false);
   const [restoringId, setRestoringId] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [now, setNow] = React.useState<number>(serverNow);
 
-  // Memoize timestamp to ensure pure render (React 19 / Compiler compliant)
-  const currentTimestamp = React.useMemo(() => Date.now(), []);
+  // In React 19 / Compiler, Date.now() is an impure function that must only be called in effects
+  React.useEffect(() => {
+    setNow(Date.now());
+  }, []);
 
   const handleRestore = async (id: string, assetId: string) => {
     try {
@@ -137,12 +141,13 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
         ) : (
           trash.map((item) => {
             const isRestoring = restoringId === item.id;
+            const current = now || serverNow;
             const deletedTime = item.deletedAt
               ? new Date(item.deletedAt).getTime()
-              : currentTimestamp;
-            const daysInTrash = Math.floor(
-              (currentTimestamp - deletedTime) / (1000 * 60 * 60 * 24)
-            );
+              : current;
+            const daysInTrash = current
+              ? Math.floor((current - deletedTime) / (1000 * 60 * 60 * 24))
+              : 0;
             const daysRemaining = Math.max(0, 30 - daysInTrash);
 
             const isAudio =
