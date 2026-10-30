@@ -30,6 +30,9 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
   const [restoringId, setRestoringId] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
+  // Memoize timestamp to ensure pure render (React 19 / Compiler compliant)
+  const currentTimestamp = React.useMemo(() => Date.now(), []);
+
   const handleRestore = async (id: string, assetId: string) => {
     try {
       setRestoringId(id);
@@ -134,9 +137,11 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
         ) : (
           trash.map((item) => {
             const isRestoring = restoringId === item.id;
-            const deletedDate = item.deletedAt ? new Date(item.deletedAt) : new Date();
+            const deletedTime = item.deletedAt
+              ? new Date(item.deletedAt).getTime()
+              : currentTimestamp;
             const daysInTrash = Math.floor(
-              (Date.now() - deletedDate.getTime()) / (1000 * 60 * 60 * 24)
+              (currentTimestamp - deletedTime) / (1000 * 60 * 60 * 24)
             );
             const daysRemaining = Math.max(0, 30 - daysInTrash);
 
