@@ -5,7 +5,13 @@ import { db } from "@/db";
 import { siteSettings, adminUsers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
+// Automatically map NEXT_PUBLIC_APP_URL to NEXTAUTH_URL if not explicitly set
+if (!process.env.NEXTAUTH_URL && process.env.NEXT_PUBLIC_APP_URL) {
+  process.env.NEXTAUTH_URL = process.env.NEXT_PUBLIC_APP_URL;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  trustHost: true,
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "dummy-google-client-id",
