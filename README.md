@@ -140,11 +140,26 @@ STORAGE_SECRET_KEY=""
 STORAGE_BUCKET_NAME="mms-studio-storage"
 STORAGE_PUBLIC_URL=""
 
+# Google Cloud OAuth 2.0 Credentials
+GOOGLE_CLIENT_ID="your_google_client_id.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET="your_google_client_secret"
+
 # Scheduled Automation Secret
 CRON_SECRET="your_secure_cron_secret"
 ```
 
-### 4. Push Database Schema & Seed
+### 4. Google Cloud Console OAuth 2.0 Setup (Callback URL)
+In your [Google Cloud Console Credentials](https://console.cloud.google.com/apis/credentials):
+1. Create or select an **OAuth 2.0 Client ID** (Application type: **Web application**).
+2. **Authorized JavaScript origins:**
+   - Local: `http://localhost:3000`
+   - Production: `https://cloud.sabbirmms.com`
+3. **Authorized redirect URIs (Callback URL):**
+   - Local: `http://localhost:3000/api/auth/callback/google`
+   - Production: `https://cloud.sabbirmms.com/api/auth/callback/google`
+4. Copy the generated `Client ID` and `Client Secret` into your `.env.local`.
+
+### 5. Push Database Schema & Seed
 ```bash
 # Push schema to PostgreSQL via Drizzle Kit
 npm run db:push
@@ -153,7 +168,7 @@ npm run db:push
 npm run db:seed
 ```
 
-### 5. Launch the Development Server
+### 6. Launch the Development Server
 ```bash
 npm run dev
 ```
