@@ -63,7 +63,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         id: asset.id,
         app_id: asset.appId,
         asset_id: asset.assetId,
-        story_id: asset.assetId, // backward-compatibility alias
         title: asset.title,
         folder: asset.folder,
         public_url: asset.publicUrl,
@@ -138,7 +137,6 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       success: true,
       message: `Media asset '${assetId}' successfully moved to trash.`,
       asset_id: assetId,
-      story_id: assetId,
     });
   } catch (err: unknown) {
     console.error("API /v1/assets/[asset_id] DELETE error:", err);

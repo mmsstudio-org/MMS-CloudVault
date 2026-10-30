@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
     // 2. Parse Multipart Form Data
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const assetId = ((formData.get("asset_id") || formData.get("story_id")) as string | null)?.trim();
+    const assetId = (formData.get("asset_id") as string | null)?.trim();
     const title = (formData.get("title") as string | null)?.trim() || undefined;
     const folder = (formData.get("folder") as string | null)?.trim() || "general";
 
@@ -85,7 +85,6 @@ export async function POST(req: NextRequest) {
           id: result.asset.id,
           app_id: result.asset.appId,
           asset_id: result.asset.assetId,
-          story_id: result.asset.assetId, // backward-compatibility alias
           title: result.asset.title,
           folder: result.asset.folder,
           public_url: result.asset.publicUrl,

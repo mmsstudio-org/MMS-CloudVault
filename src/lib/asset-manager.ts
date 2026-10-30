@@ -7,8 +7,7 @@ import { sendTelegramNotification } from "./telegram";
 
 export interface ProcessAssetParams {
   appId: string;
-  assetId?: string;
-  storyId?: string; // backward-compatibility alias
+  assetId: string;
   title?: string;
   folder?: string;
   buffer: Buffer;
@@ -23,8 +22,7 @@ export async function processAndSaveAsset(
   isReplaced: boolean;
   savedKb: number;
 }> {
-  const { appId, title, folder = "general", buffer, options, appName } = params;
-  const assetId = params.assetId || params.storyId;
+  const { appId, assetId, title, folder = "general", buffer, options, appName } = params;
 
   if (!assetId) {
     throw new Error("Asset ID is required.");

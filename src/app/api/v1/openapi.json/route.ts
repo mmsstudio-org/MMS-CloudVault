@@ -52,11 +52,6 @@ export async function GET() {
                       description: "Unique identifier of the media item or document from client app",
                       example: "banner_promo_01",
                     },
-                    story_id: {
-                      type: "string",
-                      description: "Alias for asset_id (supported for backward compatibility)",
-                      example: "banner_promo_01",
-                    },
                     title: {
                       type: "string",
                       description: "Descriptive human-readable title for the media asset",
@@ -134,36 +129,6 @@ export async function GET() {
             404: {
               description: "Media asset not found",
             },
-          },
-        },
-      },
-      "/api/v1/stories/{story_id}": {
-        get: {
-          summary: "Retrieve media asset (Backward compatibility route)",
-          parameters: [
-            {
-              name: "story_id",
-              in: "path",
-              required: true,
-              schema: { type: "string" },
-            },
-          ],
-          responses: {
-            200: { description: "Success" },
-          },
-        },
-        delete: {
-          summary: "Delete media asset (Backward compatibility route)",
-          parameters: [
-            {
-              name: "story_id",
-              in: "path",
-              required: true,
-              schema: { type: "string" },
-            },
-          ],
-          responses: {
-            200: { description: "Success" },
           },
         },
       },

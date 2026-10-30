@@ -22,23 +22,23 @@ export async function seedDatabase() {
     console.log("ℹ️ Site settings already exist.");
   }
 
-  // 2. Default API Key for Golpo Ghor App
+  // 2. Default API Key for Demo App
   const existingKey = await db
     .select()
     .from(apiKeys)
-    .where(eq(apiKeys.appId, "golpo-ghor"))
+    .where(eq(apiKeys.appId, "mms-portal"))
     .limit(1);
 
   if (existingKey.length === 0) {
     await db.insert(apiKeys).values({
-      appName: "Golpo Ghor Android App",
-      appId: "golpo-ghor",
-      secretKey: "mms_sec_demo_golpo_ghor_2026",
+      appName: "MMS Studio Web Portal",
+      appId: "mms-portal",
+      secretKey: "mms_sec_demo_portal_2026",
       isActive: true,
     });
-    console.log("✅ Seeded demo API key for Golpo Ghor Android App.");
+    console.log("✅ Seeded demo API key for MMS Studio Web Portal.");
   } else {
-    console.log("ℹ️ API key for golpo-ghor already exists.");
+    console.log("ℹ️ API key for mms-portal already exists.");
   }
 
   // 3. Superadmin User

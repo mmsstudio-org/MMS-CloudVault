@@ -270,7 +270,7 @@ export async function actionSendTestTelegram() {
 export async function actionManualUpload(formData: FormData) {
   const file = formData.get("file") as File | null;
   const appId = (formData.get("app_id") as string | null)?.trim();
-  const assetId = ((formData.get("asset_id") || formData.get("story_id")) as string | null)?.trim();
+  const assetId = (formData.get("asset_id") as string | null)?.trim();
   const title = (formData.get("title") as string | null)?.trim() || undefined;
   const folder = (formData.get("folder") as string | null)?.trim() || "general";
 

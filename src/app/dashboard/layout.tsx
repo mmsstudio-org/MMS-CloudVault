@@ -31,7 +31,7 @@ export default async function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0">
         <DashboardHeader user={user} />
-        <main className="flex-1 p-6 max-w-7xl w-full mx-auto">{children}</main>
+        <main className="flex-1 p-6 container w-full mx-auto">{children}</main>
       </div>
     </div>
   );

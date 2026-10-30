@@ -15,7 +15,7 @@ export default function ApiDocsPage() {
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col">
       {/* Navigation */}
       <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             href="/"
             className="flex items-center gap-2.5 font-semibold text-sm hover:opacity-80 transition"
@@ -56,7 +56,7 @@ export default function ApiDocsPage() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-8">
+      <main className="flex-1 container mx-auto w-full px-4 py-8">
         <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium mb-2 border border-emerald-500/20">
@@ -67,7 +67,7 @@ export default function ApiDocsPage() {
               Interactive API Reference
             </h1>
             <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-              Test media uploads, deduplication, story URL fetching, and soft deletes live using your application&apos;s <code className="text-xs font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded">x-api-key</code>.
+              Test media uploads, deduplication, asset URL fetching, and soft deletes live using your application&apos;s <code className="text-xs font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded">x-api-key</code>.
             </p>
           </div>
 

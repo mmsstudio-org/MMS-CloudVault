@@ -96,9 +96,6 @@ export const mediaAssets = pgTable(
   ]
 );
 
-// Backward compatibility alias
-export const storyAssets = mediaAssets;
-
 // -----------------------------------------------------------------------------
 // 4. ADMIN USERS TABLE (Role-based access, whitelisted Google logins, 2FA TOTP)
 // -----------------------------------------------------------------------------
@@ -129,10 +126,6 @@ export type NewApiKey = typeof apiKeys.$inferInsert;
 
 export type MediaAsset = typeof mediaAssets.$inferSelect;
 export type NewMediaAsset = typeof mediaAssets.$inferInsert;
-
-// Backward compatibility type alias
-export type StoryAsset = MediaAsset;
-export type NewStoryAsset = NewMediaAsset;
 
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type NewAdminUser = typeof adminUsers.$inferInsert;

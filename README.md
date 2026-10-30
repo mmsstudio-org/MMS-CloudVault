@@ -19,7 +19,7 @@
    - 10-20 character compact BlurHash placeholder generation for progressive mobile previews.
 
 2. **Deduplication & Replacement Mechanism (Zero Bloat):**
-   - Automatically tracks `(app_id, asset_id)` across any application (blogs, portfolios, avatars, e-commerce, story apps).
+   - Automatically tracks `(app_id, asset_id)` across any application (blogs, portfolios, avatars, e-commerce, web or mobile apps).
    - When an updated image is uploaded for an existing asset ID, the previous physical file in Cloudflare R2 / S3 / disk is deleted automatically, and the database record is updated with new CDN URLs and sizes.
 
 3. **Zero-DB Read Delivery:**
@@ -62,7 +62,7 @@ mms-studio-storage/
 │   │   │   └── v1/
 │   │   │       ├── cron/      # Automated 30-day trash cleanup cron
 │   │   │       ├── openapi/   # OpenAPI 3.0 specification JSON
-│   │   │       ├── stories/   # GET & DELETE story assets
+│   │   │       ├── assets/    # GET & DELETE universal media assets
 │   │   │       └── upload/    # POST multipart media upload & optimization
 │   │   ├── api-docs/          # Swagger UI Interactive Documentation
 │   │   ├── dashboard/         # Protected Admin Operations Portal
@@ -171,7 +171,7 @@ Content-Type: multipart/form-data
 
 **Form-Data Body:**
 - `file`: (Binary image file: PNG, JPG, WEBP, GIF, SVG)
-- `asset_id`: `blog_hero_2026` or `product_101` (Required - also accepts `story_id` for backward compatibility)
+- `asset_id`: `blog_hero_2026` or `product_101` (Required)
 - `title`: `Hero Banner - Tech Update` (Optional)
 - `folder`: `banners` (Optional, defaults to `general`)
 
@@ -184,7 +184,6 @@ Content-Type: multipart/form-data
     "id": "3048a5d6-f555-4abc-8f9c-1870ddc03e18",
     "app_id": "mms-portal",
     "asset_id": "blog_hero_2026",
-    "story_id": "blog_hero_2026",
     "title": "Hero Banner - Tech Update",
     "folder": "banners",
     "public_url": "https://storage.sabbirmms.com/apps/mms-portal/banners/blog_hero_2026-1793389679.webp",
@@ -201,19 +200,19 @@ Content-Type: multipart/form-data
 ```
 
 ### 2. Retrieve Media Asset
-`GET /api/v1/assets/{asset_id}` *(Backward compatible alias: `GET /api/v1/stories/{story_id}`)*
+`GET /api/v1/assets/{asset_id}`
 
 **Headers:**
 ```http
-x-api-key: mms_sec_demo_golpo_ghor_2026
+x-api-key: mms_sec_demo_2026
 ```
 
 ### 3. Soft Delete Media Asset (Move to Trash)
-`DELETE /api/v1/assets/{asset_id}` *(Backward compatible alias: `DELETE /api/v1/stories/{story_id}`)*
+`DELETE /api/v1/assets/{asset_id}`
 
 **Headers:**
 ```http
-x-api-key: mms_sec_demo_golpo_ghor_2026
+x-api-key: mms_sec_demo_2026
 ```
 
 ### 4. Scheduled Trash Cleanup (Cron)

@@ -5,7 +5,6 @@ export interface TelegramNotificationParams {
   event: "ASSET_UPLOADED" | "ASSET_REPLACED" | "ASSET_DELETED" | "TRASH_PURGED";
   appName: string;
   assetId?: string;
-  storyId?: string;
   title?: string;
   publicUrl?: string;
   sizeKb?: number;
@@ -31,7 +30,7 @@ export async function sendTelegramNotification(
 
     let text = "";
     const appName = params.appName || "MMS Studio Client";
-    const id = params.assetId || params.storyId || "asset";
+    const id = params.assetId || "asset";
 
     switch (params.event) {
       case "ASSET_UPLOADED":
