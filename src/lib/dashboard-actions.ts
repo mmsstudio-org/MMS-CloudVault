@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { siteSettings, apiKeys, storyAssets, adminUsers, ApiKey } from "@/db/schema";
+import { siteSettings, apiKeys, mediaAssets, adminUsers, ApiKey } from "@/db/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { invalidateApiKeyCache } from "./api-cache";
@@ -15,21 +15,21 @@ import { processAndSaveAsset } from "./asset-manager";
 export async function getDashboardMetrics() {
   const [activeAssetsCount] = await db
     .select({ count: sql<number>`count(*)` })
-    .from(storyAssets)
-    .where(eq(storyAssets.isDeleted, false));
+    .from(mediaAssets)
+    .where(eq(mediaAssets.isDeleted, false));
 
   const [storageMetrics] = await db
     .select({
-      totalOptimizedKb: sql<number>`coalesce(sum(${storyAssets.optimizedSizeKb}), 0)`,
-      totalOriginalKb: sql<number>`coalesce(sum(${storyAssets.originalSizeKb}), 0)`,
+      totalOptimizedKb: sql<number>`coalesce(sum(${mediaAssets.optimizedSizeKb}), 0)`,
+      totalOriginalKb: sql<number>`coalesce(sum(${mediaAssets.originalSizeKb}), 0)`,
     })
-    .from(storyAssets)
-    .where(eq(storyAssets.isDeleted, false));
+    .from(mediaAssets)
+    .where(eq(mediaAssets.isDeleted, false));
 
   const [trashCount] = await db
     .select({ count: sql<number>`count(*)` })
-    .from(storyAssets)
-    .where(eq(storyAssets.isDeleted, true));
+    .from(mediaAssets)
+    .where(eq(mediaAssets.isDeleted, true));
 
   const [appsCount] = await db
     .select({ count: sql<number>`count(*)` })
@@ -51,9 +51,9 @@ export async function getDashboardMetrics() {
   // Recent 6 assets
   const recentAssets = await db
     .select()
-    .from(storyAssets)
-    .where(eq(storyAssets.isDeleted, false))
-    .orderBy(desc(storyAssets.createdAt))
+    .from(mediaAssets)
+    .where(eq(mediaAssets.isDeleted, false))
+    .orderBy(desc(mediaAssets.createdAt))
     .limit(6);
 
   return {
@@ -76,11 +76,11 @@ export async function getGalleryAssets(filters?: {
   folder?: string;
   search?: string;
 }) {
-  let query = db
+  const query = db
     .select()
-    .from(storyAssets)
-    .where(eq(storyAssets.isDeleted, false))
-    .orderBy(desc(storyAssets.updatedAt));
+    .from(mediaAssets)
+    .where(eq(mediaAssets.isDeleted, false))
+    .orderBy(desc(mediaAssets.updatedAt));
 
   const results = await query;
 
@@ -98,7 +98,7 @@ export async function getGalleryAssets(filters?: {
     const q = filters.search.toLowerCase().trim();
     filtered = filtered.filter(
       (a) =>
-        a.storyId.toLowerCase().includes(q) ||
+        a.assetId.toLowerCase().includes(q) ||
         (a.title && a.title.toLowerCase().includes(q))
     );
   }
@@ -120,13 +120,13 @@ export async function actionSoftDeleteAsset(assetId: string) {
 export async function getTrashAssets() {
   return db
     .select()
-    .from(storyAssets)
-    .where(eq(storyAssets.isDeleted, true))
-    .orderBy(desc(storyAssets.deletedAt));
+    .from(mediaAssets)
+    .where(eq(mediaAssets.isDeleted, true))
+    .orderBy(desc(mediaAssets.deletedAt));
 }
 
-export async function actionRestoreAsset(assetId: string) {
-  const ok = await restoreAsset(assetId);
+export async function actionRestoreAsset(id: string) {
+  const ok = await restoreAsset(id);
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/gallery");
   revalidatePath("/dashboard/trash");
@@ -256,7 +256,7 @@ export async function actionSendTestTelegram() {
   return sendTelegramNotification({
     event: "ASSET_UPLOADED",
     appName: "Test MMS Studio System",
-    storyId: "test_verification_probe",
+    assetId: "test_verification_probe",
     title: "System Test Notification",
     sizeKb: 120,
     savedKb: 45,
@@ -270,12 +270,12 @@ export async function actionSendTestTelegram() {
 export async function actionManualUpload(formData: FormData) {
   const file = formData.get("file") as File | null;
   const appId = (formData.get("app_id") as string | null)?.trim();
-  const storyId = (formData.get("story_id") as string | null)?.trim();
+  const assetId = ((formData.get("asset_id") || formData.get("story_id")) as string | null)?.trim();
   const title = (formData.get("title") as string | null)?.trim() || undefined;
   const folder = (formData.get("folder") as string | null)?.trim() || "general";
 
-  if (!file || !appId || !storyId) {
-    throw new Error("Missing required file, appId or storyId.");
+  if (!file || !appId || !assetId) {
+    throw new Error("Missing required file, appId or assetId.");
   }
 
   const arrayBuffer = await file.arrayBuffer();
@@ -283,7 +283,7 @@ export async function actionManualUpload(formData: FormData) {
 
   const result = await processAndSaveAsset({
     appId,
-    storyId,
+    assetId,
     title,
     folder,
     buffer,

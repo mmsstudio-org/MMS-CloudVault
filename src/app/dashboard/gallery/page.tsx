@@ -20,7 +20,7 @@ export default async function GalleryPage() {
           Media Asset Gallery
         </h1>
         <p className="text-xs text-zinc-500 mt-1">
-          Explore, filter, copy public CDN links, and manage your optimized story images.
+          Explore, filter, copy public CDN links, and manage your optimized media assets.
         </p>
       </div>
 

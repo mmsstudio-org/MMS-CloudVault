@@ -26,15 +26,15 @@ export async function POST(req: NextRequest) {
     // 2. Parse Multipart Form Data
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
-    const storyId = (formData.get("story_id") as string | null)?.trim();
+    const assetId = ((formData.get("asset_id") || formData.get("story_id")) as string | null)?.trim();
     const title = (formData.get("title") as string | null)?.trim() || undefined;
     const folder = (formData.get("folder") as string | null)?.trim() || "general";
 
-    if (!storyId) {
+    if (!assetId) {
       return NextResponse.json(
         {
           success: false,
-          error: "Bad Request: 'story_id' field is required in form-data.",
+          error: "Bad Request: 'asset_id' field is required in form-data.",
         },
         { status: 400 }
       );
@@ -69,7 +69,7 @@ export async function POST(req: NextRequest) {
     const result = await processAndSaveAsset({
       appId,
       appName,
-      storyId,
+      assetId,
       title,
       folder,
       buffer,
@@ -79,12 +79,13 @@ export async function POST(req: NextRequest) {
       {
         success: true,
         message: result.isReplaced
-          ? "Asset successfully replaced existing image for this story ID"
-          : "Asset successfully optimized and saved",
+          ? "Media asset successfully replaced existing item for this asset ID"
+          : "Media asset successfully optimized and saved",
         data: {
           id: result.asset.id,
           app_id: result.asset.appId,
-          story_id: result.asset.storyId,
+          asset_id: result.asset.assetId,
+          story_id: result.asset.assetId, // backward-compatibility alias
           title: result.asset.title,
           folder: result.asset.folder,
           public_url: result.asset.publicUrl,

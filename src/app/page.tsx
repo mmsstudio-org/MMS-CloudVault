@@ -121,7 +121,7 @@ export default function HomePage() {
           </h1>
 
           <p className="max-w-2xl mx-auto text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            MMS Studio Storage empowers Android story applications, web apps, and media creators with on-the-fly Sharp WebP optimization, aspect-ratio scaling, in-memory API key caching, and automatic deduplication.
+            MMS Studio Storage empowers applications, web apps, and media creators with on-the-fly Sharp WebP optimization, aspect-ratio scaling, in-memory API key caching, and automatic deduplication.
           </p>
 
           {/* Action CTAs */}
@@ -163,7 +163,7 @@ export default function HomePage() {
 
             <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80">
               <span className="text-[11px] text-zinc-500 font-medium">Deduplication</span>
-              <p className="text-xl font-bold text-zinc-900 dark:text-white mt-1">App + Story ID</p>
+              <p className="text-xl font-bold text-zinc-900 dark:text-white mt-1">App + Asset ID</p>
               <p className="text-[10px] text-purple-500 mt-0.5">Auto storage recycling</p>
             </div>
 
@@ -217,7 +217,7 @@ export default function HomePage() {
                 Intelligent Replacement Engine
               </h3>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                When a story photo is updated from your app, the old physical storage object is permanently deleted and replaced instantly, preventing storage bloat.
+                When a media asset is updated from your app, the old physical storage object is permanently deleted and replaced instantly, preventing storage bloat.
               </p>
             </div>
 
@@ -293,7 +293,7 @@ export default function HomePage() {
               <div className="p-4 rounded-2xl bg-zinc-800/80 border border-zinc-700">
                 <span className="text-[11px] font-mono text-emerald-400 block mb-1">Step 1</span>
                 <p className="text-xs font-bold">Client Upload</p>
-                <p className="text-[11px] text-zinc-400 mt-1">x-api-key + Story ID</p>
+                <p className="text-[11px] text-zinc-400 mt-1">x-api-key + Asset ID</p>
               </div>
 
               <div className="p-4 rounded-2xl bg-zinc-800/80 border border-zinc-700">

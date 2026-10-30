@@ -35,7 +35,7 @@ export default async function DashboardPage() {
             MMS Studio Media Infrastructure
           </h1>
           <p className="text-xs text-zinc-300 mt-1 max-w-xl">
-            Automated Sharp WebP image processing pipeline, instant story deduplication, and zero-latency CDN object delivery.
+            Automated Sharp WebP image processing pipeline, instant asset deduplication, and zero-latency CDN object delivery.
           </p>
         </div>
 
@@ -182,7 +182,7 @@ export default async function DashboardPage() {
                 <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 shrink-0 relative border border-zinc-300/50 dark:border-zinc-700/50">
                   <Image
                     src={asset.publicUrl}
-                    alt={asset.title || asset.storyId}
+                    alt={asset.title || asset.assetId}
                     fill
                     className="object-cover group-hover:scale-105 transition"
                     unoptimized
@@ -199,10 +199,10 @@ export default async function DashboardPage() {
                     </span>
                   </div>
                   <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
-                    {asset.title || asset.storyId}
+                    {asset.title || asset.assetId}
                   </p>
                   <p className="text-[11px] text-zinc-400 font-mono">
-                    ID: {asset.storyId} • {asset.optimizedSizeKb} KB
+                    ID: {asset.assetId} • {asset.optimizedSizeKb} KB
                   </p>
                 </div>
 

@@ -13,25 +13,25 @@ import {
   X,
   Loader2,
 } from "lucide-react";
-import { StoryAsset } from "@/db/schema";
+import { MediaAsset } from "@/db/schema";
 import { CopyButton } from "./copy-button";
 import { actionSoftDeleteAsset } from "@/lib/dashboard-actions";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 
 interface GalleryViewProps {
-  initialAssets: StoryAsset[];
+  initialAssets: MediaAsset[];
   apps: string[];
   folders: string[];
 }
 
 export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) {
-  const [assets, setAssets] = React.useState<StoryAsset[]>(initialAssets);
+  const [assets, setAssets] = React.useState<MediaAsset[]>(initialAssets);
   const [search, setSearch] = React.useState("");
   const [selectedApp, setSelectedApp] = React.useState("ALL");
   const [selectedFolder, setSelectedFolder] = React.useState("ALL");
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
-  const [qrModalAsset, setQrModalAsset] = React.useState<StoryAsset | null>(null);
+  const [qrModalAsset, setQrModalAsset] = React.useState<MediaAsset | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = React.useState("");
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
@@ -44,22 +44,22 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
       const q = search.toLowerCase().trim();
       const matchSearch =
         !q ||
-        asset.storyId.toLowerCase().includes(q) ||
+        asset.assetId.toLowerCase().includes(q) ||
         (asset.title && asset.title.toLowerCase().includes(q));
 
       return matchApp && matchFolder && matchSearch;
     });
   }, [assets, selectedApp, selectedFolder, search]);
 
-  const handleDelete = async (id: string, storyId: string) => {
-    if (!confirm(`Are you sure you want to move story '${storyId}' to trash?`)) {
+  const handleDelete = async (id: string, assetId: string) => {
+    if (!confirm(`Are you sure you want to move asset '${assetId}' to trash?`)) {
       return;
     }
     try {
       setDeletingId(id);
       await actionSoftDeleteAsset(id);
       setAssets((prev) => prev.filter((a) => a.id !== id));
-      toast.success(`Story '${storyId}' moved to trash.`);
+      toast.success(`Asset '${assetId}' moved to trash.`);
     } catch {
       toast.error("Failed to delete asset.");
     } finally {
@@ -67,7 +67,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
     }
   };
 
-  const handleOpenQr = async (asset: StoryAsset) => {
+  const handleOpenQr = async (asset: MediaAsset) => {
     try {
       setQrModalAsset(asset);
       const url = await QRCode.toDataURL(asset.publicUrl, { width: 300, margin: 2 });
@@ -88,7 +88,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by Story ID or Title..."
+            placeholder="Search by Asset ID or Title..."
             className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-zinc-500"
           />
           {search && (
@@ -183,7 +183,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-950 overflow-hidden">
                 <Image
                   src={asset.publicUrl}
-                  alt={asset.title || asset.storyId}
+                  alt={asset.title || asset.assetId}
                   fill
                   className="object-cover group-hover:scale-105 transition duration-300"
                   unoptimized
@@ -202,10 +202,10 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
                 <div>
                   <h3 className="text-xs font-bold text-zinc-900 dark:text-white line-clamp-1">
-                    {asset.title || asset.storyId}
+                    {asset.title || asset.assetId}
                   </h3>
                   <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
-                    ID: {asset.storyId}
+                    ID: {asset.assetId}
                   </p>
                   <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1">
                     <span>{asset.width}x{asset.height} px</span>
@@ -239,7 +239,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
 
                   <button
                     type="button"
-                    onClick={() => handleDelete(asset.id, asset.storyId)}
+                    onClick={() => handleDelete(asset.id, asset.assetId)}
                     disabled={deletingId === asset.id}
                     title="Move to Trash"
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer disabled:opacity-50"
@@ -268,7 +268,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800">
                     <Image
                       src={asset.publicUrl}
-                      alt={asset.title || asset.storyId}
+                      alt={asset.title || asset.assetId}
                       fill
                       className="object-cover"
                       unoptimized
@@ -284,10 +284,10 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       </span>
                     </div>
                     <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">
-                      {asset.title || asset.storyId}
+                      {asset.title || asset.assetId}
                     </p>
                     <p className="text-[11px] text-zinc-400 font-mono truncate">
-                      ID: {asset.storyId} • {asset.width}x{asset.height} px • {asset.optimizedSizeKb} KB
+                      ID: {asset.assetId} • {asset.width}x{asset.height} px • {asset.optimizedSizeKb} KB
                     </p>
                   </div>
                 </div>
@@ -311,7 +311,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                   </a>
                   <button
                     type="button"
-                    onClick={() => handleDelete(asset.id, asset.storyId)}
+                    onClick={() => handleDelete(asset.id, asset.assetId)}
                     disabled={deletingId === asset.id}
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
                   >
@@ -355,7 +355,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
 
             <div className="text-center space-y-1">
               <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
-                {qrModalAsset.storyId}
+                {qrModalAsset.assetId}
               </p>
               <p className="text-[11px] text-zinc-500 truncate">
                 {qrModalAsset.publicUrl}

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-cache";
 import { db } from "@/db";
-import { storyAssets } from "@/db/schema";
+import { mediaAssets } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { softDeleteAsset } from "@/lib/trash-manager";
 
@@ -13,7 +13,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
     const { story_id: storyId } = await params;
 
-    // Authenticate API Key
     const apiKeyHeader =
       req.headers.get("x-api-key") ||
       req.headers.get("X-API-KEY") ||
@@ -32,15 +31,14 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     const { appId } = auth.app;
 
-    // Fetch active asset
     const records = await db
       .select()
-      .from(storyAssets)
+      .from(mediaAssets)
       .where(
         and(
-          eq(storyAssets.appId, appId),
-          eq(storyAssets.storyId, storyId),
-          eq(storyAssets.isDeleted, false)
+          eq(mediaAssets.appId, appId),
+          eq(mediaAssets.assetId, storyId),
+          eq(mediaAssets.isDeleted, false)
         )
       )
       .limit(1);
@@ -49,7 +47,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           success: false,
-          error: `Story asset not found for story_id '${storyId}' under app '${appId}'.`,
+          error: `Media asset not found for identifier '${storyId}' under app '${appId}'.`,
         },
         { status: 404 }
       );
@@ -62,7 +60,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       data: {
         id: asset.id,
         app_id: asset.appId,
-        story_id: asset.storyId,
+        asset_id: asset.assetId,
+        story_id: asset.assetId,
         title: asset.title,
         folder: asset.folder,
         public_url: asset.publicUrl,
@@ -111,12 +110,12 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     const records = await db
       .select()
-      .from(storyAssets)
+      .from(mediaAssets)
       .where(
         and(
-          eq(storyAssets.appId, appId),
-          eq(storyAssets.storyId, storyId),
-          eq(storyAssets.isDeleted, false)
+          eq(mediaAssets.appId, appId),
+          eq(mediaAssets.assetId, storyId),
+          eq(mediaAssets.isDeleted, false)
         )
       )
       .limit(1);
@@ -125,7 +124,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           success: false,
-          error: `Active story asset not found for story_id '${storyId}'.`,
+          error: `Active media asset not found for identifier '${storyId}'.`,
         },
         { status: 404 }
       );
@@ -135,7 +134,8 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({
       success: true,
-      message: `Story asset '${storyId}' successfully moved to trash.`,
+      message: `Media asset '${storyId}' successfully moved to trash.`,
+      asset_id: storyId,
       story_id: storyId,
     });
   } catch (err: unknown) {

@@ -13,7 +13,7 @@ export default function PrivacyPolicyPage() {
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col">
       {/* Navigation */}
       <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link
             href="/"
             className="flex items-center gap-2.5 font-semibold text-sm hover:opacity-80 transition"
@@ -44,7 +44,7 @@ export default function PrivacyPolicyPage() {
       </header>
 
       {/* Content */}
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-12">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-4 mb-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-500/20">
             <ShieldCheck className="w-3.5 h-3.5" />
@@ -97,7 +97,7 @@ export default function PrivacyPolicyPage() {
                 <strong>Authorized Email Whitelisting:</strong> Access to the administrative portal is strictly restricted to pre-approved administrator emails configured in the system whitelist. Unauthorized accounts are immediately rejected and no account records or sessions are retained.
               </li>
               <li>
-                <strong>Uploaded Media Assets:</strong> Image files, titles, and unique story IDs uploaded via authorized API keys or the administrative dashboard are stored within our S3-compatible cloud object storage (Cloudflare R2 / AWS S3) for the sole purpose of delivery to your mobile/web applications.
+                <strong>Uploaded Media Assets:</strong> Image files, titles, and unique asset IDs uploaded via authorized API keys or the administrative dashboard are stored within our S3-compatible cloud object storage (Cloudflare R2 / AWS S3) for the sole purpose of delivery to your mobile/web applications.
               </li>
               <li>
                 <strong>Technical Logs:</strong> IP address, browser user-agent, and API request timestamps are recorded temporarily solely for rate limiting, DDoS mitigation, and diagnostic logging.
@@ -116,7 +116,7 @@ export default function PrivacyPolicyPage() {
               <li>Images exceeding defined max dimensions are smoothly downscaled preserving aspect ratio.</li>
               <li>Assets are compressed into modern WebP format to conserve mobile bandwidth and device storage.</li>
               <li>A compact <code>blur_hash</code> placeholder string is calculated for seamless progressive client-side loading.</li>
-              <li>When an updated image is uploaded for an existing story ID, previous assets are automatically recycled.</li>
+              <li>When an updated image is uploaded for an existing asset ID, previous assets are automatically recycled.</li>
             </ul>
           </section>
 

@@ -11,25 +11,25 @@ import {
   Loader2,
   CheckCircle2,
 } from "lucide-react";
-import { StoryAsset } from "@/db/schema";
+import { MediaAsset } from "@/db/schema";
 import { actionRestoreAsset, actionPurgeTrashNow } from "@/lib/dashboard-actions";
 import { toast } from "sonner";
 
 interface TrashManagerViewProps {
-  initialTrash: StoryAsset[];
+  initialTrash: MediaAsset[];
 }
 
 export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
-  const [trash, setTrash] = React.useState<StoryAsset[]>(initialTrash);
+  const [trash, setTrash] = React.useState<MediaAsset[]>(initialTrash);
   const [isPurging, setIsPurging] = React.useState(false);
   const [restoringId, setRestoringId] = React.useState<string | null>(null);
 
-  const handleRestore = async (id: string, storyId: string) => {
+  const handleRestore = async (id: string, assetId: string) => {
     try {
       setRestoringId(id);
       await actionRestoreAsset(id);
       setTrash((prev) => prev.filter((item) => item.id !== id));
-      toast.success(`Story '${storyId}' restored to active gallery.`);
+      toast.success(`Asset '${assetId}' restored to active gallery.`);
     } catch {
       toast.error("Failed to restore asset.");
     } finally {
@@ -123,7 +123,7 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
                   <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800 grayscale">
                     <Image
                       src={item.publicUrl}
-                      alt={item.title || item.storyId}
+                      alt={item.title || item.assetId}
                       fill
                       className="object-cover"
                       unoptimized
@@ -140,10 +140,10 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
                       </span>
                     </div>
                     <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">
-                      {item.title || item.storyId}
+                      {item.title || item.assetId}
                     </p>
                     <p className="text-[11px] text-zinc-400 font-mono">
-                      ID: {item.storyId} • {item.optimizedSizeKb} KB
+                      ID: {item.assetId} • {item.optimizedSizeKb} KB
                     </p>
                   </div>
                 </div>
@@ -151,7 +151,7 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
-                    onClick={() => handleRestore(item.id, item.storyId)}
+                    onClick={() => handleRestore(item.id, item.assetId)}
                     disabled={isRestoring}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
                   >

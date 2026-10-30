@@ -19,8 +19,8 @@
    - 10-20 character compact BlurHash placeholder generation for progressive mobile previews.
 
 2. **Deduplication & Replacement Mechanism (Zero Bloat):**
-   - Automatically tracks `(app_id, story_id)`.
-   - When an updated image is uploaded for an existing story ID, the previous physical file in Cloudflare R2 / S3 / disk is deleted automatically, and the database record is updated with new CDN URLs and sizes.
+   - Automatically tracks `(app_id, asset_id)` across any application (blogs, portfolios, avatars, e-commerce, story apps).
+   - When an updated image is uploaded for an existing asset ID, the previous physical file in Cloudflare R2 / S3 / disk is deleted automatically, and the database record is updated with new CDN URLs and sizes.
 
 3. **Zero-DB Read Delivery:**
    - Client devices fetch images directly from the high-speed CDN public URL (`https://storage.sabbirmms.com/...`).
@@ -171,9 +171,9 @@ Content-Type: multipart/form-data
 
 **Form-Data Body:**
 - `file`: (Binary image file: PNG, JPG, WEBP, GIF, SVG)
-- `story_id`: `ghost_story_ep01` (Required)
-- `title`: `The Haunted Manor - Episode 1` (Optional)
-- `folder`: `covers` (Optional, defaults to `general`)
+- `asset_id`: `blog_hero_2026` or `product_101` (Required - also accepts `story_id` for backward compatibility)
+- `title`: `Hero Banner - Tech Update` (Optional)
+- `folder`: `banners` (Optional, defaults to `general`)
 
 **Sample Response (200 OK):**
 ```json
@@ -182,11 +182,12 @@ Content-Type: multipart/form-data
   "message": "Asset successfully optimized and saved",
   "data": {
     "id": "3048a5d6-f555-4abc-8f9c-1870ddc03e18",
-    "app_id": "golpo-ghor",
-    "story_id": "ghost_story_ep01",
-    "title": "The Haunted Manor - Episode 1",
-    "folder": "covers",
-    "public_url": "https://storage.sabbirmms.com/apps/golpo-ghor/covers/ghost_story_ep01-1793389679.webp",
+    "app_id": "mms-portal",
+    "asset_id": "blog_hero_2026",
+    "story_id": "blog_hero_2026",
+    "title": "Hero Banner - Tech Update",
+    "folder": "banners",
+    "public_url": "https://storage.sabbirmms.com/apps/mms-portal/banners/blog_hero_2026-1793389679.webp",
     "blur_hash": "LEHLk~WB2yk8pyo0adR*.7kCMdnj",
     "is_replaced": false,
     "original_size_kb": 180,
@@ -199,16 +200,16 @@ Content-Type: multipart/form-data
 }
 ```
 
-### 2. Retrieve Story Asset URL
-`GET /api/v1/stories/{story_id}`
+### 2. Retrieve Media Asset
+`GET /api/v1/assets/{asset_id}` *(Backward compatible alias: `GET /api/v1/stories/{story_id}`)*
 
 **Headers:**
 ```http
 x-api-key: mms_sec_demo_golpo_ghor_2026
 ```
 
-### 3. Soft Delete Story Asset (Trash)
-`DELETE /api/v1/stories/{story_id}`
+### 3. Soft Delete Media Asset (Move to Trash)
+`DELETE /api/v1/assets/{asset_id}` *(Backward compatible alias: `DELETE /api/v1/stories/{story_id}`)*
 
 **Headers:**
 ```http

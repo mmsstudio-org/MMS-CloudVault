@@ -29,9 +29,12 @@ export const metadata: Metadata = {
     "Media Delivery",
     "Image CDN",
     "Sharp Image Optimizer",
-    "FastAPI Story Assets",
+    "Media Asset CDN",
     "Sabbir MMS",
   ],
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION || undefined,
+  },
   authors: [{ name: "MMS Studio", url: "https://studio.sabbirmms.com" }],
   creator: "MMS Studio",
   publisher: "MMS Studio",

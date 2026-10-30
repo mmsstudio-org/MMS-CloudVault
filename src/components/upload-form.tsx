@@ -4,18 +4,13 @@ import * as React from "react";
 import Image from "next/image";
 import {
   UploadCloud,
-  FileImage,
   CheckCircle2,
-  AlertCircle,
   Loader2,
-  Copy,
-  Plus,
-  FolderPlus,
 } from "lucide-react";
 import { actionManualUpload } from "@/lib/dashboard-actions";
 import { CopyButton } from "./copy-button";
 import { toast } from "sonner";
-import { StoryAsset } from "@/db/schema";
+import { MediaAsset } from "@/db/schema";
 
 interface UploadFormProps {
   apps: { appName: string; appId: string }[];
@@ -25,15 +20,15 @@ interface UploadFormProps {
 export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const [file, setFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
-  const [selectedApp, setSelectedApp] = React.useState(apps[0]?.appId || "golpo-ghor");
-  const [folder, setFolder] = React.useState("covers");
+  const [selectedApp, setSelectedApp] = React.useState(apps[0]?.appId || "main-app");
+  const [folder, setFolder] = React.useState("general");
   const [isCustomFolder, setIsCustomFolder] = React.useState(false);
   const [customFolder, setCustomFolder] = React.useState("");
-  const [storyId, setStoryId] = React.useState("");
+  const [assetId, setAssetId] = React.useState("");
   const [title, setTitle] = React.useState("");
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadedResult, setUploadedResult] = React.useState<{
-    asset: StoryAsset;
+    asset: MediaAsset;
     isReplaced: boolean;
     savedKb: number;
   } | null>(null);
@@ -47,13 +42,13 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       setPreviewUrl(URL.createObjectURL(selected));
       setUploadedResult(null);
 
-      // Auto-populate story ID if empty
-      if (!storyId) {
+      // Auto-populate asset ID if empty
+      if (!assetId) {
         const cleanName = selected.name
           .replace(/\.[^/.]+$/, "")
           .replace(/[^a-zA-Z0-9_-]/g, "_")
           .toLowerCase();
-        setStoryId(`story_${cleanName}`);
+        setAssetId(`asset_${cleanName}`);
       }
     }
   };
@@ -74,8 +69,8 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       toast.error("Please select an image file to upload.");
       return;
     }
-    if (!storyId.trim()) {
-      toast.error("Story ID is required.");
+    if (!assetId.trim()) {
+      toast.error("Asset ID is required.");
       return;
     }
 
@@ -86,7 +81,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("app_id", selectedApp);
-      formData.append("story_id", storyId.trim());
+      formData.append("asset_id", assetId.trim());
       formData.append("title", title.trim());
       formData.append("folder", finalFolder || "general");
 
@@ -107,7 +102,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const handleReset = () => {
     setFile(null);
     setPreviewUrl(null);
-    setStoryId("");
+    setAssetId("");
     setTitle("");
     setUploadedResult(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -165,7 +160,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
           {/* Metadata Inputs */}
           <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
-              Asset Metadata & Routing
+              Media Asset Routing & Identifier
             </h2>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -207,7 +202,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     type="text"
                     value={customFolder}
                     onChange={(e) => setCustomFolder(e.target.value)}
-                    placeholder="e.g. banners, episodes"
+                    placeholder="e.g. banners, products, avatars"
                     className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
                   />
                 ) : (
@@ -216,11 +211,12 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     onChange={(e) => setFolder(e.target.value)}
                     className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
                   >
-                    <option value="covers">covers</option>
-                    <option value="episodes">episodes</option>
                     <option value="general">general</option>
+                    <option value="covers">covers</option>
+                    <option value="banners">banners</option>
+                    <option value="media">media</option>
                     {existingFolders
-                      .filter((f) => !["covers", "episodes", "general"].includes(f))
+                      .filter((f) => !["general", "covers", "banners", "media"].includes(f))
                       .map((f) => (
                         <option key={f} value={f}>
                           {f}
@@ -232,34 +228,34 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Story ID */}
+              {/* Asset ID */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Story ID (Unique Identifier) *
+                  Asset ID (Unique Identifier) *
                 </label>
                 <input
                   type="text"
-                  value={storyId}
-                  onChange={(e) => setStoryId(e.target.value)}
-                  placeholder="e.g. story_ep_102"
+                  value={assetId}
+                  onChange={(e) => setAssetId(e.target.value)}
+                  placeholder="e.g. item_cover_001"
                   required
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none font-mono"
                 />
                 <span className="text-[10px] text-zinc-400 mt-1 block">
-                  Duplicate IDs replace existing images automatically.
+                  Duplicate Asset IDs replace existing images automatically.
                 </span>
               </div>
 
               {/* Title */}
               <div>
                 <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Story Title (Optional)
+                  Asset Title (Optional)
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. The Midnight Echo"
+                  placeholder="e.g. Main Hero Visual"
                   className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
                 />
               </div>
@@ -305,7 +301,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               <CheckCircle2 className="w-5 h-5" />
               <span>
                 {uploadedResult.isReplaced
-                  ? "Existing Image Replaced!"
+                  ? "Existing Asset Replaced!"
                   : "Asset Successfully Uploaded!"}
               </span>
             </div>
@@ -348,8 +344,8 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                   <p className="font-semibold">{uploadedResult.savedKb} KB saved</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Story ID:</span>
-                  <p className="font-mono">{uploadedResult.asset.storyId}</p>
+                  <span className="text-zinc-500">Asset ID:</span>
+                  <p className="font-mono">{uploadedResult.asset.assetId}</p>
                 </div>
               </div>
             </div>
@@ -369,7 +365,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               <li className="flex items-start gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <span>
-                  <strong>WebP Format:</strong> Delivers superior compression and high fidelity for mobile apps.
+                  <strong>WebP Format:</strong> Delivers superior compression and high fidelity for all apps.
                 </span>
               </li>
               <li className="flex items-start gap-2">
@@ -381,7 +377,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               <li className="flex items-start gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <span>
-                  <strong>Instant Deduplication:</strong> Same story ID automatically deletes old storage files and updates CDN references.
+                  <strong>Instant Deduplication:</strong> Same Asset ID automatically deletes old storage files and updates CDN references.
                 </span>
               </li>
             </ul>

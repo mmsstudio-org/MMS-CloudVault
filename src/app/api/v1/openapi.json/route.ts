@@ -8,7 +8,7 @@ export async function GET() {
     info: {
       title: "MMS Studio Storage REST API",
       description:
-        "High-performance, automated media asset ingestion, Sharp optimization pipeline, progressive BlurHash calculation, and Cloudflare R2 / S3 object delivery.",
+        "High-performance, automated media asset ingestion, Sharp optimization pipeline, progressive BlurHash calculation, and Cloudflare R2 / S3 object delivery for mobile apps, web applications, and publishing platforms.",
       version: "1.0.0",
       contact: {
         name: "MMS Studio Engineering",
@@ -36,31 +36,36 @@ export async function GET() {
     paths: {
       "/api/v1/upload": {
         post: {
-          summary: "Upload, optimize and assign story image asset",
+          summary: "Upload, optimize and assign media asset",
           description:
-            "Uploads a media image, automatically scales it within max dimension, converts to WebP, limits file size, and generates a compact BlurHash placeholder. Automatically replaces existing image for duplicate story IDs under the same application.",
+            "Uploads a media image, automatically scales it within max dimension, converts to WebP, limits file size, and generates a compact BlurHash placeholder. Automatically replaces existing image for duplicate asset IDs under the same application.",
           requestBody: {
             required: true,
             content: {
               "multipart/form-data": {
                 schema: {
                   type: "object",
-                  required: ["story_id", "file"],
+                  required: ["asset_id", "file"],
                   properties: {
+                    asset_id: {
+                      type: "string",
+                      description: "Unique identifier of the media item or document from client app",
+                      example: "banner_promo_01",
+                    },
                     story_id: {
                       type: "string",
-                      description: "Unique identifier of the story/document from the client app",
-                      example: "horror_story_ep01",
+                      description: "Alias for asset_id (supported for backward compatibility)",
+                      example: "banner_promo_01",
                     },
                     title: {
                       type: "string",
-                      description: "Descriptive human-readable title for the story",
-                      example: "The Haunted Manor - Episode 1",
+                      description: "Descriptive human-readable title for the media asset",
+                      example: "Seasonal Promotion Banner",
                     },
                     folder: {
                       type: "string",
                       description: "Category or sub-folder inside the app namespace",
-                      example: "covers",
+                      example: "banners",
                     },
                     file: {
                       type: "string",
@@ -77,7 +82,7 @@ export async function GET() {
               description: "Asset successfully processed and saved",
             },
             400: {
-              description: "Missing required story_id or file",
+              description: "Missing required asset_id or file",
             },
             401: {
               description: "Invalid or inactive API Key",
@@ -88,47 +93,77 @@ export async function GET() {
           },
         },
       },
-      "/api/v1/stories/{story_id}": {
+      "/api/v1/assets/{asset_id}": {
         get: {
-          summary: "Retrieve direct public URL and metadata for a story asset",
+          summary: "Retrieve direct public URL and metadata for a media asset",
           parameters: [
             {
-              name: "story_id",
+              name: "asset_id",
               in: "path",
               required: true,
               schema: { type: "string" },
-              description: "Story identifier",
-              example: "horror_story_ep01",
+              description: "Unique media asset identifier",
+              example: "banner_promo_01",
             },
           ],
           responses: {
             200: {
-              description: "Story asset details found",
+              description: "Media asset details found",
             },
             404: {
-              description: "Asset not found for this story ID",
+              description: "Asset not found for this asset ID",
             },
           },
         },
         delete: {
-          summary: "Move story asset to Trash (Soft delete with 30-day recovery)",
+          summary: "Move media asset to Trash (Soft delete with 30-day recovery)",
+          parameters: [
+            {
+              name: "asset_id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
+              description: "Unique media asset identifier",
+              example: "banner_promo_01",
+            },
+          ],
+          responses: {
+            200: {
+              description: "Media asset successfully moved to trash",
+            },
+            404: {
+              description: "Media asset not found",
+            },
+          },
+        },
+      },
+      "/api/v1/stories/{story_id}": {
+        get: {
+          summary: "Retrieve media asset (Backward compatibility route)",
           parameters: [
             {
               name: "story_id",
               in: "path",
               required: true,
               schema: { type: "string" },
-              description: "Story identifier",
-              example: "horror_story_ep01",
             },
           ],
           responses: {
-            200: {
-              description: "Asset successfully moved to trash",
+            200: { description: "Success" },
+          },
+        },
+        delete: {
+          summary: "Delete media asset (Backward compatibility route)",
+          parameters: [
+            {
+              name: "story_id",
+              in: "path",
+              required: true,
+              schema: { type: "string" },
             },
-            404: {
-              description: "Story asset not found",
-            },
+          ],
+          responses: {
+            200: { description: "Success" },
           },
         },
       },

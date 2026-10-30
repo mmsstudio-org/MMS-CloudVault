@@ -4,7 +4,8 @@ import { siteSettings } from "@/db/schema";
 export interface TelegramNotificationParams {
   event: "ASSET_UPLOADED" | "ASSET_REPLACED" | "ASSET_DELETED" | "TRASH_PURGED";
   appName: string;
-  storyId: string;
+  assetId?: string;
+  storyId?: string;
   title?: string;
   publicUrl?: string;
   sizeKb?: number;
@@ -30,30 +31,31 @@ export async function sendTelegramNotification(
 
     let text = "";
     const appName = params.appName || "MMS Studio Client";
+    const id = params.assetId || params.storyId || "asset";
 
     switch (params.event) {
       case "ASSET_UPLOADED":
-        text = `🚀 <b>New Asset Uploaded</b>\n` +
+        text = `🚀 <b>New Media Asset Uploaded</b>\n` +
           `• <b>App:</b> ${appName}\n` +
-          `• <b>Story ID:</b> <code>${params.storyId}</code>\n` +
+          `• <b>Asset ID:</b> <code>${id}</code>\n` +
           (params.title ? `• <b>Title:</b> ${params.title}\n` : "") +
           `• <b>Size:</b> ${params.sizeKb || 0} KB (Saved ${params.savedKb || 0} KB)\n` +
           (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">View Asset</a>` : "");
         break;
 
       case "ASSET_REPLACED":
-        text = `🔄 <b>Asset Updated & Replaced</b>\n` +
+        text = `🔄 <b>Media Asset Updated & Replaced</b>\n` +
           `• <b>App:</b> ${appName}\n` +
-          `• <b>Story ID:</b> <code>${params.storyId}</code>\n` +
+          `• <b>Asset ID:</b> <code>${id}</code>\n` +
           (params.title ? `• <b>Title:</b> ${params.title}\n` : "") +
           `• <b>New Size:</b> ${params.sizeKb || 0} KB\n` +
           (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">View Asset</a>` : "");
         break;
 
       case "ASSET_DELETED":
-        text = `🗑️ <b>Asset Moved to Trash</b>\n` +
+        text = `🗑️ <b>Media Asset Moved to Trash</b>\n` +
           `• <b>App:</b> ${appName}\n` +
-          `• <b>Story ID:</b> <code>${params.storyId}</code>`;
+          `• <b>Asset ID:</b> <code>${id}</code>`;
         break;
 
       case "TRASH_PURGED":

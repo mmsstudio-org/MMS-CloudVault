@@ -29,7 +29,7 @@ export default async function ManualUploadPage() {
           Manual Web Uploader
         </h1>
         <p className="text-xs text-zinc-500 mt-1">
-          Upload and optimize media assets directly through the browser with identical Sharp compression and story deduplication rules.
+          Upload and optimize media assets directly through the browser with identical Sharp compression and asset deduplication rules.
         </p>
       </div>
 

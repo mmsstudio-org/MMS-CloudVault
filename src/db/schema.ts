@@ -58,16 +58,16 @@ export const apiKeys = pgTable(
 );
 
 // -----------------------------------------------------------------------------
-// 3. STORY ASSETS TABLE (Image metadata, replacement tracking & deduplication)
+// 3. MEDIA ASSETS TABLE (Universal media metadata, replacement & deduplication)
 // -----------------------------------------------------------------------------
-export const storyAssets = pgTable(
-  "story_assets",
+export const mediaAssets = pgTable(
+  "media_assets",
   {
     id: uuid("id")
       .default(sql`gen_random_uuid()`)
       .primaryKey(),
     appId: text("app_id").notNull(),
-    storyId: text("story_id").notNull(),
+    assetId: text("asset_id").notNull(),
     title: text("title"),
     folder: text("folder").default("general").notNull(),
     storageKey: text("storage_key").notNull(),
@@ -88,13 +88,16 @@ export const storyAssets = pgTable(
       .notNull(),
   },
   (table) => [
-    // Composite Unique Constraint: appId + storyId guarantees deduplication & replace
-    uniqueIndex("story_assets_app_story_unique_idx").on(
+    // Composite Unique Constraint: appId + assetId guarantees deduplication & replacement
+    uniqueIndex("media_assets_app_asset_unique_idx").on(
       table.appId,
-      table.storyId
+      table.assetId
     ),
   ]
 );
+
+// Backward compatibility alias
+export const storyAssets = mediaAssets;
 
 // -----------------------------------------------------------------------------
 // 4. ADMIN USERS TABLE (Role-based access, whitelisted Google logins, 2FA TOTP)
@@ -124,8 +127,12 @@ export type NewSiteSettings = typeof siteSettings.$inferInsert;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;
 
-export type StoryAsset = typeof storyAssets.$inferSelect;
-export type NewStoryAsset = typeof storyAssets.$inferInsert;
+export type MediaAsset = typeof mediaAssets.$inferSelect;
+export type NewMediaAsset = typeof mediaAssets.$inferInsert;
+
+// Backward compatibility type alias
+export type StoryAsset = MediaAsset;
+export type NewStoryAsset = NewMediaAsset;
 
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type NewAdminUser = typeof adminUsers.$inferInsert;

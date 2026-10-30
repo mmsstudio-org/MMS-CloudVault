@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { storyAssets } from "@/db/schema";
+import { mediaAssets } from "@/db/schema";
 import { eq, and, lt, inArray } from "drizzle-orm";
 import { deleteObject } from "./storage";
 import { sendTelegramNotification } from "./telegram";
@@ -19,10 +19,10 @@ export async function purgeTrash(options?: {
 
   // Fetch trash records
   const query = forceAll
-    ? eq(storyAssets.isDeleted, true)
-    : and(eq(storyAssets.isDeleted, true), lt(storyAssets.deletedAt, cutoff));
+    ? eq(mediaAssets.isDeleted, true)
+    : and(eq(mediaAssets.isDeleted, true), lt(mediaAssets.deletedAt, cutoff));
 
-  const itemsToPurge = await db.select().from(storyAssets).where(query);
+  const itemsToPurge = await db.select().from(mediaAssets).where(query);
 
   if (itemsToPurge.length === 0) {
     return { purgedCount: 0, errors: 0 };
@@ -42,14 +42,14 @@ export async function purgeTrash(options?: {
 
   // 2. Delete database records in bulk
   if (idsToDelete.length > 0) {
-    await db.delete(storyAssets).where(inArray(storyAssets.id, idsToDelete));
+    await db.delete(mediaAssets).where(inArray(mediaAssets.id, idsToDelete));
   }
 
   // 3. Dispatch Telegram alert
   sendTelegramNotification({
     event: "TRASH_PURGED",
     appName: "MMS Studio Storage System",
-    storyId: "CLEANUP_JOB",
+    assetId: "CLEANUP_JOB",
     count: idsToDelete.length,
   }).catch((err) => console.warn("Telegram alert error:", err));
 
@@ -62,15 +62,15 @@ export async function purgeTrash(options?: {
 /**
  * Restores a soft-deleted asset back to active status
  */
-export async function restoreAsset(assetId: string): Promise<boolean> {
+export async function restoreAsset(id: string): Promise<boolean> {
   const result = await db
-    .update(storyAssets)
+    .update(mediaAssets)
     .set({
       isDeleted: false,
       deletedAt: null,
       updatedAt: new Date(),
     })
-    .where(eq(storyAssets.id, assetId))
+    .where(eq(mediaAssets.id, id))
     .returning();
 
   return result.length > 0;
@@ -79,15 +79,15 @@ export async function restoreAsset(assetId: string): Promise<boolean> {
 /**
  * Soft deletes an asset (moves to Trash)
  */
-export async function softDeleteAsset(assetId: string): Promise<boolean> {
+export async function softDeleteAsset(id: string): Promise<boolean> {
   const result = await db
-    .update(storyAssets)
+    .update(mediaAssets)
     .set({
       isDeleted: true,
       deletedAt: new Date(),
       updatedAt: new Date(),
     })
-    .where(eq(storyAssets.id, assetId))
+    .where(eq(mediaAssets.id, id))
     .returning();
 
   return result.length > 0;

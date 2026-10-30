@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { storyAssets, StoryAsset } from "@/db/schema";
+import { mediaAssets, MediaAsset } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { uploadObject, deleteObject } from "./storage";
 import { optimizeImage, ImageOptimizationOptions } from "./image-optimizer";
@@ -7,7 +7,8 @@ import { sendTelegramNotification } from "./telegram";
 
 export interface ProcessAssetParams {
   appId: string;
-  storyId: string;
+  assetId?: string;
+  storyId?: string; // backward-compatibility alias
   title?: string;
   folder?: string;
   buffer: Buffer;
@@ -18,26 +19,31 @@ export interface ProcessAssetParams {
 export async function processAndSaveAsset(
   params: ProcessAssetParams
 ): Promise<{
-  asset: StoryAsset;
+  asset: MediaAsset;
   isReplaced: boolean;
   savedKb: number;
 }> {
-  const { appId, storyId, title, folder = "general", buffer, options, appName } = params;
+  const { appId, title, folder = "general", buffer, options, appName } = params;
+  const assetId = params.assetId || params.storyId;
+
+  if (!assetId) {
+    throw new Error("Asset ID is required.");
+  }
 
   // 1. Optimize image through Sharp engine & compute BlurHash
   const optimized = await optimizeImage(buffer, options);
 
   // 2. Generate unique storage key path
   const sanitizedFolder = folder.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "general";
-  const sanitizedStoryId = storyId.replace(/[^a-zA-Z0-9_-]/g, "_");
+  const sanitizedAssetId = assetId.replace(/[^a-zA-Z0-9_-]/g, "_");
   const timestamp = Date.now();
-  const storageKey = `apps/${appId}/${sanitizedFolder}/${sanitizedStoryId}-${timestamp}.webp`;
+  const storageKey = `apps/${appId}/${sanitizedFolder}/${sanitizedAssetId}-${timestamp}.webp`;
 
-  // 3. Check for existing asset by composite key (appId + storyId)
+  // 3. Check for existing asset by composite key (appId + assetId)
   const existingRecords = await db
     .select()
-    .from(storyAssets)
-    .where(and(eq(storyAssets.appId, appId), eq(storyAssets.storyId, storyId)))
+    .from(mediaAssets)
+    .where(and(eq(mediaAssets.appId, appId), eq(mediaAssets.assetId, assetId)))
     .limit(1);
 
   const existing = existingRecords[0];
@@ -58,12 +64,12 @@ export async function processAndSaveAsset(
     optimized.mimeType
   );
 
-  let savedAsset: StoryAsset;
+  let savedAsset: MediaAsset;
 
   // 5. Save or update database record
   if (existing) {
     const updated = await db
-      .update(storyAssets)
+      .update(mediaAssets)
       .set({
         title: title || existing.title,
         folder: sanitizedFolder,
@@ -79,17 +85,17 @@ export async function processAndSaveAsset(
         deletedAt: null,
         updatedAt: new Date(),
       })
-      .where(eq(storyAssets.id, existing.id))
+      .where(eq(mediaAssets.id, existing.id))
       .returning();
 
     savedAsset = updated[0];
   } else {
     const inserted = await db
-      .insert(storyAssets)
+      .insert(mediaAssets)
       .values({
         appId,
-        storyId,
-        title: title || `Asset for ${storyId}`,
+        assetId,
+        title: title || `Asset for ${assetId}`,
         folder: sanitizedFolder,
         storageKey,
         publicUrl,
@@ -112,7 +118,7 @@ export async function processAndSaveAsset(
   sendTelegramNotification({
     event: isReplaced ? "ASSET_REPLACED" : "ASSET_UPLOADED",
     appName: appName || appId,
-    storyId,
+    assetId,
     title: title || savedAsset.title || "",
     publicUrl,
     sizeKb: optimized.optimizedSizeKb,

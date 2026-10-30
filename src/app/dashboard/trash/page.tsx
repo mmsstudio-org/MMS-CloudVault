@@ -17,7 +17,7 @@ export default async function TrashPage() {
           Trash Bin & System Cleanup
         </h1>
         <p className="text-xs text-zinc-500 mt-1">
-          Review soft-deleted story assets, restore accidental deletions, or trigger immediate garbage collection.
+          Review soft-deleted media assets, restore accidental deletions, or trigger immediate garbage collection.
         </p>
       </div>
 
