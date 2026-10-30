@@ -83,68 +83,70 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
         <span>Sign in with Google</span>
       </button>
 
-      {/* Dev / Quick Access Collapsible */}
-      <div className="pt-2">
-        <button
-          type="button"
-          onClick={() => setShowDevLogin(!showDevLogin)}
-          className="w-full flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition py-1 cursor-pointer"
-        >
-          <span className="flex items-center gap-1.5 font-medium">
-            <KeyRound className="w-3.5 h-3.5 text-amber-500" />
-            Developer / Local Quick Access
-          </span>
-          {showDevLogin ? (
-            <ChevronUp className="w-4 h-4" />
-          ) : (
-            <ChevronDown className="w-4 h-4" />
-          )}
-        </button>
-
-        {showDevLogin && (
-          <form
-            onSubmit={handleDevSignIn}
-            className="mt-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 space-y-3"
+      {/* Dev / Quick Access Collapsible (Development Mode Only) */}
+      {process.env.NODE_ENV === "development" && (
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => setShowDevLogin(!showDevLogin)}
+            className="w-full flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition py-1 cursor-pointer"
           >
-            <div>
-              <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                Whitelisted Email
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                placeholder="admin@yourdomain.com"
-              />
-            </div>
+            <span className="flex items-center gap-1.5 font-medium">
+              <KeyRound className="w-3.5 h-3.5 text-amber-500" />
+              Developer / Local Quick Access
+            </span>
+            {showDevLogin ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </button>
 
-            <div>
-              <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                Admin Passcode
-              </label>
-              <input
-                type="password"
-                value={passcode}
-                onChange={(e) => setPasscode(e.target.value)}
-                required
-                className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                placeholder="••••••••"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={isCredLoading}
-              className="w-full py-2 px-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+          {showDevLogin && (
+            <form
+              onSubmit={handleDevSignIn}
+              className="mt-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 space-y-3"
             >
-              {isCredLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-              Sign In as Administrator
-            </button>
-          </form>
-        )}
-      </div>
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                  Whitelisted Email
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                  placeholder="admin@yourdomain.com"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                  Admin Passcode
+                </label>
+                <input
+                  type="password"
+                  value={passcode}
+                  onChange={(e) => setPasscode(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500"
+                  placeholder="••••••••"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={isCredLoading}
+                className="w-full py-2 px-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+              >
+                {isCredLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                Sign In as Administrator
+              </button>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   );
 }

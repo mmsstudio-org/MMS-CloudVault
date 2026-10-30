@@ -20,21 +20,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         passcode: { label: "Passcode", type: "password" },
       },
       async authorize(credentials) {
+        // Strict Security: Credentials bypass is completely disabled in production
+        if (process.env.NODE_ENV === "production") {
+          console.warn("[Auth] Credentials bypass is disabled in production.");
+          return null;
+        }
+
         const email = credentials?.email as string | undefined;
         const passcode = credentials?.passcode as string | undefined;
 
         if (!email) return null;
 
-        // In dev or local testing, allow sabbirmms@gmail.com or initial email with CRON_SECRET or dev passcode
+        // In local development testing only
         const allowedDevPasscode =
           process.env.CRON_SECRET || "mms_studio_dev_2026";
-        const initialEmail =
-          process.env.INITIAL_SUPERADMIN_EMAIL || "sabbirmms@gmail.com";
 
         if (
           passcode === allowedDevPasscode ||
-          passcode === "admin123" ||
-          process.env.NODE_ENV !== "production"
+          passcode === "admin123"
         ) {
           // Verify if email is in whitelist
           const isAllowed = await isEmailWhitelisted(email);

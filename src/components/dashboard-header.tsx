@@ -4,7 +4,6 @@ import Image from "next/image";
 import { signOut } from "next-auth/react";
 import { LogOut, ShieldCheck, User } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
-import { TwoFactorDialog } from "./two-factor-dialog";
 
 interface DashboardHeaderProps {
   user: {
@@ -29,8 +28,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         </p>
       </div>
 
-      <div className="flex items-center gap-3">
-        <TwoFactorDialog />
+      <div className="flex items-center gap-4">
         <ThemeToggle />
 
         {/* User Profile Pill */}
