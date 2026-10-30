@@ -41,6 +41,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 width={32}
                 height={32}
                 className="object-cover"
+                unoptimized
               />
             ) : (
               <User className="w-4 h-4 text-zinc-500" />
