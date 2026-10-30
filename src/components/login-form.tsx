@@ -11,8 +11,8 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
   const [isGoogleLoading, setIsGoogleLoading] = React.useState(false);
   const [isCredLoading, setIsCredLoading] = React.useState(false);
   const [showDevLogin, setShowDevLogin] = React.useState(false);
-  const [email, setEmail] = React.useState("sabbirmms@gmail.com");
-  const [passcode, setPasscode] = React.useState("admin123");
+  const [email, setEmail] = React.useState("");
+  const [passcode, setPasscode] = React.useState("");
 
   const handleGoogleSignIn = async () => {
     try {
@@ -116,13 +116,13 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                placeholder="sabbirmms@gmail.com"
+                placeholder="admin@yourdomain.com"
               />
             </div>
 
             <div>
               <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
-                Passcode (Default: admin123)
+                Admin Passcode
               </label>
               <input
                 type="password"
@@ -130,7 +130,7 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
                 onChange={(e) => setPasscode(e.target.value)}
                 required
                 className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                placeholder="admin123"
+                placeholder="••••••••"
               />
             </div>
 
