@@ -179,7 +179,7 @@ Visit [http://localhost:3000](http://localhost:3000) to view the homepage or [ht
 
 ### 7. Local Admin Login Credentials (Development)
 When developing locally before configuring Google OAuth, click **"Developer / Local Quick Access"** on `/login`:
-- **Email:** `sabbirmms@gmail.com`
+- **Email:** `mr.sabbirmms@gmail.com`
 - **Passcode:** `admin123`
 *(Note: This dev credential provider is strictly disabled in production for enterprise security).*
 

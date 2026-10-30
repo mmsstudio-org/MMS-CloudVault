@@ -217,9 +217,9 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
             </label>
             <input
               type="number"
-              min={400}
-              max={8000}
-              step={64}
+              min={64}
+              max={4000}
+              // step={64}
               value={maxDimensionPx}
               onChange={(e) => setMaxDimensionPx(Number(e.target.value))}
               required
@@ -239,7 +239,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
               type="number"
               min={50}
               max={15000}
-              step={50}
+              // step={12}
               value={maxFileKb}
               onChange={(e) => setMaxFileKb(Number(e.target.value))}
               required
