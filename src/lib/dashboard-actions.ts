@@ -9,6 +9,14 @@ import { purgeTrash, restoreAsset, softDeleteAsset, deleteAssetPermanently } fro
 import { sendTelegramNotification } from "./telegram";
 import { processAndSaveAsset } from "./asset-manager";
 
+function safeRevalidate(path: string) {
+  try {
+    revalidatePath(path);
+  } catch {
+    // Graceful no-op in test environments or CLI scripts without Next.js request context
+  }
+}
+
 // -----------------------------------------------------------------------------
 // 1. ANALYTICS & METRICS
 // -----------------------------------------------------------------------------
@@ -108,17 +116,17 @@ export async function getGalleryAssets(filters?: {
 
 export async function actionSoftDeleteAsset(assetId: string) {
   const ok = await softDeleteAsset(assetId);
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/gallery");
-  revalidatePath("/dashboard/trash");
+  safeRevalidate("/dashboard");
+  safeRevalidate("/dashboard/gallery");
+  safeRevalidate("/dashboard/trash");
   return ok;
 }
 
 export async function actionDeleteAssetPermanently(id: string) {
   const result = await deleteAssetPermanently(id);
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/gallery");
-  revalidatePath("/dashboard/trash");
+  safeRevalidate("/dashboard");
+  safeRevalidate("/dashboard/gallery");
+  safeRevalidate("/dashboard/trash");
   return result;
 }
 
@@ -135,17 +143,17 @@ export async function getTrashAssets() {
 
 export async function actionRestoreAsset(id: string) {
   const ok = await restoreAsset(id);
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/gallery");
-  revalidatePath("/dashboard/trash");
+  safeRevalidate("/dashboard");
+  safeRevalidate("/dashboard/gallery");
+  safeRevalidate("/dashboard/trash");
   return ok;
 }
 
 export async function actionPurgeTrashNow() {
   const res = await purgeTrash({ forceAll: true });
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/gallery");
-  revalidatePath("/dashboard/trash");
+  safeRevalidate("/dashboard");
+  safeRevalidate("/dashboard/gallery");
+  safeRevalidate("/dashboard/trash");
   return res;
 }
 
