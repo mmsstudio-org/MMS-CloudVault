@@ -13,7 +13,7 @@ export async function GET() {
       contact: {
         name: "MMS Studio Engineering",
         url: "https://studio.sabbirmms.com",
-        email: "sabbirmms@gmail.com",
+        email: "mr.sabbirmms@gmail.com",
       },
     },
     servers: [

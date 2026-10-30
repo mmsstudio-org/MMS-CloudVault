@@ -12,7 +12,7 @@ export async function seedDatabase() {
       maxDimensionPx: 2048,
       maxFileKb: 1024,
       compressionQuality: 80,
-      allowedAdminEmails: JSON.stringify(["sabbirmms@gmail.com"]),
+      allowedAdminEmails: JSON.stringify(["mr.sabbirmms@gmail.com"]),
       googleSiteVerification: "",
       googleSearchConsoleTag: "",
       telegramNotificationsEnabled: false,
@@ -45,17 +45,17 @@ export async function seedDatabase() {
   const existingAdmin = await db
     .select()
     .from(adminUsers)
-    .where(eq(adminUsers.email, "sabbirmms@gmail.com"))
+    .where(eq(adminUsers.email, "mr.sabbirmms@gmail.com"))
     .limit(1);
 
   if (existingAdmin.length === 0) {
     await db.insert(adminUsers).values({
-      email: "sabbirmms@gmail.com",
+      email: "mr.sabbirmms@gmail.com",
       name: "Sabbir MMS",
       role: "superadmin",
       isTwoFactorEnabled: false,
     });
-    console.log("✅ Seeded superadmin user (sabbirmms@gmail.com).");
+    console.log("✅ Seeded superadmin user (mr.sabbirmms@gmail.com).");
   } else {
     console.log("ℹ️ Superadmin already exists.");
   }

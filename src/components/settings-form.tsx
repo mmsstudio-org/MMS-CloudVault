@@ -60,7 +60,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
   );
 
   // Allowed Admin Emails Whitelist
-  let defaultEmails: string[] = ["sabbirmms@gmail.com"];
+  let defaultEmails: string[] = ["mr.sabbirmms@gmail.com"];
   if (initialSettings?.allowedAdminEmails) {
     try {
       defaultEmails = JSON.parse(initialSettings.allowedAdminEmails);
@@ -99,7 +99,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
   };
 
   const handleRemoveEmail = (emailToRemove: string) => {
-    if (emailToRemove === "sabbirmms@gmail.com") {
+    if (emailToRemove === "mr.sabbirmms@gmail.com") {
       toast.error("The root superadmin email cannot be removed.");
       return;
     }
@@ -432,7 +432,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
         {/* Email Pills List */}
         <div className="flex flex-wrap gap-2 pt-1">
           {allowedEmails.map((email) => {
-            const isRoot = email === "sabbirmms@gmail.com";
+            const isRoot = email === "mr.sabbirmms@gmail.com";
             return (
               <div
                 key={email}

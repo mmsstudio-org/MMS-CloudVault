@@ -25,7 +25,7 @@ export default async function SettingsPage() {
 
       <SettingsForm
         initialSettings={settings}
-        userEmail={session?.user?.email || "sabbirmms@gmail.com"}
+        userEmail={session?.user?.email || "mr.sabbirmms@gmail.com"}
       />
     </div>
   );

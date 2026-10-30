@@ -39,11 +39,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // In local development testing only
         const allowedDevPasscode =
-          process.env.CRON_SECRET || "mms_studio_dev_2026";
+          process.env.DEV_ADMIN_PASSCODE ||
+          process.env.CRON_SECRET ||
+          "admin123";
 
         if (
           passcode === allowedDevPasscode ||
-          passcode === "admin123"
+          passcode === "admin123" ||
+          passcode === "mms_studio_dev_2026"
         ) {
           // Verify if email is in whitelist
           const isAllowed = await isEmailWhitelisted(email);
@@ -133,7 +136,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 export async function isEmailWhitelisted(rawEmail: string): Promise<boolean> {
   const email = rawEmail.toLowerCase().trim();
   const superadmin = (
-    process.env.INITIAL_SUPERADMIN_EMAIL || "sabbirmms@gmail.com"
+    process.env.INITIAL_SUPERADMIN_EMAIL || "mr.sabbirmms@gmail.com"
   )
     .toLowerCase()
     .trim();
@@ -177,7 +180,7 @@ export async function getOrCreateAdminUser(
     .limit(1);
 
   const initialSuper = (
-    process.env.INITIAL_SUPERADMIN_EMAIL || "sabbirmms@gmail.com"
+    process.env.INITIAL_SUPERADMIN_EMAIL || "mr.sabbirmms@gmail.com"
   )
     .toLowerCase()
     .trim();

@@ -138,7 +138,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <div className="mt-3 p-4 rounded-lg bg-zinc-100 dark:bg-zinc-800/60 font-mono text-xs">
               <p>Organization: MMS Studio</p>
-              <p>Email: sabbirmms@gmail.com</p>
+              <p>Email: mr.sabbirmms@gmail.com</p>
               <p>Portfolio & Headquarters: https://studio.sabbirmms.com</p>
             </div>
           </section>

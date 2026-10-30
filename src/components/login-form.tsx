@@ -107,6 +107,13 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
               onSubmit={handleDevSignIn}
               className="mt-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 space-y-3"
             >
+              <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300">
+                <span className="font-semibold block">Local Dev Quick Credentials:</span>
+                Email: <code className="font-mono font-bold">mr.sabbirmms@gmail.com</code>
+                <br />
+                Passcode: <code className="font-mono font-bold">admin123</code>
+              </div>
+
               <div>
                 <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
                   Whitelisted Email
@@ -116,8 +123,8 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                  placeholder="admin@yourdomain.com"
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 font-mono"
+                  placeholder="mr.sabbirmms@gmail.com"
                 />
               </div>
 
@@ -130,8 +137,8 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500"
-                  placeholder="••••••••"
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 font-mono"
+                  placeholder="admin123"
                 />
               </div>
 

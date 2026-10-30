@@ -26,7 +26,7 @@ export const siteSettings = pgTable("site_settings", {
   googleSiteVerification: text("google_site_verification"),
   googleSearchConsoleTag: text("google_search_console_tag"),
   allowedAdminEmails: text("allowed_admin_emails")
-    .default('["sabbirmms@gmail.com"]')
+    .default('["mr.sabbirmms@gmail.com"]')
     .notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)

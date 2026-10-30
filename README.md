@@ -131,7 +131,9 @@ NEXTAUTH_URL="http://localhost:3000"
 NEXTAUTH_SECRET="your-super-random-secret"
 
 # Initial root superadmin (allowed to login even if DB is empty)
-INITIAL_SUPERADMIN_EMAIL="sabbirmms@gmail.com"
+INITIAL_SUPERADMIN_EMAIL="mr.sabbirmms@gmail.com"
+# Local development quick access passcode
+DEV_ADMIN_PASSCODE="admin123"
 
 # Storage credentials (leave blank in local dev for automatic public/uploads fallback)
 STORAGE_ENDPOINT=""
@@ -174,6 +176,12 @@ npm run dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to view the homepage or [http://localhost:3000/dashboard](http://localhost:3000/dashboard) to log in.
+
+### 7. Local Admin Login Credentials (Development)
+When developing locally before configuring Google OAuth, click **"Developer / Local Quick Access"** on `/login`:
+- **Email:** `sabbirmms@gmail.com`
+- **Passcode:** `admin123`
+*(Note: This dev credential provider is strictly disabled in production for enterprise security).*
 
 ---
 
