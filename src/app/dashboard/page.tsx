@@ -183,7 +183,7 @@ export default async function DashboardPage() {
               return (
                 <div
                   key={asset.id}
-                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/50 transition group flex gap-3.5 items-center"
+                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/50 transition group flex gap-3.5 items-center overflow-hidden min-w-0"
                 >
                   <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 shrink-0 relative border border-zinc-300/50 dark:border-zinc-700/50 flex items-center justify-center">
                     {isAudio ? (
@@ -201,29 +201,31 @@ export default async function DashboardPage() {
                     )}
                   </div>
 
-                  <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono shrink-0">
                         {asset.appId}
                       </span>
-                      <span className="text-[10px] text-zinc-400">
+                      <span className="text-[10px] text-zinc-400 truncate">
                         {asset.folder}
                       </span>
                       {isAudio && (
-                        <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-semibold font-mono">
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-semibold font-mono shrink-0">
                           AUDIO
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
+                    <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate" title={asset.title || asset.assetId}>
                       {asset.title || asset.assetId}
                     </p>
-                    <p className="text-[11px] text-zinc-400 font-mono">
+                    <p className="text-[11px] text-zinc-400 font-mono truncate" title={`ID: ${asset.assetId}`}>
                       ID: {asset.assetId} • {asset.optimizedSizeKb} KB
                     </p>
                   </div>
 
-                  <CopyButton text={asset.publicUrl} />
+                  <div className="shrink-0">
+                    <CopyButton text={asset.publicUrl} />
+                  </div>
                 </div>
               );
             })}

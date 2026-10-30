@@ -140,20 +140,20 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
                       />
                     )}
                   </div>
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0">
                         {item.appId}
                       </span>
-                      <span className="text-[10px] text-amber-500 flex items-center gap-1">
+                      <span className="text-[10px] text-amber-500 flex items-center gap-1 shrink-0">
                         <Clock className="w-3 h-3" />
                         {daysRemaining} days left
                       </span>
                     </div>
-                    <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                    <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" title={item.title || item.assetId}>
                       {item.title || item.assetId}
                     </p>
-                    <p className="text-[11px] text-zinc-400 font-mono">
+                    <p className="text-[11px] text-zinc-400 font-mono truncate" title={`ID: ${item.assetId}`}>
                       ID: {item.assetId} • {item.optimizedSizeKb} KB
                     </p>
                   </div>

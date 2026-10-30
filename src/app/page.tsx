@@ -107,7 +107,7 @@ export default function HomePage() {
         {/* Ambient Gradient Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-emerald-500/10 dark:bg-emerald-500/15 blur-[120px] rounded-full pointer-events-none -z-10" />
 
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-6">
+        <div className="mx-auto px-4 sm:px-6 text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 shadow-xs">
             <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
             High-Performance Media & Asset Pipeline for Mobile Apps
@@ -120,7 +120,7 @@ export default function HomePage() {
             </span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
+          <p className="max-w-3xl mx-auto text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
             MMS Studio Storage empowers applications, web apps, and media creators with on-the-fly Sharp WebP optimization, aspect-ratio scaling, in-memory API key caching, and automatic deduplication.
           </p>
 

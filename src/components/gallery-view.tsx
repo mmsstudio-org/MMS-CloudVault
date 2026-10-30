@@ -263,12 +263,12 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                 )}
 
                 {/* Card Meta Content */}
-                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-xs font-bold text-zinc-900 dark:text-white line-clamp-1">
+                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between min-w-0 overflow-hidden">
+                  <div className="min-w-0 overflow-hidden">
+                    <h3 className="text-xs font-bold text-zinc-900 dark:text-white line-clamp-1" title={asset.title || asset.assetId}>
                       {asset.title || asset.assetId}
                     </h3>
-                    <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
+                    <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate" title={`ID: ${asset.assetId}`}>
                       ID: {asset.assetId}
                     </p>
                     <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1">
@@ -344,7 +344,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                   key={asset.id}
                   className="p-4 flex items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
                 >
-                  <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="flex items-center gap-3.5 min-w-0 flex-1 overflow-hidden">
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
                       {isAudio ? (
                         <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-zinc-900 flex items-center justify-center text-emerald-400">
@@ -360,32 +360,32 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                         />
                       )}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1 overflow-hidden">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0">
                           {asset.appId}
                         </span>
-                        <span className="text-[10px] text-zinc-400 font-mono">
+                        <span className="text-[10px] text-zinc-400 font-mono truncate">
                           /{asset.folder}
                         </span>
                         {isAudio && (
-                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-semibold">
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-semibold shrink-0">
                             AUDIO
                           </span>
                         )}
                       </div>
-                      <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                      <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" title={asset.title || asset.assetId}>
                         {asset.title || asset.assetId}
                       </p>
                       {isAudio ? (
-                        <div className="flex items-center gap-2 mt-1">
-                          <span className="text-[11px] text-zinc-400 font-mono">
+                        <div className="flex flex-wrap items-center gap-2 mt-1 min-w-0">
+                          <span className="text-[11px] text-zinc-400 font-mono truncate max-w-full" title={`ID: ${asset.assetId}`}>
                             ID: {asset.assetId} • {asset.optimizedSizeKb} KB
                           </span>
                           <audio controls src={asset.publicUrl} className="h-6 w-44 sm:w-56" />
                         </div>
                       ) : (
-                        <p className="text-[11px] text-zinc-400 font-mono truncate">
+                        <p className="text-[11px] text-zinc-400 font-mono truncate" title={`ID: ${asset.assetId}`}>
                           ID: {asset.assetId} • {asset.width}x{asset.height} px • {asset.optimizedSizeKb} KB
                         </p>
                       )}
