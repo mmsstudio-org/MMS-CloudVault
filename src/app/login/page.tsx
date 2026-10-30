@@ -21,21 +21,41 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col justify-between">
-      {/* Top Bar */}
-      <header className="p-4 sm:p-6 flex items-center justify-between max-w-5xl mx-auto w-full">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Homepage
-        </Link>
-        <ThemeToggle />
+      {/* Top Bar Navigation */}
+      <header className="border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md sticky top-0 z-40">
+        <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 font-semibold text-sm hover:opacity-80 transition"
+          >
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center">
+              <Image
+                src="/logo.png"
+                alt="MMS Studio Logo"
+                width={32}
+                height={32}
+                className="object-contain"
+              />
+            </div>
+            <span>MMS CloudVault</span>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition px-2.5 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
+        </div>
       </header>
 
-      {/* Main Login Card */}
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xl">
+      {/* Main Login Container */}
+      <main className="flex-1 container mx-auto px-4 sm:px-6 py-10 sm:py-16 flex items-center justify-center">
+        <div className="w-full max-w-sm sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xl">
           {/* Logo & Header */}
           <div className="text-center space-y-3 mb-8">
             <div className="inline-flex w-14 h-14 rounded-2xl overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black items-center justify-center shadow-md">
@@ -102,16 +122,21 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </main>
 
       {/* Footer */}
-      <footer className="py-6 text-center text-xs text-zinc-400 dark:text-zinc-600">
-        MMS Studio Media Infrastructure •{" "}
-        <a
-          href="https://studio.sabbirmms.com"
-          target="_blank"
-          rel="noreferrer"
-          className="hover:underline"
-        >
-          studio.sabbirmms.com
-        </a>
+      <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60 py-6">
+        <div className="container mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 dark:text-zinc-500">
+          <p>© 2026 MMS CloudVault. All rights reserved.</p>
+          <p>
+            MMS Studio Media Infrastructure •{" "}
+            <a
+              href="https://studio.sabbirmms.com"
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300"
+            >
+              studio.sabbirmms.com
+            </a>
+          </p>
+        </div>
       </footer>
     </div>
   );
