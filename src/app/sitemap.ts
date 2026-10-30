@@ -2,7 +2,7 @@ import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://storage.sabbirmms.com";
-  const now = new Date();
+  const now = new Date("2026-10-31T00:00:00.000Z");
 
   return [
     {

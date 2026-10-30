@@ -13,6 +13,8 @@ export const metadata = {
   description: "Secure administrator authentication for MMS Studio Storage.",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
   const error = params?.error;

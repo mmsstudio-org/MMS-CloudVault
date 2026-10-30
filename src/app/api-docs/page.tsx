@@ -90,7 +90,7 @@ export default function ApiDocsPage() {
 
       {/* Footer */}
       <footer className="border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-500">
-        © {new Date().getFullYear()} MMS Studio. Powered by Next.js & Sharp Engine.
+        © 2026 MMS Studio. Powered by Next.js & Sharp Engine.
       </footer>
     </div>
   );

@@ -67,11 +67,11 @@ export async function optimizeImage(
   let targetQuality = options?.compressionQuality ?? defaultSettings.compressionQuality;
 
   // 1. Initial metadata inspection
-  const initialPipeline = sharp(inputBuffer, { failOnError: false });
+  const initialPipeline = sharp(inputBuffer, { failOn: "none" });
   const meta = await initialPipeline.metadata();
 
   // 2. Aspect-Ratio Preserving Dimension Scaling
-  let pipeline = sharp(inputBuffer, { failOnError: false }).rotate(); // Auto-rotates according to EXIF
+  let pipeline = sharp(inputBuffer, { failOn: "none" }).rotate(); // Auto-rotates according to EXIF
 
   const shouldResize =
     (meta.width && meta.width > maxDimension) ||

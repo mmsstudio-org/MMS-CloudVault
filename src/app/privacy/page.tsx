@@ -147,7 +147,7 @@ export default function PrivacyPolicyPage() {
 
       {/* Footer */}
       <footer className="border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-500">
-        © {new Date().getFullYear()} MMS Studio. All rights reserved.
+        © 2026 MMS Studio. All rights reserved.
       </footer>
     </div>
   );

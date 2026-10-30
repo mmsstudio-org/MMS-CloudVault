@@ -1,0 +1,39 @@
+import { getApiKeysList, getGalleryAssets } from "@/lib/dashboard-actions";
+import { UploadForm } from "@/components/upload-form";
+
+export const metadata = {
+  title: "Manual Web Upload",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function ManualUploadPage() {
+  const allKeys = await getApiKeysList();
+  const assets = await getGalleryAssets();
+
+  const apps = allKeys
+    .filter((k) => k.isActive)
+    .map((k) => ({ appName: k.appName, appId: k.appId }));
+
+  // Fallback if no keys created yet
+  if (apps.length === 0) {
+    apps.push({ appName: "Default Studio App", appId: "default-app" });
+  }
+
+  const existingFolders = Array.from(new Set(assets.map((a) => a.folder)));
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+          Manual Web Uploader
+        </h1>
+        <p className="text-xs text-zinc-500 mt-1">
+          Upload and optimize media assets directly through the browser with identical Sharp compression and story deduplication rules.
+        </p>
+      </div>
+
+      <UploadForm apps={apps} existingFolders={existingFolders} />
+    </div>
+  );
+}
