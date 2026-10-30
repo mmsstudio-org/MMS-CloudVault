@@ -116,7 +116,7 @@ export async function GET(request: NextRequest) {
             response: [],
           },
           {
-            name: "Soft Delete Asset (Move to Trash)",
+            name: "Delete Asset Permanently (Purge from Storage)",
             request: {
               method: "DELETE",
               header: [],
@@ -128,11 +128,12 @@ export async function GET(request: NextRequest) {
                   {
                     key: "asset_id",
                     value: "banner_promo_01",
-                    description: "The unique ID of the media asset to move to trash.",
+                    description: "The unique ID of the media asset to permanently delete.",
                   },
                 ],
               },
-              description: "Soft deletes an asset by moving it to Trash. Retained for 30 days before permanent cleanup.",
+              description:
+                "Permanently destroys the physical media file from Cloud Object Storage (S3 / R2) and removes the database record. Pass query parameter ?soft=true to move to trash instead.",
             },
             response: [],
           },

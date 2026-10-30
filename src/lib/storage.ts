@@ -6,28 +6,40 @@ import {
 import * as fs from "fs";
 import * as path from "path";
 
-// Initialize S3 / R2 Client if credentials exist
-const endpoint = process.env.STORAGE_ENDPOINT;
-const accessKeyId = process.env.STORAGE_ACCESS_KEY;
-const secretAccessKey = process.env.STORAGE_SECRET_KEY;
-const bucketName = process.env.STORAGE_BUCKET_NAME || "mms-studio-storage";
-const region = process.env.STORAGE_REGION || "auto";
-const publicBaseUrl = process.env.STORAGE_PUBLIC_URL;
+/**
+ * Dynamically resolves S3 / R2 storage configuration from process.env
+ */
+export function getStorageConfig() {
+  const endpoint = process.env.STORAGE_ENDPOINT;
+  const accessKeyId = process.env.STORAGE_ACCESS_KEY;
+  const secretAccessKey = process.env.STORAGE_SECRET_KEY;
+  const bucketName = process.env.STORAGE_BUCKET_NAME || "mms-cloud-vault";
+  const region = process.env.STORAGE_REGION || "auto";
+  const publicBaseUrl = process.env.STORAGE_PUBLIC_URL;
 
-const hasCloudStorage = Boolean(endpoint && accessKeyId && secretAccessKey);
+  const hasCloudStorage = Boolean(endpoint && accessKeyId && secretAccessKey);
 
-let s3Client: S3Client | null = null;
-if (hasCloudStorage) {
-  s3Client = new S3Client({
-    region,
+  let s3Client: S3Client | null = null;
+  if (hasCloudStorage) {
+    s3Client = new S3Client({
+      region,
+      endpoint,
+      credentials: {
+        accessKeyId: accessKeyId!,
+        secretAccessKey: secretAccessKey!,
+      },
+      // Required for Cloudflare R2 and generic S3 compatibles (Neon, MinIO, etc.)
+      forcePathStyle: true,
+    });
+  }
+
+  return {
     endpoint,
-    credentials: {
-      accessKeyId: accessKeyId!,
-      secretAccessKey: secretAccessKey!,
-    },
-    // Required for Cloudflare R2 and generic S3 compatibles
-    forcePathStyle: true,
-  });
+    bucketName,
+    publicBaseUrl,
+    hasCloudStorage,
+    s3Client,
+  };
 }
 
 /**
@@ -38,6 +50,9 @@ export async function uploadObject(
   storageKey: string,
   contentType: string = "image/webp"
 ): Promise<{ publicUrl: string; storageKey: string }> {
+  const { endpoint, bucketName, publicBaseUrl, hasCloudStorage, s3Client } =
+    getStorageConfig();
+
   if (hasCloudStorage && s3Client) {
     const command = new PutObjectCommand({
       Bucket: bucketName,
@@ -52,6 +67,10 @@ export async function uploadObject(
     const publicUrl = publicBaseUrl
       ? `${publicBaseUrl.replace(/\/$/, "")}/${storageKey}`
       : `${endpoint?.replace(/\/$/, "")}/${bucketName}/${storageKey}`;
+
+    console.log(
+      `[Storage] Uploaded "${storageKey}" to S3 bucket "${bucketName}" -> ${publicUrl}`
+    );
 
     return { publicUrl, storageKey };
   }
@@ -70,6 +89,8 @@ export async function uploadObject(
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
   const publicUrl = `${baseUrl.replace(/\/$/, "")}/uploads/${storageKey}`;
 
+  console.log(`[Storage] Saved locally to ${filePath} -> ${publicUrl}`);
+
   return { publicUrl, storageKey };
 }
 
@@ -77,24 +98,35 @@ export async function uploadObject(
  * Deletes an object from Cloudflare R2 / S3 or local disk
  */
 export async function deleteObject(storageKey: string): Promise<boolean> {
+  const { bucketName, hasCloudStorage, s3Client } = getStorageConfig();
+
   try {
     if (hasCloudStorage && s3Client) {
+      console.log(
+        `[Storage] Deleting object key "${storageKey}" from S3 bucket "${bucketName}"...`
+      );
+
       const command = new DeleteObjectCommand({
         Bucket: bucketName,
         Key: storageKey,
       });
-      await s3Client.send(command);
+
+      const res = await s3Client.send(command);
+      console.log(
+        `[Storage] S3 DeleteObject SUCCESS: key="${storageKey}", HTTP status=${res.$metadata?.httpStatusCode}`
+      );
       return true;
     }
 
-    // Local fallback
+    // Local fallback: remove file from public/uploads
     const filePath = path.join(process.cwd(), "public", "uploads", storageKey);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
+      console.log(`[Storage] Local file deleted: ${filePath}`);
     }
     return true;
   } catch (err) {
-    console.error(`Failed to delete storage key: ${storageKey}`, err);
+    console.error(`[Storage Error] Failed to delete storage key: ${storageKey}`, err);
     return false;
   }
 }
@@ -103,6 +135,7 @@ export async function deleteObject(storageKey: string): Promise<boolean> {
  * Formats public URL for a given key
  */
 export function getPublicUrl(storageKey: string): string {
+  const { hasCloudStorage, publicBaseUrl } = getStorageConfig();
   if (hasCloudStorage && publicBaseUrl) {
     return `${publicBaseUrl.replace(/\/$/, "")}/${storageKey}`;
   }

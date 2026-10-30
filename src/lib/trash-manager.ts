@@ -92,3 +92,41 @@ export async function softDeleteAsset(id: string): Promise<boolean> {
 
   return result.length > 0;
 }
+
+/**
+ * Permanently deletes an asset: destroys physical file from Object Storage (S3 / R2 / disk)
+ * and purges record from the database.
+ */
+export async function deleteAssetPermanently(
+  id: string
+): Promise<{ success: boolean; assetId?: string; error?: string }> {
+  const records = await db
+    .select()
+    .from(mediaAssets)
+    .where(eq(mediaAssets.id, id))
+    .limit(1);
+
+  if (records.length === 0) {
+    return { success: false, error: "Asset not found" };
+  }
+
+  const asset = records[0];
+
+  // 1. Delete physical file from Object Storage
+  if (asset.storageKey) {
+    console.log(`[Permanent Delete] Purging object storage key: "${asset.storageKey}"`);
+    await deleteObject(asset.storageKey);
+  }
+
+  // 2. Delete database record
+  await db.delete(mediaAssets).where(eq(mediaAssets.id, id));
+
+  // 3. Dispatch Telegram alert
+  sendTelegramNotification({
+    event: "ASSET_DELETED",
+    appName: asset.appId,
+    assetId: asset.assetId,
+  }).catch((err) => console.warn("Telegram alert error:", err));
+
+  return { success: true, assetId: asset.assetId };
+}

@@ -3,7 +3,7 @@ import { validateApiKey } from "@/lib/api-cache";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
-import { softDeleteAsset } from "@/lib/trash-manager";
+import { softDeleteAsset, deleteAssetPermanently } from "@/lib/trash-manager";
 
 interface RouteParams {
   params: Promise<{ asset_id: string }>;
@@ -131,11 +131,22 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    await softDeleteAsset(records[0].id);
+    const isSoft = req.nextUrl.searchParams.get("soft") === "true";
+
+    if (isSoft) {
+      await softDeleteAsset(records[0].id);
+      return NextResponse.json({
+        success: true,
+        message: `Media asset '${assetId}' moved to trash.`,
+        asset_id: assetId,
+      });
+    }
+
+    await deleteAssetPermanently(records[0].id);
 
     return NextResponse.json({
       success: true,
-      message: `Media asset '${assetId}' successfully moved to trash.`,
+      message: `Media asset '${assetId}' permanently deleted from object storage and database.`,
       asset_id: assetId,
     });
   } catch (err: unknown) {

@@ -111,7 +111,9 @@ export async function GET() {
           },
         },
         delete: {
-          summary: "Move media asset to Trash (Soft delete with 30-day recovery)",
+          summary: "Permanently delete media asset from storage and database",
+          description:
+            "Permanently erases the physical media file (image or audio) from Cloud Object Storage and removes the database record. Pass query parameter ?soft=true if you only wish to move it to trash.",
           parameters: [
             {
               name: "asset_id",
@@ -121,10 +123,18 @@ export async function GET() {
               description: "Unique media asset identifier",
               example: "banner_promo_01",
             },
+            {
+              name: "soft",
+              in: "query",
+              required: false,
+              schema: { type: "boolean" },
+              description: "Set to true to soft-delete to trash instead of permanent storage destruction",
+              example: false,
+            },
           ],
           responses: {
             200: {
-              description: "Media asset successfully moved to trash",
+              description: "Media asset successfully deleted",
             },
             404: {
               description: "Media asset not found",

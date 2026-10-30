@@ -13,7 +13,11 @@ import {
   Music,
 } from "lucide-react";
 import { MediaAsset } from "@/db/schema";
-import { actionRestoreAsset, actionPurgeTrashNow } from "@/lib/dashboard-actions";
+import {
+  actionRestoreAsset,
+  actionPurgeTrashNow,
+  actionDeleteAssetPermanently,
+} from "@/lib/dashboard-actions";
 import { toast } from "sonner";
 
 interface TrashManagerViewProps {
@@ -24,6 +28,7 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
   const [trash, setTrash] = React.useState<MediaAsset[]>(initialTrash);
   const [isPurging, setIsPurging] = React.useState(false);
   const [restoringId, setRestoringId] = React.useState<string | null>(null);
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
   const handleRestore = async (id: string, assetId: string) => {
     try {
@@ -35,6 +40,26 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
       toast.error("Failed to restore asset.");
     } finally {
       setRestoringId(null);
+    }
+  };
+
+  const handlePermanentDelete = async (id: string, assetId: string) => {
+    if (
+      !confirm(
+        `CRITICAL: Permanently destroy asset '${assetId}'? The physical file will be immediately erased from Object Storage and database.`
+      )
+    ) {
+      return;
+    }
+    try {
+      setDeletingId(id);
+      await actionDeleteAssetPermanently(id);
+      setTrash((prev) => prev.filter((item) => item.id !== id));
+      toast.success(`Asset '${assetId}' permanently erased from storage.`);
+    } catch {
+      toast.error("Failed to delete asset permanently.");
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -163,7 +188,7 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
                   <button
                     type="button"
                     onClick={() => handleRestore(item.id, item.assetId)}
-                    disabled={isRestoring}
+                    disabled={isRestoring || deletingId === item.id}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
                   >
                     {isRestoring ? (
@@ -172,6 +197,21 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
                       <RotateCcw className="w-3.5 h-3.5" />
                     )}
                     <span>Restore</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handlePermanentDelete(item.id, item.assetId)}
+                    disabled={isRestoring || deletingId === item.id}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/40 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition cursor-pointer disabled:opacity-50"
+                    title="Permanently erase from Object Storage"
+                  >
+                    {deletingId === item.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5" />
+                    )}
+                    <span>Delete Permanently</span>
                   </button>
                 </div>
               </div>

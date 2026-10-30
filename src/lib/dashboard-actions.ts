@@ -5,7 +5,7 @@ import { siteSettings, apiKeys, mediaAssets, adminUsers, ApiKey } from "@/db/sch
 import { eq, desc, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { invalidateApiKeyCache } from "./api-cache";
-import { purgeTrash, restoreAsset, softDeleteAsset } from "./trash-manager";
+import { purgeTrash, restoreAsset, softDeleteAsset, deleteAssetPermanently } from "./trash-manager";
 import { sendTelegramNotification } from "./telegram";
 import { processAndSaveAsset } from "./asset-manager";
 
@@ -112,6 +112,14 @@ export async function actionSoftDeleteAsset(assetId: string) {
   revalidatePath("/dashboard/gallery");
   revalidatePath("/dashboard/trash");
   return ok;
+}
+
+export async function actionDeleteAssetPermanently(id: string) {
+  const result = await deleteAssetPermanently(id);
+  revalidatePath("/dashboard");
+  revalidatePath("/dashboard/gallery");
+  revalidatePath("/dashboard/trash");
+  return result;
 }
 
 // -----------------------------------------------------------------------------

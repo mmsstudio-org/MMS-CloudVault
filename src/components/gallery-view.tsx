@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { MediaAsset } from "@/db/schema";
 import { CopyButton } from "./copy-button";
-import { actionSoftDeleteAsset } from "@/lib/dashboard-actions";
+import { actionDeleteAssetPermanently } from "@/lib/dashboard-actions";
 import { toast } from "sonner";
 import QRCode from "qrcode";
 
@@ -63,14 +63,18 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
   }, [assets, selectedApp, selectedFolder, mediaTypeFilter, search]);
 
   const handleDelete = async (id: string, assetId: string) => {
-    if (!confirm(`Are you sure you want to move asset '${assetId}' to trash?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to permanently delete asset '${assetId}'? The physical file will be immediately erased from cloud storage and the public URL will become invalid.`
+      )
+    ) {
       return;
     }
     try {
       setDeletingId(id);
-      await actionSoftDeleteAsset(id);
+      await actionDeleteAssetPermanently(id);
       setAssets((prev) => prev.filter((a) => a.id !== id));
-      toast.success(`Asset '${assetId}' moved to trash.`);
+      toast.success(`Asset '${assetId}' permanently erased from storage and database.`);
     } catch {
       toast.error("Failed to delete asset.");
     } finally {
