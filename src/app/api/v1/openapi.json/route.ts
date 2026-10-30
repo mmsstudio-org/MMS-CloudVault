@@ -6,13 +6,13 @@ export async function GET() {
   const openApiSpec = {
     openapi: "3.0.3",
     info: {
-      title: "MMS Studio Storage REST API",
+      title: "MMS CloudVault REST API",
       description:
-        "High-performance, automated media asset ingestion, Sharp optimization pipeline, progressive BlurHash calculation, and Cloudflare R2 / S3 object delivery for mobile apps, web applications, and publishing platforms.",
+        "High-performance, automated media asset ingestion, Sharp WebP optimization pipeline, progressive BlurHash calculation, and Cloudflare R2 / S3 object delivery for mobile apps, web applications, and media platforms.",
       version: "1.0.0",
       contact: {
-        name: "MMS Studio Engineering",
-        url: "https://studio.sabbirmms.com",
+        name: "MMS CloudVault Engineering",
+        url: "https://cloud.sabbirmms.com",
         email: "mr.sabbirmms@gmail.com",
       },
     },

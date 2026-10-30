@@ -1,20 +1,23 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, BookOpen, ExternalLink, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BookOpen, ExternalLink, ShieldCheck, Globe, Cpu, Database } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SwaggerView } from "@/components/swagger-view";
+import { PostmanExportButton } from "@/components/postman-export-button";
 
 export const metadata = {
-  title: "API Documentation & Swagger UI",
+  title: "API Documentation & Interactive Playground | MMS CloudVault",
   description:
-    "Interactive OpenAPI specification and live testing playground for MMS Studio Storage REST endpoints.",
+    "Interactive OpenAPI specification and live testing playground for MMS CloudVault REST endpoints. Export directly to Postman or test live.",
 };
 
 export default function ApiDocsPage() {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col antialiased">
       {/* Navigation */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md sticky top-0 z-40">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link
             href="/"
@@ -29,16 +32,16 @@ export default function ApiDocsPage() {
                 className="object-contain"
               />
             </div>
-            <span>MMS Studio Storage</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+            <span>MMS CloudVault</span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-medium border border-emerald-500/20">
               API Docs
             </span>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
               href="/dashboard"
-              className="text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
             >
               Dashboard
               <ExternalLink className="w-3 h-3" />
@@ -46,7 +49,7 @@ export default function ApiDocsPage() {
             <ThemeToggle />
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition px-2.5 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Back
@@ -55,42 +58,71 @@ export default function ApiDocsPage() {
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="flex-1 container mx-auto w-full px-4 py-8">
-        <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium mb-2 border border-emerald-500/20">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              OpenAPI 3.0.3 Validated
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Interactive API Reference
-            </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-              Test media uploads, deduplication, asset URL fetching, and soft deletes live using your application&apos;s <code className="text-xs font-mono bg-zinc-200 dark:bg-zinc-800 px-1 py-0.5 rounded">x-api-key</code>.
-            </p>
-          </div>
+      {/* Hero Header */}
+      <section className="border-b border-zinc-200 dark:border-zinc-800 bg-gradient-to-b from-white to-zinc-50/50 dark:from-zinc-900/40 dark:to-zinc-950 py-10">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold border border-emerald-500/20">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  OpenAPI 3.0.3 Validated
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-mono">
+                  <Globe className="w-3 h-3" />
+                  REST v1.0
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-mono">
+                  <Cpu className="w-3 h-3" />
+                  Sharp WebP Engine
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-xs font-mono">
+                  <Database className="w-3 h-3" />
+                  R2 / S3 Storage
+                </span>
+              </div>
 
-          <div className="flex items-center gap-2">
-            <a
-              href="/api/v1/openapi.json"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-            >
-              <BookOpen className="w-3.5 h-3.5" />
-              Raw OpenAPI JSON
-            </a>
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                MMS CloudVault API Reference
+              </h1>
+              <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Seamlessly ingest images and audio, execute on-the-fly Sharp WebP transformations, generate progressive BlurHashes, and manage cloud assets. Authenticate requests using your application&apos;s <code className="text-xs font-mono bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-900 dark:text-zinc-200 font-semibold">x-api-key</code> header.
+              </p>
+
+              <div className="pt-1 flex items-center gap-2 text-xs text-zinc-500 font-mono">
+                <span>Base URL:</span>
+                <code className="px-2 py-0.5 rounded bg-zinc-200/70 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 font-bold select-all">
+                  {appUrl}
+                </code>
+              </div>
+            </div>
+
+            {/* Action Buttons: Postman Export + Raw OpenAPI */}
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <PostmanExportButton />
+
+              <a
+                href="/api/v1/openapi.json"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                Raw OpenAPI JSON
+              </a>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Swagger UI Component */}
+      {/* Main Container */}
+      <main className="flex-1 container mx-auto w-full px-4 py-8">
         <SwaggerView url="/api/v1/openapi.json" />
       </main>
 
       {/* Footer */}
       <footer className="border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-500">
-        © 2026 MMS Studio. Powered by Next.js & Sharp Engine.
+        © 2026 MMS CloudVault. Powered by Next.js & Sharp Media Optimization Engine.
       </footer>
     </div>
   );
