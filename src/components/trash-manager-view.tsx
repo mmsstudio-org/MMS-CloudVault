@@ -30,12 +30,6 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
   const [isPurging, setIsPurging] = React.useState(false);
   const [restoringId, setRestoringId] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
-  const [now, setNow] = React.useState<number>(serverNow);
-
-  // In React 19 / Compiler, Date.now() is an impure function that must only be called in effects
-  React.useEffect(() => {
-    setNow(Date.now());
-  }, []);
 
   const handleRestore = async (id: string, assetId: string) => {
     try {
@@ -141,12 +135,11 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
         ) : (
           trash.map((item) => {
             const isRestoring = restoringId === item.id;
-            const current = now || serverNow;
             const deletedTime = item.deletedAt
               ? new Date(item.deletedAt).getTime()
-              : current;
-            const daysInTrash = current
-              ? Math.floor((current - deletedTime) / (1000 * 60 * 60 * 24))
+              : serverNow;
+            const daysInTrash = serverNow
+              ? Math.floor((serverNow - deletedTime) / (1000 * 60 * 60 * 24))
               : 0;
             const daysRemaining = Math.max(0, 30 - daysInTrash);
 
