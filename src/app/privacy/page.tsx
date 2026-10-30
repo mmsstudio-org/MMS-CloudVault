@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata = {
   title: "Privacy Policy",
-  description: "Privacy policy and data protection terms for MMS Studio Storage.",
+  description: "Privacy policy and data protection terms for MMS CloudVault.",
 };
 
 export default function PrivacyPolicyPage() {
@@ -27,7 +27,7 @@ export default function PrivacyPolicyPage() {
                 className="object-contain"
               />
             </div>
-            <span>MMS Studio Storage</span>
+            <span>MMS CloudVault</span>
           </Link>
 
           <div className="flex items-center gap-4">
@@ -72,7 +72,7 @@ export default function PrivacyPolicyPage() {
               <Lock className="w-4 h-4 text-emerald-500" /> 1. Overview and Core Commitment
             </h2>
             <p>
-              MMS Studio Storage is a dedicated digital media asset pipeline and object storage delivery infrastructure operated by MMS Studio (
+              MMS CloudVault is a dedicated digital media asset pipeline and object storage delivery infrastructure operated by MMS Studio (
               <a
                 href="https://studio.sabbirmms.com"
                 className="text-emerald-500 underline"

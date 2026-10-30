@@ -18,7 +18,7 @@ export async function generateTotpSetup(
 ): Promise<TotpSetupData> {
   const secret = generateSecret();
   const uri = generateURI({
-    issuer: "MMS Studio Storage",
+    issuer: "MMS CloudVault",
     label: email,
     secret,
   });

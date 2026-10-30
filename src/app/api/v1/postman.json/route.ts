@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       _postman_id: "mms-cloudvault-v1-collection",
       name: "MMS CloudVault REST API",
       description:
-        "Official Postman Collection for MMS CloudVault (MMS Studio Storage). Media upload, Sharp WebP transformation, MP3 audio storage, BlurHash generation, asset retrieval, and trash management.",
+        "Official Postman Collection for MMS CloudVault. Media upload, Sharp WebP transformation, MP3 audio storage, BlurHash generation, asset retrieval, and trash management.",
       schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
       version: "1.0.0",
     },

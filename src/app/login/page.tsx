@@ -10,7 +10,7 @@ interface LoginPageProps {
 
 export const metadata = {
   title: "Admin Portal Sign In",
-  description: "Secure administrator authentication for MMS Studio Storage.",
+  description: "Secure administrator authentication for MMS CloudVault.",
 };
 
 export const dynamic = "force-dynamic";
@@ -50,7 +50,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             </div>
             <div>
               <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-                MMS Studio Storage
+                MMS CloudVault
               </h1>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
                 Administrative Media & Asset Management Portal

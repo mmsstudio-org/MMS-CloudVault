@@ -48,7 +48,7 @@ export async function purgeTrash(options?: {
   // 3. Dispatch Telegram alert
   sendTelegramNotification({
     event: "TRASH_PURGED",
-    appName: "MMS Studio Storage System",
+    appName: "MMS CloudVault System",
     assetId: "CLEANUP_JOB",
     count: idsToDelete.length,
   }).catch((err) => console.warn("Telegram alert error:", err));

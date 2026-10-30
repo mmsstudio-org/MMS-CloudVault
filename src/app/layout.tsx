@@ -16,14 +16,15 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://storage.sabbirmms.com"),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://cloud.sabbirmms.com"),
   title: {
-    default: "MMS Studio Storage — High-Performance Media & Asset Infrastructure",
-    template: "%s | MMS Studio Storage",
+    default: "MMS CloudVault — High-Performance Media & Asset Infrastructure",
+    template: "%s | MMS CloudVault",
   },
   description:
     "Ultra-low latency, serverless object storage, Sharp-powered image optimization pipeline, and secure asset delivery engine for MMS Studio applications and mobile products.",
   keywords: [
+    "MMS CloudVault",
     "MMS Studio",
     "Object Storage",
     "Media Delivery",
@@ -44,17 +45,17 @@ export const metadata: Metadata = {
     apple: "/icon.png",
   },
   openGraph: {
-    title: "MMS Studio Storage — High-Performance Media Infrastructure",
+    title: "MMS CloudVault — High-Performance Media Infrastructure",
     description:
       "Enterprise-grade media asset storage, automated compression, and instant delivery CDN for modern applications.",
-    url: "https://storage.sabbirmms.com",
-    siteName: "MMS Studio Storage",
+    url: "https://cloud.sabbirmms.com",
+    siteName: "MMS CloudVault",
     images: [
       {
         url: "/logo.png",
         width: 512,
         height: 512,
-        alt: "MMS Studio Storage Logo",
+        alt: "MMS CloudVault Logo",
       },
     ],
     locale: "en_US",

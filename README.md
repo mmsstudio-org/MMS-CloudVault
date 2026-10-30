@@ -1,5 +1,5 @@
-# MMS Studio Storage 🚀
-> High-performance, serverless object storage, Sharp-powered image optimization pipeline, and secure asset delivery engine for MMS Studio mobile applications and web products.
+# MMS CloudVault 🚀
+> High-performance, serverless object storage, Sharp-powered image optimization pipeline, and secure asset delivery engine for mobile applications and web products.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-blue?style=flat&logo=react)](https://react.dev/)

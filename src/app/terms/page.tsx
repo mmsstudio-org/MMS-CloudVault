@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata = {
   title: "Terms of Service",
-  description: "Terms and conditions governing the use of MMS Studio Storage API and Admin Portal.",
+  description: "Terms and conditions governing the use of MMS CloudVault API and Admin Portal.",
 };
 
 export default function TermsOfServicePage() {
@@ -27,7 +27,7 @@ export default function TermsOfServicePage() {
                 className="object-contain"
               />
             </div>
-            <span>MMS Studio Storage</span>
+            <span>MMS CloudVault</span>
           </Link>
 
           <div className="flex items-center gap-4">
@@ -64,7 +64,7 @@ export default function TermsOfServicePage() {
               <CheckCircle2 className="w-4 h-4 text-emerald-500" /> 1. Acceptance of Terms
             </h2>
             <p>
-              By accessing the MMS Studio Storage portal, using the REST API endpoints, or retrieving media assets generated through this infrastructure, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not access or use the services.
+              By accessing the MMS CloudVault portal, using the REST API endpoints, or retrieving media assets generated through this infrastructure, you agree to be bound by these Terms of Service. If you do not agree to these terms, do not access or use the services.
             </p>
           </section>
 

@@ -121,7 +121,7 @@ export default function HomePage() {
           </h1>
 
           <p className="max-w-3xl mx-auto text-sm sm:text-base text-zinc-600 dark:text-zinc-400 leading-relaxed">
-            MMS Studio Storage empowers applications, web apps, and media creators with on-the-fly Sharp WebP optimization, aspect-ratio scaling, in-memory API key caching, and automatic deduplication.
+            MMS CloudVault empowers applications, web apps, and media creators with on-the-fly Sharp WebP optimization, aspect-ratio scaling, in-memory API key caching, and automatic deduplication.
           </p>
 
           {/* Action CTAs */}
@@ -349,7 +349,7 @@ export default function HomePage() {
                 />
               </div>
               <span className="font-bold text-sm text-zinc-900 dark:text-white">
-                MMS Studio Storage
+                MMS CloudVault
               </span>
             </div>
             <p className="text-xs text-zinc-500 max-w-sm leading-relaxed">
