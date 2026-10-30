@@ -10,6 +10,7 @@ export interface TelegramNotificationParams {
   sizeKb?: number;
   savedKb?: number;
   count?: number;
+  mimeType?: string;
 }
 
 export async function sendTelegramNotification(
@@ -31,15 +32,24 @@ export async function sendTelegramNotification(
     let text = "";
     const appName = params.appName || "MMS Studio Client";
     const id = params.assetId || "asset";
+    const isAudio = params.mimeType?.startsWith("audio/");
 
     switch (params.event) {
       case "ASSET_UPLOADED":
-        text = `🚀 <b>New Media Asset Uploaded</b>\n` +
-          `• <b>App:</b> ${appName}\n` +
-          `• <b>Asset ID:</b> <code>${id}</code>\n` +
-          (params.title ? `• <b>Title:</b> ${params.title}\n` : "") +
-          `• <b>Size:</b> ${params.sizeKb || 0} KB (Saved ${params.savedKb || 0} KB)\n` +
-          (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">View Asset</a>` : "");
+        text = isAudio
+          ? `🎵 <b>New Audio Track Uploaded</b>\n` +
+            `• <b>App:</b> ${appName}\n` +
+            `• <b>Asset ID:</b> <code>${id}</code>\n` +
+            (params.title ? `• <b>Title:</b> ${params.title}\n` : "") +
+            `• <b>Format:</b> ${params.mimeType || "audio/mpeg"}\n` +
+            `• <b>Size:</b> ${params.sizeKb || 0} KB\n` +
+            (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">Listen Audio</a>` : "")
+          : `🚀 <b>New Media Asset Uploaded</b>\n` +
+            `• <b>App:</b> ${appName}\n` +
+            `• <b>Asset ID:</b> <code>${id}</code>\n` +
+            (params.title ? `• <b>Title:</b> ${params.title}\n` : "") +
+            `• <b>Size:</b> ${params.sizeKb || 0} KB (Saved ${params.savedKb || 0} KB)\n` +
+            (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">View Asset</a>` : "");
         break;
 
       case "ASSET_REPLACED":

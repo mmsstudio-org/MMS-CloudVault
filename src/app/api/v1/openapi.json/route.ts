@@ -38,7 +38,7 @@ export async function GET() {
         post: {
           summary: "Upload, optimize and assign media asset",
           description:
-            "Uploads a media image, automatically scales it within max dimension, converts to WebP, limits file size, and generates a compact BlurHash placeholder. Automatically replaces existing image for duplicate asset IDs under the same application.",
+            "Uploads a media image or audio file. Images are automatically scaled, converted to WebP, and assigned a BlurHash. Audio files (MP3, WAV, OGG, M4A, AAC) are uploaded directly to Object Storage. Automatically replaces duplicate asset IDs under the same application.",
           requestBody: {
             required: true,
             content: {
@@ -65,7 +65,7 @@ export async function GET() {
                     file: {
                       type: "string",
                       format: "binary",
-                      description: "Binary image file (JPEG, PNG, WebP, GIF, SVG)",
+                      description: "Binary image (JPEG, PNG, WebP, GIF, SVG) or audio file (MP3, WAV, OGG, M4A, AAC, FLAC)",
                     },
                   },
                 },
@@ -83,7 +83,7 @@ export async function GET() {
               description: "Invalid or inactive API Key",
             },
             415: {
-              description: "Uploaded file is not a supported image format",
+              description: "Uploaded file is not a supported image or audio format",
             },
           },
         },

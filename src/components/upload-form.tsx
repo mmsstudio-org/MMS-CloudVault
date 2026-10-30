@@ -6,6 +6,8 @@ import {
   UploadCloud,
   CheckCircle2,
   Loader2,
+  Music,
+  Headphones,
 } from "lucide-react";
 import { actionManualUpload } from "@/lib/dashboard-actions";
 import { CopyButton } from "./copy-button";
@@ -42,6 +44,11 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       setPreviewUrl(URL.createObjectURL(selected));
       setUploadedResult(null);
 
+      const isAudio = selected.type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(selected.name);
+      if (isAudio && folder === "general") {
+        setFolder("audio");
+      }
+
       // Auto-populate asset ID if empty
       if (!assetId) {
         const cleanName = selected.name
@@ -60,13 +67,26 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       setFile(selected);
       setPreviewUrl(URL.createObjectURL(selected));
       setUploadedResult(null);
+
+      const isAudio = selected.type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(selected.name);
+      if (isAudio && folder === "general") {
+        setFolder("audio");
+      }
+
+      if (!assetId) {
+        const cleanName = selected.name
+          .replace(/\.[^/.]+$/, "")
+          .replace(/[^a-zA-Z0-9_-]/g, "_")
+          .toLowerCase();
+        setAssetId(`asset_${cleanName}`);
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) {
-      toast.error("Please select an image file to upload.");
+      toast.error("Please select a media file (image or audio) to upload.");
       return;
     }
     if (!assetId.trim()) {
@@ -123,23 +143,56 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
               onChange={handleFileChange}
               className="hidden"
             />
 
             {previewUrl ? (
-              <div className="relative aspect-video max-w-sm mx-auto rounded-xl overflow-hidden shadow-md border border-zinc-200 dark:border-zinc-700">
-                <Image
-                  src={previewUrl}
-                  alt="Upload Preview"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold">
-                  Click or drag to change image
+              file && (file.type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name)) ? (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="max-w-md mx-auto p-4 rounded-xl bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-700 text-left shadow-lg"
+                >
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                      <Music className="w-5 h-5 animate-pulse" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-semibold uppercase">
+                        Audio Track
+                      </span>
+                      <p className="text-xs font-bold text-white truncate mt-0.5">
+                        {file.name}
+                      </p>
+                      <p className="text-[11px] text-zinc-400 font-mono">
+                        {Math.round(file.size / 1024)} KB
+                      </p>
+                    </div>
+                  </div>
+
+                  <audio controls src={previewUrl} className="w-full h-9 rounded-lg" />
+
+                  <p
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-[11px] text-center text-zinc-400 hover:text-white mt-2 cursor-pointer transition underline"
+                  >
+                    Click to choose a different file
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <div className="relative aspect-video max-w-sm mx-auto rounded-xl overflow-hidden shadow-md border border-zinc-200 dark:border-zinc-700">
+                  <Image
+                    src={previewUrl}
+                    alt="Upload Preview"
+                    fill
+                    className="object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-semibold">
+                    Click or drag to change file
+                  </div>
+                </div>
+              )
             ) : (
               <div className="space-y-2">
                 <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 group-hover:text-emerald-500 flex items-center justify-center mx-auto transition">
@@ -147,10 +200,10 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-zinc-900 dark:text-white">
-                    Click to browse or drag and drop an image
+                    Click to browse or drag and drop media
                   </p>
                   <p className="text-[11px] text-zinc-400 mt-0.5">
-                    PNG, JPG, WEBP, GIF, SVG up to configured max size
+                    Images (JPG, PNG, WEBP, GIF, SVG) or Audio (MP3, WAV, OGG, M4A, AAC)
                   </p>
                 </div>
               </div>
@@ -214,9 +267,10 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     <option value="general">general</option>
                     <option value="covers">covers</option>
                     <option value="banners">banners</option>
+                    <option value="audio">audio</option>
                     <option value="media">media</option>
                     {existingFolders
-                      .filter((f) => !["general", "covers", "banners", "media"].includes(f))
+                      .filter((f) => !["general", "covers", "banners", "audio", "media"].includes(f))
                       .map((f) => (
                         <option key={f} value={f}>
                           {f}
@@ -306,15 +360,34 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               </span>
             </div>
 
-            <div className="relative aspect-video rounded-xl overflow-hidden border border-emerald-500/30">
-              <Image
-                src={uploadedResult.asset.publicUrl}
-                alt="Uploaded"
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
+            {uploadedResult.asset.mimeType.startsWith("audio/") ? (
+              <div className="p-4 rounded-xl bg-zinc-950 text-white border border-zinc-800 space-y-3">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                    <Music className="w-4 h-4 animate-pulse" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-bold truncate">
+                      {uploadedResult.asset.title || uploadedResult.asset.assetId}
+                    </p>
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      {uploadedResult.asset.mimeType}
+                    </span>
+                  </div>
+                </div>
+                <audio controls src={uploadedResult.asset.publicUrl} className="w-full h-8" />
+              </div>
+            ) : (
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-emerald-500/30">
+                <Image
+                  src={uploadedResult.asset.publicUrl}
+                  alt="Uploaded"
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
+            )}
 
             <div className="space-y-2 text-xs">
               <div>
@@ -332,20 +405,30 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-500/20 text-[11px]">
                 <div>
-                  <span className="text-zinc-500">Dimensions:</span>
-                  <p className="font-semibold">{uploadedResult.asset.width}x{uploadedResult.asset.height} px</p>
+                  <span className="text-zinc-500">
+                    {uploadedResult.asset.mimeType.startsWith("audio/") ? "Media Type:" : "Dimensions:"}
+                  </span>
+                  <p className="font-semibold">
+                    {uploadedResult.asset.mimeType.startsWith("audio/")
+                      ? "Audio Track"
+                      : `${uploadedResult.asset.width}x${uploadedResult.asset.height} px`}
+                  </p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Optimized Size:</span>
-                  <p className="font-semibold text-emerald-500">{uploadedResult.asset.optimizedSizeKb} KB (WebP)</p>
+                  <span className="text-zinc-500">
+                    {uploadedResult.asset.mimeType.startsWith("audio/") ? "Audio Size:" : "Optimized Size:"}
+                  </span>
+                  <p className="font-semibold text-emerald-500">
+                    {uploadedResult.asset.optimizedSizeKb} KB
+                  </p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Saved Space:</span>
-                  <p className="font-semibold">{uploadedResult.savedKb} KB saved</p>
+                  <span className="text-zinc-500">Folder:</span>
+                  <p className="font-semibold">{uploadedResult.asset.folder}</p>
                 </div>
                 <div>
                   <span className="text-zinc-500">Asset ID:</span>
-                  <p className="font-mono">{uploadedResult.asset.assetId}</p>
+                  <p className="font-mono truncate">{uploadedResult.asset.assetId}</p>
                 </div>
               </div>
             </div>

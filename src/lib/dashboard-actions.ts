@@ -288,6 +288,8 @@ export async function actionManualUpload(formData: FormData) {
     folder,
     buffer,
     appName: appId,
+    fileName: file.name,
+    mimeType: file.type,
   });
 
   revalidatePath("/dashboard");

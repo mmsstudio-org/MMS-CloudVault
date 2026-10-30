@@ -10,6 +10,7 @@ import {
   ShieldAlert,
   Loader2,
   CheckCircle2,
+  Music,
 } from "lucide-react";
 import { MediaAsset } from "@/db/schema";
 import { actionRestoreAsset, actionPurgeTrashNow } from "@/lib/dashboard-actions";
@@ -114,20 +115,30 @@ export function TrashManagerView({ initialTrash }: TrashManagerViewProps) {
             );
             const daysRemaining = Math.max(0, 30 - daysInTrash);
 
+            const isAudio =
+              item.mimeType?.startsWith("audio/") ||
+              /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(item.storageKey);
+
             return (
               <div
                 key={item.id}
                 className="p-4 flex items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800 grayscale">
-                    <Image
-                      src={item.publicUrl}
-                      alt={item.title || item.assetId}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
+                    {isAudio ? (
+                      <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-zinc-400">
+                        <Music className="w-6 h-6" />
+                      </div>
+                    ) : (
+                      <Image
+                        src={item.publicUrl}
+                        alt={item.title || item.assetId}
+                        fill
+                        className="object-cover grayscale"
+                        unoptimized
+                      />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">

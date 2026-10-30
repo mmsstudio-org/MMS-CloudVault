@@ -45,6 +45,10 @@
    - Fully documented OpenAPI 3.0 specification available at `/api/v1/openapi.json`.
    - Interactive testing UI at `/api-docs`.
 
+8. **Universal Audio Support (MP3, WAV, OGG, M4A, AAC, FLAC):**
+   - Direct audio stream delivery with zero database strain.
+   - Built-in web audio player in the Admin Gallery and Uploader for instant playback.
+
 ---
 
 ## 📁 Project Architecture & File Map
@@ -170,10 +174,10 @@ Content-Type: multipart/form-data
 ```
 
 **Form-Data Body:**
-- `file`: (Binary image file: PNG, JPG, WEBP, GIF, SVG)
-- `asset_id`: `blog_hero_2026` or `product_101` (Required)
-- `title`: `Hero Banner - Tech Update` (Optional)
-- `folder`: `banners` (Optional, defaults to `general`)
+- `file`: (Binary image: PNG, JPG, WEBP, GIF, SVG or Audio: MP3, WAV, OGG, M4A, AAC, FLAC)
+- `asset_id`: `blog_hero_2026` or `audio_ep01` (Required)
+- `title`: `Hero Banner / Podcast Episode 1` (Optional)
+- `folder`: `banners` or `audio` (Optional, defaults to `general`)
 
 **Sample Response (200 OK):**
 ```json

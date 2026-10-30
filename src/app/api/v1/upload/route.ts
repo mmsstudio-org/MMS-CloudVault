@@ -50,12 +50,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 3. Validate image MIME type
-    if (!file.type.startsWith("image/") && !file.name.match(/\.(jpg|jpeg|png|webp|gif|svg)$/i)) {
+    // 3. Validate image or audio MIME type
+    const isImage = file.type.startsWith("image/") || !!file.name.match(/\.(jpg|jpeg|png|webp|gif|svg)$/i);
+    const isAudio = file.type.startsWith("audio/") || !!file.name.match(/\.(mp3|wav|ogg|m4a|aac|flac)$/i);
+
+    if (!isImage && !isAudio) {
       return NextResponse.json(
         {
           success: false,
-          error: "Unsupported Media Type: Uploaded file must be a valid image format.",
+          error: "Unsupported Media Type: Uploaded file must be a valid image (JPEG, PNG, WebP, GIF, SVG) or audio file (MP3, WAV, OGG, M4A, AAC, FLAC).",
         },
         { status: 415 }
       );
@@ -73,6 +76,8 @@ export async function POST(req: NextRequest) {
       title,
       folder,
       buffer,
+      fileName: file.name,
+      mimeType: file.type,
     });
 
     return NextResponse.json(

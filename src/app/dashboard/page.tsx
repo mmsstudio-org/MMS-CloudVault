@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Copy,
   ArrowRight,
+  Music,
 } from "lucide-react";
 import { getDashboardMetrics } from "@/lib/dashboard-actions";
 import { CopyButton } from "@/components/copy-button";
@@ -174,41 +175,58 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {metrics.recentAssets.map((asset) => (
-              <div
-                key={asset.id}
-                className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/50 transition group flex gap-3.5 items-center"
-              >
-                <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 shrink-0 relative border border-zinc-300/50 dark:border-zinc-700/50">
-                  <Image
-                    src={asset.publicUrl}
-                    alt={asset.title || asset.assetId}
-                    fill
-                    className="object-cover group-hover:scale-105 transition"
-                    unoptimized
-                  />
-                </div>
+            {metrics.recentAssets.map((asset) => {
+              const isAudio =
+                asset.mimeType?.startsWith("audio/") ||
+                /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(asset.storageKey);
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
-                      {asset.appId}
-                    </span>
-                    <span className="text-[10px] text-zinc-400">
-                      {asset.folder}
-                    </span>
+              return (
+                <div
+                  key={asset.id}
+                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/50 transition group flex gap-3.5 items-center"
+                >
+                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 shrink-0 relative border border-zinc-300/50 dark:border-zinc-700/50 flex items-center justify-center">
+                    {isAudio ? (
+                      <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-zinc-900 flex items-center justify-center text-emerald-400">
+                        <Music className="w-6 h-6 animate-pulse" />
+                      </div>
+                    ) : (
+                      <Image
+                        src={asset.publicUrl}
+                        alt={asset.title || asset.assetId}
+                        fill
+                        className="object-cover group-hover:scale-105 transition"
+                        unoptimized
+                      />
+                    )}
                   </div>
-                  <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
-                    {asset.title || asset.assetId}
-                  </p>
-                  <p className="text-[11px] text-zinc-400 font-mono">
-                    ID: {asset.assetId} • {asset.optimizedSizeKb} KB
-                  </p>
-                </div>
 
-                <CopyButton text={asset.publicUrl} />
-              </div>
-            ))}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+                        {asset.appId}
+                      </span>
+                      <span className="text-[10px] text-zinc-400">
+                        {asset.folder}
+                      </span>
+                      {isAudio && (
+                        <span className="text-[9px] px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-semibold font-mono">
+                          AUDIO
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
+                      {asset.title || asset.assetId}
+                    </p>
+                    <p className="text-[11px] text-zinc-400 font-mono">
+                      ID: {asset.assetId} • {asset.optimizedSizeKb} KB
+                    </p>
+                  </div>
+
+                  <CopyButton text={asset.publicUrl} />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

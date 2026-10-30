@@ -12,6 +12,8 @@ import {
   SlidersHorizontal,
   X,
   Loader2,
+  Music,
+  Volume2,
 } from "lucide-react";
 import { MediaAsset } from "@/db/schema";
 import { CopyButton } from "./copy-button";
@@ -30,6 +32,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
   const [search, setSearch] = React.useState("");
   const [selectedApp, setSelectedApp] = React.useState("ALL");
   const [selectedFolder, setSelectedFolder] = React.useState("ALL");
+  const [mediaTypeFilter, setMediaTypeFilter] = React.useState<"ALL" | "IMAGE" | "AUDIO">("ALL");
   const [viewMode, setViewMode] = React.useState<"grid" | "list">("grid");
   const [qrModalAsset, setQrModalAsset] = React.useState<MediaAsset | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = React.useState("");
@@ -41,15 +44,23 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
       const matchApp = selectedApp === "ALL" || asset.appId === selectedApp;
       const matchFolder =
         selectedFolder === "ALL" || asset.folder === selectedFolder;
+      const isAudio =
+        asset.mimeType.startsWith("audio/") ||
+        /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(asset.storageKey);
+      const matchType =
+        mediaTypeFilter === "ALL" ||
+        (mediaTypeFilter === "AUDIO" && isAudio) ||
+        (mediaTypeFilter === "IMAGE" && !isAudio);
+
       const q = search.toLowerCase().trim();
       const matchSearch =
         !q ||
         asset.assetId.toLowerCase().includes(q) ||
         (asset.title && asset.title.toLowerCase().includes(q));
 
-      return matchApp && matchFolder && matchSearch;
+      return matchApp && matchFolder && matchType && matchSearch;
     });
-  }, [assets, selectedApp, selectedFolder, search]);
+  }, [assets, selectedApp, selectedFolder, mediaTypeFilter, search]);
 
   const handleDelete = async (id: string, assetId: string) => {
     if (!confirm(`Are you sure you want to move asset '${assetId}' to trash?`)) {
@@ -131,6 +142,17 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
             ))}
           </select>
 
+          {/* Media Type Filter */}
+          <select
+            value={mediaTypeFilter}
+            onChange={(e) => setMediaTypeFilter(e.target.value as "ALL" | "IMAGE" | "AUDIO")}
+            className="px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer font-medium"
+          >
+            <option value="ALL">All Media Types</option>
+            <option value="IMAGE">Images Only</option>
+            <option value="AUDIO">Audio (MP3 / WAV)</option>
+          </select>
+
           {/* View Mode Toggle */}
           <div className="flex items-center p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
             <button
@@ -174,55 +196,208 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {filteredAssets.map((asset) => (
-            <div
-              key={asset.id}
-              className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between"
-            >
-              {/* Image Preview Container */}
-              <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-950 overflow-hidden">
-                <Image
-                  src={asset.publicUrl}
-                  alt={asset.title || asset.assetId}
-                  fill
-                  className="object-cover group-hover:scale-105 transition duration-300"
-                  unoptimized
-                />
-                <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/70 text-white backdrop-blur-md">
-                    {asset.appId}
-                  </span>
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-900/70 text-zinc-300 backdrop-blur-md">
-                    {asset.folder}
-                  </span>
-                </div>
-              </div>
+          {filteredAssets.map((asset) => {
+            const isAudio =
+              asset.mimeType?.startsWith("audio/") ||
+              /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(asset.storageKey);
 
-              {/* Card Meta Content */}
-              <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="text-xs font-bold text-zinc-900 dark:text-white line-clamp-1">
-                    {asset.title || asset.assetId}
-                  </h3>
-                  <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
-                    ID: {asset.assetId}
-                  </p>
-                  <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1">
-                    <span>{asset.width}x{asset.height} px</span>
-                    <span>•</span>
-                    <span>{asset.optimizedSizeKb} KB (WebP)</span>
+            return (
+              <div
+                key={asset.id}
+                className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between"
+              >
+                {/* Media Preview Container */}
+                {isAudio ? (
+                  <div className="relative aspect-video w-full bg-gradient-to-br from-zinc-900 via-zinc-950 to-black p-3.5 flex flex-col justify-between overflow-hidden border-b border-zinc-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                          <Music className="w-3 h-3 animate-pulse" /> Audio
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-300">
+                          {asset.appId}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-zinc-400">
+                        /{asset.folder}
+                      </span>
+                    </div>
+
+                    <div className="py-1">
+                      <p className="text-xs font-bold text-white line-clamp-1">
+                        {asset.title || asset.assetId}
+                      </p>
+                      <span className="text-[10px] text-zinc-400 font-mono">
+                        {asset.mimeType}
+                      </span>
+                    </div>
+
+                    {/* Integrated Audio Player */}
+                    <div className="mt-auto">
+                      <audio
+                        controls
+                        controlsList="nodownload"
+                        src={asset.publicUrl}
+                        className="w-full h-8 rounded-lg"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-950 overflow-hidden">
+                    <Image
+                      src={asset.publicUrl}
+                      alt={asset.title || asset.assetId}
+                      fill
+                      className="object-cover group-hover:scale-105 transition duration-300"
+                      unoptimized
+                    />
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/70 text-white backdrop-blur-md">
+                        {asset.appId}
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-900/70 text-zinc-300 backdrop-blur-md">
+                        {asset.folder}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Card Meta Content */}
+                <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-xs font-bold text-zinc-900 dark:text-white line-clamp-1">
+                      {asset.title || asset.assetId}
+                    </h3>
+                    <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate">
+                      ID: {asset.assetId}
+                    </p>
+                    <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1">
+                      {isAudio ? (
+                        <>
+                          <span className="text-emerald-500 font-medium">Audio Track</span>
+                          <span>•</span>
+                          <span>{asset.optimizedSizeKb} KB</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{asset.width}x{asset.height} px</span>
+                          <span>•</span>
+                          <span>{asset.optimizedSizeKb} KB (WebP)</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <CopyButton text={asset.publicUrl} />
+                      <button
+                        type="button"
+                        onClick={() => handleOpenQr(asset)}
+                        title="Show QR Code"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition cursor-pointer"
+                      >
+                        <QrCode className="w-4 h-4" />
+                      </button>
+                      <a
+                        href={asset.publicUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Open in New Tab"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition cursor-pointer"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(asset.id, asset.assetId)}
+                      disabled={deletingId === asset.id}
+                      title="Move to Trash"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer disabled:opacity-50"
+                    >
+                      {deletingId === asset.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        /* List View */
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
+          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+            {filteredAssets.map((asset) => {
+              const isAudio =
+                asset.mimeType?.startsWith("audio/") ||
+                /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(asset.storageKey);
 
-                {/* Actions */}
-                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5">
+              return (
+                <div
+                  key={asset.id}
+                  className="p-4 flex items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
+                >
+                  <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
+                      {isAudio ? (
+                        <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-zinc-900 flex items-center justify-center text-emerald-400">
+                          <Music className="w-6 h-6 animate-pulse" />
+                        </div>
+                      ) : (
+                        <Image
+                          src={asset.publicUrl}
+                          alt={asset.title || asset.assetId}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
+                          {asset.appId}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-mono">
+                          /{asset.folder}
+                        </span>
+                        {isAudio && (
+                          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-semibold">
+                            AUDIO
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">
+                        {asset.title || asset.assetId}
+                      </p>
+                      {isAudio ? (
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[11px] text-zinc-400 font-mono">
+                            ID: {asset.assetId} • {asset.optimizedSizeKb} KB
+                          </span>
+                          <audio controls src={asset.publicUrl} className="h-6 w-44 sm:w-56" />
+                        </div>
+                      ) : (
+                        <p className="text-[11px] text-zinc-400 font-mono truncate">
+                          ID: {asset.assetId} • {asset.width}x{asset.height} px • {asset.optimizedSizeKb} KB
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
                     <CopyButton text={asset.publicUrl} />
                     <button
                       type="button"
                       onClick={() => handleOpenQr(asset)}
-                      title="Show QR Code"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition cursor-pointer"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                     >
                       <QrCode className="w-4 h-4" />
                     </button>
@@ -230,96 +405,22 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       href={asset.publicUrl}
                       target="_blank"
                       rel="noreferrer"
-                      title="Open in New Tab"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition cursor-pointer"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(asset.id, asset.assetId)}
-                    disabled={deletingId === asset.id}
-                    title="Move to Trash"
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer disabled:opacity-50"
-                  >
-                    {deletingId === asset.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin text-red-500" />
-                    ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(asset.id, asset.assetId)}
+                      disabled={deletingId === asset.id}
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
+                    >
                       <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        /* List View */
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {filteredAssets.map((asset) => (
-              <div
-                key={asset.id}
-                className="p-4 flex items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800">
-                    <Image
-                      src={asset.publicUrl}
-                      alt={asset.title || asset.assetId}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300">
-                        {asset.appId}
-                      </span>
-                      <span className="text-[10px] text-zinc-400 font-mono">
-                        /{asset.folder}
-                      </span>
-                    </div>
-                    <p className="text-xs font-bold text-zinc-900 dark:text-white truncate">
-                      {asset.title || asset.assetId}
-                    </p>
-                    <p className="text-[11px] text-zinc-400 font-mono truncate">
-                      ID: {asset.assetId} • {asset.width}x{asset.height} px • {asset.optimizedSizeKb} KB
-                    </p>
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <CopyButton text={asset.publicUrl} />
-                  <button
-                    type="button"
-                    onClick={() => handleOpenQr(asset)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                  >
-                    <QrCode className="w-4 h-4" />
-                  </button>
-                  <a
-                    href={asset.publicUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </a>
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(asset.id, asset.assetId)}
-                    disabled={deletingId === asset.id}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

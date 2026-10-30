@@ -13,6 +13,8 @@ export interface ProcessAssetParams {
   buffer: Buffer;
   options?: ImageOptimizationOptions;
   appName?: string;
+  fileName?: string;
+  mimeType?: string;
 }
 
 export async function processAndSaveAsset(
@@ -28,14 +30,71 @@ export async function processAndSaveAsset(
     throw new Error("Asset ID is required.");
   }
 
-  // 1. Optimize image through Sharp engine & compute BlurHash
-  const optimized = await optimizeImage(buffer, options);
+  const fileName = params.fileName?.toLowerCase() || "";
+  const inputMime = params.mimeType?.toLowerCase() || "";
+
+  const isAudio =
+    inputMime.startsWith("audio/") ||
+    /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(fileName);
+
+  let ext = "webp";
+  let finalMime = "image/webp";
+  let uploadBuffer: Buffer;
+  let originalSizeKb = Math.round(buffer.length / 1024) || 1;
+  let optimizedSizeKb = originalSizeKb;
+  let width = 0;
+  let height = 0;
+  let blurHash: string | null = null;
+  let savedKb = 0;
+
+  if (isAudio) {
+    // Detect audio extension & MIME type
+    if (fileName.endsWith(".mp3") || inputMime === "audio/mpeg" || inputMime === "audio/mp3") {
+      ext = "mp3";
+      finalMime = "audio/mpeg";
+    } else if (fileName.endsWith(".wav") || inputMime === "audio/wav") {
+      ext = "wav";
+      finalMime = "audio/wav";
+    } else if (fileName.endsWith(".ogg") || inputMime === "audio/ogg") {
+      ext = "ogg";
+      finalMime = "audio/ogg";
+    } else if (fileName.endsWith(".m4a") || inputMime === "audio/mp4" || inputMime === "audio/x-m4a") {
+      ext = "m4a";
+      finalMime = "audio/mp4";
+    } else if (fileName.endsWith(".aac") || inputMime === "audio/aac") {
+      ext = "aac";
+      finalMime = "audio/aac";
+    } else if (fileName.endsWith(".flac") || inputMime === "audio/flac") {
+      ext = "flac";
+      finalMime = "audio/flac";
+    } else {
+      ext = "mp3";
+      finalMime = inputMime || "audio/mpeg";
+    }
+
+    uploadBuffer = buffer;
+    originalSizeKb = Math.round(buffer.length / 1024) || 1;
+    optimizedSizeKb = originalSizeKb;
+    savedKb = 0;
+  } else {
+    // 1. Optimize image through Sharp engine & compute BlurHash
+    const optimized = await optimizeImage(buffer, options);
+    uploadBuffer = optimized.optimizedBuffer;
+    originalSizeKb = optimized.originalSizeKb;
+    optimizedSizeKb = optimized.optimizedSizeKb;
+    width = optimized.width;
+    height = optimized.height;
+    blurHash = optimized.blurHash;
+    savedKb = Math.max(0, originalSizeKb - optimizedSizeKb);
+    ext = "webp";
+    finalMime = optimized.mimeType;
+  }
 
   // 2. Generate unique storage key path
-  const sanitizedFolder = folder.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "general";
+  const sanitizedFolder = folder.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || (isAudio ? "audio" : "general");
   const sanitizedAssetId = assetId.replace(/[^a-zA-Z0-9_-]/g, "_");
   const timestamp = Date.now();
-  const storageKey = `apps/${appId}/${sanitizedFolder}/${sanitizedAssetId}-${timestamp}.webp`;
+  const storageKey = `apps/${appId}/${sanitizedFolder}/${sanitizedAssetId}-${timestamp}.${ext}`;
 
   // 3. Check for existing asset by composite key (appId + assetId)
   const existingRecords = await db
@@ -55,11 +114,11 @@ export async function processAndSaveAsset(
     }
   }
 
-  // 4. Upload optimized buffer to Object Storage (or local storage fallback)
+  // 4. Upload buffer to Object Storage (or local storage fallback)
   const { publicUrl } = await uploadObject(
-    optimized.optimizedBuffer,
+    uploadBuffer,
     storageKey,
-    optimized.mimeType
+    finalMime
   );
 
   let savedAsset: MediaAsset;
@@ -73,12 +132,12 @@ export async function processAndSaveAsset(
         folder: sanitizedFolder,
         storageKey,
         publicUrl,
-        blurHash: optimized.blurHash,
-        originalSizeKb: optimized.originalSizeKb,
-        optimizedSizeKb: optimized.optimizedSizeKb,
-        width: optimized.width,
-        height: optimized.height,
-        mimeType: optimized.mimeType,
+        blurHash,
+        originalSizeKb,
+        optimizedSizeKb,
+        width,
+        height,
+        mimeType: finalMime,
         isDeleted: false,
         deletedAt: null,
         updatedAt: new Date(),
@@ -93,24 +152,22 @@ export async function processAndSaveAsset(
       .values({
         appId,
         assetId,
-        title: title || `Asset for ${assetId}`,
+        title: title || `${isAudio ? "Audio" : "Asset"} for ${assetId}`,
         folder: sanitizedFolder,
         storageKey,
         publicUrl,
-        blurHash: optimized.blurHash,
-        originalSizeKb: optimized.originalSizeKb,
-        optimizedSizeKb: optimized.optimizedSizeKb,
-        width: optimized.width,
-        height: optimized.height,
-        mimeType: optimized.mimeType,
+        blurHash,
+        originalSizeKb,
+        optimizedSizeKb,
+        width,
+        height,
+        mimeType: finalMime,
         isDeleted: false,
       })
       .returning();
 
     savedAsset = inserted[0];
   }
-
-  const savedKb = Math.max(0, optimized.originalSizeKb - optimized.optimizedSizeKb);
 
   // 6. Trigger Telegram notification asynchronously (without blocking response)
   sendTelegramNotification({
@@ -119,8 +176,9 @@ export async function processAndSaveAsset(
     assetId,
     title: title || savedAsset.title || "",
     publicUrl,
-    sizeKb: optimized.optimizedSizeKb,
+    sizeKb: optimizedSizeKb,
     savedKb,
+    mimeType: finalMime,
   }).catch((err) => console.warn("Telegram alert error:", err));
 
   return {
