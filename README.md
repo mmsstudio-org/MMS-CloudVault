@@ -161,23 +161,54 @@ In your [Google Cloud Console Credentials](https://console.cloud.google.com/apis
    - Production: `https://cloud.sabbirmms.com/api/auth/callback/google`
 4. Copy the generated `Client ID` and `Client Secret` into your `.env.local`.
 
-### 5. Push Database Schema & Seed
-```bash
-# Push schema to PostgreSQL via Drizzle Kit
-npm run db:push
+### 5. Database Setup, Fresh Push & Reset Commands
 
-# Seed default settings and demo API key
-npm run db:seed
+> **Note on Prisma:** This project uses **Drizzle ORM** (TypeScript-native). Unlike Prisma, there is **NO `prisma generate`** command needed! Drizzle infers all types and client structures directly from `src/db/schema.ts` without intermediate code generation.
+
+#### Complete Database Reset & Fresh Push (1-Click Recommended)
+To completely wipe previous tables, push fresh schema, and seed default settings & superadmin:
+```bash
+npm run db:fresh
 ```
 
-### 6. Launch the Development Server
+#### Individual Database Commands:
+- **Fresh Schema Push (Without dropping tables):**
+  ```bash
+  npm run db:push
+  ```
+- **Seed Initial Data (Admin, site settings, demo API key):**
+  ```bash
+  npm run db:seed
+  ```
+- **Reset/Drop Database Schema:**
+  ```bash
+  npm run db:reset
+  ```
+- **Launch Visual Database Studio (Drizzle Studio):**
+  ```bash
+  npm run db:studio
+  ```
+
+---
+
+### 6. Postman & Swagger OpenAPI Integration
+- **Interactive Swagger UI:** Visit [http://localhost:3000/api-docs](http://localhost:3000/api-docs) for the redesigned dark-mode developer playground.
+- **Export to Postman (v2.1):** 
+  - Download the official Postman Collection via [http://localhost:3000/api/v1/postman.json?download=1](http://localhost:3000/api/v1/postman.json?download=1) or click **"Export to Postman"** on `/api-docs`.
+  - Import the downloaded `.json` file into Postman desktop or web.
+  - Or use **Import > Link** in Postman and paste: `http://localhost:3000/api/v1/openapi.json`.
+  - Set the `apiKey` variable in the Postman Collection and test immediately.
+
+---
+
+### 7. Launch the Development Server
 ```bash
 npm run dev
 ```
 
 Visit [http://localhost:3000](http://localhost:3000) to view the homepage or [http://localhost:3000/dashboard](http://localhost:3000/dashboard) to log in.
 
-### 7. Local Admin Login Credentials (Development)
+### 8. Local Admin Login Credentials (Development)
 When developing locally before configuring Google OAuth, click **"Developer / Local Quick Access"** on `/login`:
 - **Email:** `mr.sabbirmms@gmail.com`
 - **Passcode:** `admin123`
