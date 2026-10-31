@@ -36,6 +36,8 @@ interface UploadFormProps {
   existingFolders: string[];
 }
 
+const STORAGE_LAST_APP_KEY = "mms_storage_last_selected_app";
+
 export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const router = useRouter();
   const [file, setFile] = React.useState<File | null>(null);
@@ -49,6 +51,24 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const [compressAudio, setCompressAudio] = React.useState(false);
   const [audioBitrate, setAudioBitrate] = React.useState<"96k" | "128k" | "192k" | "256k">("192k");
   const [isUploading, setIsUploading] = React.useState(false);
+
+  // Restore last selected application from localStorage on mount
+  React.useEffect(() => {
+    try {
+      const savedApp = localStorage.getItem(STORAGE_LAST_APP_KEY);
+      if (savedApp && apps.some((app) => app.appId === savedApp)) {
+        setSelectedApp(savedApp);
+      }
+    } catch {}
+  }, [apps]);
+
+  // Handle application change and persist to localStorage
+  const handleAppChange = (newAppId: string) => {
+    setSelectedApp(newAppId);
+    try {
+      localStorage.setItem(STORAGE_LAST_APP_KEY, newAppId);
+    } catch {}
+  };
 
   // Multi-File Batch Queue State
   const [batchQueue, setBatchQueue] = React.useState<BatchQueueItem[]>([]);
@@ -525,7 +545,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                 </label>
                 <select
                   value={selectedApp}
-                  onChange={(e) => setSelectedApp(e.target.value)}
+                  onChange={(e) => handleAppChange(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none"
                 >
                   {apps.map((app) => (
