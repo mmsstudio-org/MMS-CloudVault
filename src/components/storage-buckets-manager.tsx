@@ -360,7 +360,7 @@ export function StorageBucketsManager({
                 v2.0 Dynamic Engine
               </span>
             </h2>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
               Connect multiple S3/R2 object storage providers. Dynamically route
               images and audio, switch active buckets with zero downtime, and
               test connectivity live.
@@ -451,14 +451,14 @@ export function StorageBucketsManager({
 
                 {/* Storage Configuration Metadata */}
                 <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between text-zinc-500">
+                  <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
                     <span>Bucket Name:</span>
                     <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
                       {b.bucketName}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-zinc-500">
+                  <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
                     <span>Endpoint:</span>
                     <span
                       className="font-mono text-[11px] text-zinc-700 dark:text-zinc-300 truncate max-w-[220px]"
@@ -468,7 +468,7 @@ export function StorageBucketsManager({
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-zinc-500">
+                  <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
                     <span>Region:</span>
                     <span className="font-mono text-zinc-700 dark:text-zinc-300">
                       {b.region || "auto"}
@@ -476,7 +476,7 @@ export function StorageBucketsManager({
                   </div>
 
                   {b.publicBaseUrl && (
-                    <div className="flex items-center justify-between text-zinc-500">
+                    <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
                       <span>Public CDN Domain:</span>
                       <span className="font-mono text-[11px] text-cyan-600 dark:text-cyan-400 truncate max-w-[200px]">
                         {b.publicBaseUrl}
@@ -484,7 +484,7 @@ export function StorageBucketsManager({
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between text-zinc-500">
+                  <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
                     <span>Physical Assets Stored:</span>
                     <span className="font-semibold text-zinc-900 dark:text-white">
                       {b.assetCount} item(s)
@@ -495,7 +495,7 @@ export function StorageBucketsManager({
                 {/* Secure Credentials View with Eye Toggle */}
                 <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 space-y-2">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-zinc-500">Access Key ID:</span>
+                    <span className="text-zinc-600 dark:text-zinc-400">Access Key ID:</span>
                     <div className="flex items-center gap-1.5 font-mono">
                       <span className="text-zinc-800 dark:text-zinc-200">
                         {showKey
@@ -518,7 +518,7 @@ export function StorageBucketsManager({
                   </div>
 
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-zinc-500">Secret Access Key:</span>
+                    <span className="text-zinc-600 dark:text-zinc-400">Secret Access Key:</span>
                     <div className="flex items-center gap-1.5 font-mono">
                       <span className="text-zinc-800 dark:text-zinc-200">
                         {showSecret
@@ -543,7 +543,7 @@ export function StorageBucketsManager({
 
                 {/* Storage Quota Progress */}
                 <div className="pt-2 space-y-1.5">
-                  <div className="flex justify-between text-[11px] text-zinc-500">
+                  <div className="flex justify-between text-[11px] text-zinc-600 dark:text-zinc-400">
                     <span>Storage Usage</span>
                     <span>
                       {usedMb} MB / {maxGb} GB ({usedPercent}%)
@@ -582,7 +582,7 @@ export function StorageBucketsManager({
                   <button
                     type="button"
                     onClick={() => openEditModal(b)}
-                    className="p-2 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="p-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
                     title="Edit configuration"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -619,7 +619,7 @@ export function StorageBucketsManager({
                       ? "Edit Storage Bucket"
                       : "Register New Storage Bucket"}
                   </h3>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
                     Configure S3 / R2 API credentials, endpoint, region, and
                     delivery CDN.
                   </p>
@@ -870,7 +870,7 @@ export function StorageBucketsManager({
                   <p className="text-xs font-bold text-zinc-900 dark:text-white">
                     Pre-Flight Connection Check
                   </p>
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
                     Verify credentials against the live S3 API before saving.
                   </p>
                 </div>
@@ -959,7 +959,7 @@ export function StorageBucketsManager({
                       ? "Bucket Protected"
                       : "Delete Storage Bucket"}
                   </h3>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
                     Review bucket status before proceeding
                   </p>
                 </div>
@@ -985,11 +985,11 @@ export function StorageBucketsManager({
                   {bucketToDelete.bucketName}
                 </span>
               </div>
-              <p className="text-[11px] font-mono text-zinc-500 truncate">
+              <p className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 truncate">
                 {bucketToDelete.endpoint}
               </p>
               <div className="flex items-center justify-between text-[11px] pt-1 border-t border-zinc-200/60 dark:border-zinc-700/50">
-                <span className="text-zinc-500">Stored Assets:</span>
+                <span className="text-zinc-600 dark:text-zinc-400">Stored Assets:</span>
                 <span className="font-semibold text-zinc-900 dark:text-white">
                   {bucketToDelete.assetCount} item(s)
                 </span>

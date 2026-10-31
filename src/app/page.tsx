@@ -156,27 +156,27 @@ export default function HomePage() {
           {/* Quick Metrics Bar */}
           <div className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto text-left">
             <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80">
-              <span className="text-[11px] text-zinc-500 font-medium">Image Optimization</span>
+              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">Image Optimization</span>
               <p className="text-xl font-bold text-zinc-900 dark:text-white mt-1">Sharp + WebP</p>
-              <p className="text-[10px] text-emerald-500 mt-0.5">Iterative size trimming</p>
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium mt-0.5">Iterative size trimming</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80">
-              <span className="text-[11px] text-zinc-500 font-medium">Deduplication</span>
+              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">Deduplication</span>
               <p className="text-xl font-bold text-zinc-900 dark:text-white mt-1">App + Asset ID</p>
-              <p className="text-[10px] text-purple-500 mt-0.5">Auto storage recycling</p>
+              <p className="text-[10px] text-purple-600 dark:text-purple-400 font-medium mt-0.5">Auto storage recycling</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80">
-              <span className="text-[11px] text-zinc-500 font-medium">Read Delivery</span>
+              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">Read Delivery</span>
               <p className="text-xl font-bold text-zinc-900 dark:text-white mt-1">Zero DB Load</p>
-              <p className="text-[10px] text-sky-500 mt-0.5">Direct Cloudflare R2 / S3</p>
+              <p className="text-[10px] text-sky-600 dark:text-sky-400 font-medium mt-0.5">Direct Cloudflare R2 / S3</p>
             </div>
 
             <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/80 dark:border-zinc-800/80">
-              <span className="text-[11px] text-zinc-500 font-medium">Security Gate</span>
+              <span className="text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">Security Gate</span>
               <p className="text-xl font-bold text-zinc-900 dark:text-white mt-1">Whitelist 2FA</p>
-              <p className="text-[10px] text-amber-500 mt-0.5">Google OAuth & TOTP</p>
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">Google OAuth & TOTP</p>
             </div>
           </div>
         </div>
@@ -189,7 +189,7 @@ export default function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
               Built for Scale, Reliability & Cost Efficiency
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-500">
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               Engineered to replace fragile Firebase storage with modern, developer-controlled media pipelines.
             </p>
           </div>
@@ -283,7 +283,7 @@ export default function HomePage() {
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-zinc-900 dark:text-white">
               End-to-End Media Pipeline
             </h2>
-            <p className="text-xs sm:text-sm text-zinc-500">
+            <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400">
               Clean separation of concerns between write ingestion and high-speed public CDN delivery.
             </p>
           </div>
@@ -352,7 +352,7 @@ export default function HomePage() {
                 MMS CloudVault
               </span>
             </div>
-            <p className="text-xs text-zinc-500 max-w-sm leading-relaxed">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-sm leading-relaxed">
               High-performance, automated media asset ingestion, Sharp optimization pipeline, progressive BlurHash calculation, and Cloudflare R2 / S3 object delivery for modern applications.
             </p>
             <p className="text-[11px] text-zinc-400">

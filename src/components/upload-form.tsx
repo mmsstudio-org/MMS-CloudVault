@@ -361,7 +361,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     </label>
                   </div>
 
-                  <p className="text-[11px] text-zinc-500">
+                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
                     By default, audio is preserved in 100% original fidelity without modification. Enable compression to optimize size.
                   </p>
 
@@ -402,7 +402,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                  className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                 >
                   Reset
                 </button>
@@ -473,13 +473,13 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
             <div className="space-y-2 text-xs">
               <div>
-                <span className="text-zinc-500 block text-[11px]">Public CDN URL:</span>
+                <span className="text-zinc-600 dark:text-zinc-400 block text-[11px]">Public CDN URL:</span>
                 <div className="flex items-center gap-2 mt-0.5">
                   <input
                     type="text"
                     readOnly
                     value={uploadedResult.asset.publicUrl}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[11px] font-mono"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[11px] font-mono text-zinc-900 dark:text-zinc-100"
                   />
                   <CopyButton text={uploadedResult.asset.publicUrl} />
                 </div>
@@ -487,30 +487,30 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-500/20 text-[11px]">
                 <div>
-                  <span className="text-zinc-500">
+                  <span className="text-zinc-600 dark:text-zinc-400">
                     {uploadedResult.asset.mimeType.startsWith("audio/") ? "Media Type:" : "Dimensions:"}
                   </span>
-                  <p className="font-semibold">
+                  <p className="font-semibold text-zinc-900 dark:text-white">
                     {uploadedResult.asset.mimeType.startsWith("audio/")
                       ? "Audio Track"
                       : `${uploadedResult.asset.width}x${uploadedResult.asset.height} px`}
                   </p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">
+                  <span className="text-zinc-600 dark:text-zinc-400">
                     {uploadedResult.asset.mimeType.startsWith("audio/") ? "Audio Size:" : "Optimized Size:"}
                   </span>
-                  <p className="font-semibold text-emerald-500">
+                  <p className="font-semibold text-emerald-600 dark:text-emerald-400">
                     {uploadedResult.asset.optimizedSizeKb} KB
                   </p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Folder:</span>
-                  <p className="font-semibold">{uploadedResult.asset.folder}</p>
+                  <span className="text-zinc-600 dark:text-zinc-400">Folder:</span>
+                  <p className="font-semibold text-zinc-900 dark:text-white">{uploadedResult.asset.folder}</p>
                 </div>
                 <div>
-                  <span className="text-zinc-500">Asset ID:</span>
-                  <p className="font-mono truncate">{uploadedResult.asset.assetId}</p>
+                  <span className="text-zinc-600 dark:text-zinc-400">Asset ID:</span>
+                  <p className="font-mono text-zinc-800 dark:text-zinc-200 truncate">{uploadedResult.asset.assetId}</p>
                 </div>
               </div>
             </div>

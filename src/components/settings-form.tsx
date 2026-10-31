@@ -203,7 +203,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
             <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
               Sharp Image Capping & Optimization Engine
             </h2>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">
               Global resolution limits, compression quality, and file size ceilings applied to all incoming uploads.
             </p>
           </div>
@@ -286,7 +286,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
               <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
                 Telegram Webhook Alerts
               </h2>
-              <p className="text-xs text-zinc-500">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">
                 Real-time push notifications when mobile apps upload or replace assets.
               </p>
             </div>
@@ -359,7 +359,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
             <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
               Google Site Verification & Search Console
             </h2>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">
               Configure search crawler verification keys and brand validation tokens.
             </p>
           </div>
@@ -404,7 +404,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
             <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
               Authorized Administrator Whitelist
             </h2>
-            <p className="text-xs text-zinc-500">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400">
               Strict gatekeeping: Google accounts not listed below are rejected immediately at sign-in time with zero user creation.
             </p>
           </div>
@@ -470,7 +470,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
               Enhanced Security
             </span>
           </div>
-          <p className="text-xs text-zinc-500 max-w-xl">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-xl">
             Protect your administrator account with hardware or mobile-based TOTP verification codes.
           </p>
         </div>

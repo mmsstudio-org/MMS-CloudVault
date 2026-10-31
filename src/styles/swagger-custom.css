@@ -282,14 +282,56 @@
   border-top-color: rgba(39, 39, 42, 0.6) !important;
 }
 
-.swagger-ui .opblock-description-wrapper p {
+.swagger-ui .opblock-description-wrapper p,
+.swagger-ui .renderedMarkdown p,
+.swagger-ui .markdown p,
+.swagger-ui .description {
   font-size: 0.875rem !important;
-  color: #52525b !important;
+  color: #3f3f46 !important;
   line-height: 1.6 !important;
 }
 
-.dark .swagger-ui .opblock-description-wrapper p {
+.dark .swagger-ui .opblock-description-wrapper p,
+.dark .swagger-ui .renderedMarkdown p,
+.dark .swagger-ui .markdown p,
+.dark .swagger-ui .description,
+html.dark-mode .swagger-ui .opblock-description-wrapper p,
+html.dark-mode .swagger-ui .renderedMarkdown p,
+html.dark-mode .swagger-ui .markdown p,
+html.dark-mode .swagger-ui .description {
+  color: #d4d4d8 !important;
+}
+
+.swagger-ui .parameters-col_description {
+  font-size: 0.8125rem !important;
+  color: #52525b !important;
+  line-height: 1.5 !important;
+}
+
+.dark .swagger-ui .parameters-col_description,
+html.dark-mode .swagger-ui .parameters-col_description {
+  color: #d4d4d8 !important;
+}
+
+.swagger-ui .tabli button {
+  font-weight: 600 !important;
+  font-size: 0.75rem !important;
+  color: #71717a !important;
+  padding: 0.35rem 0.75rem !important;
+}
+
+.dark .swagger-ui .tabli button,
+html.dark-mode .swagger-ui .tabli button {
   color: #a1a1aa !important;
+}
+
+.swagger-ui .tabli.active button {
+  color: #10b981 !important;
+}
+
+.dark .swagger-ui .tabli.active button,
+html.dark-mode .swagger-ui .tabli.active button {
+  color: #34d399 !important;
 }
 
 /* Section Header Titles */
@@ -556,13 +598,71 @@
   padding: 0.75rem !important;
 }
 
-.dark .swagger-ui .model-box {
+.dark .swagger-ui .model-box,
+html.dark-mode .swagger-ui .model-box {
   background: #18181b !important;
+}
+
+.swagger-ui .model-title {
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  color: #18181b !important;
+}
+
+.dark .swagger-ui .model-title,
+html.dark-mode .swagger-ui .model-title {
+  color: #fafafa !important;
+}
+
+.swagger-ui .prop-name {
+  font-family: ui-monospace, monospace !important;
+  font-weight: 600 !important;
+  font-size: 0.8125rem !important;
+  color: #18181b !important;
+}
+
+.dark .swagger-ui .prop-name,
+html.dark-mode .swagger-ui .prop-name {
+  color: #fafafa !important;
+}
+
+.swagger-ui .prop-type {
+  font-family: ui-monospace, monospace !important;
+  font-size: 0.75rem !important;
+  color: #0284c7 !important;
+}
+
+.dark .swagger-ui .prop-type,
+html.dark-mode .swagger-ui .prop-type {
+  color: #38bdf8 !important;
+}
+
+.swagger-ui .prop-format {
+  font-size: 0.75rem !important;
+  color: #71717a !important;
+}
+
+.dark .swagger-ui .prop-format,
+html.dark-mode .swagger-ui .prop-format {
+  color: #a1a1aa !important;
+}
+
+.swagger-ui .property-row {
+  color: #52525b !important;
+}
+
+.dark .swagger-ui .property-row,
+html.dark-mode .swagger-ui .property-row {
+  color: #d4d4d8 !important;
 }
 
 /* ==========================================================================
    Modal Dialogs (Authorize Popup)
    ========================================================================== */
+.swagger-ui .dialog-ux {
+  z-index: 99999 !important;
+}
+
 .swagger-ui .dialog-ux .backdrop-ux {
   background-color: rgba(0, 0, 0, 0.75) !important;
   backdrop-filter: blur(8px) !important;
@@ -573,51 +673,311 @@
   border-radius: 1rem !important;
   border: 1px solid #e4e4e7 !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
-  padding: 1.75rem !important;
+  padding: 0 !important;
   max-width: 520px !important;
+  width: 92% !important;
+  overflow: hidden !important;
+  color: #18181b !important;
 }
 
-.dark .swagger-ui .dialog-ux .modal-ux {
-  background: #111115 !important;
+.dark .swagger-ui .dialog-ux .modal-ux,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux {
+  background: #111114 !important;
   border-color: #27272a !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
   color: #fafafa !important;
 }
 
 .swagger-ui .dialog-ux .modal-ux-header {
-  border-bottom: 1px solid rgba(228, 228, 231, 0.8) !important;
-  padding-bottom: 1rem !important;
-  margin-bottom: 1rem !important;
+  border-bottom: 1px solid #e4e4e7 !important;
+  padding: 1.25rem 1.5rem !important;
+  margin-bottom: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
 }
 
-.dark .swagger-ui .dialog-ux .modal-ux-header {
-  border-bottom-color: rgba(39, 39, 42, 0.8) !important;
+.dark .swagger-ui .dialog-ux .modal-ux-header,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-header {
+  border-bottom-color: #27272a !important;
 }
 
 .swagger-ui .dialog-ux .modal-ux-header h3 {
   font-size: 1.125rem !important;
   font-weight: 700 !important;
-  color: inherit !important;
+  color: #18181b !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-header h3,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-header h3 {
+  color: #fafafa !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-header .close-modal {
+  padding: 0.35rem !important;
+  border-radius: 0.5rem !important;
+  cursor: pointer !important;
+  background: transparent !important;
+  border: none !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.15s ease !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-header .close-modal:hover {
+  background: #f4f4f5 !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover {
+  background: #27272a !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-header .close-modal svg {
+  fill: #71717a !important;
+  width: 14px !important;
+  height: 14px !important;
+  transition: fill 0.15s ease !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-header .close-modal:hover svg {
+  fill: #18181b !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-header .close-modal svg,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-header .close-modal svg {
+  fill: #a1a1aa !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover svg,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover svg {
+  fill: #fafafa !important;
 }
 
 .swagger-ui .dialog-ux .modal-ux-content {
-  color: #71717a !important;
+  padding: 1.5rem !important;
   font-size: 0.875rem !important;
+  color: #52525b !important;
 }
 
-.dark .swagger-ui .dialog-ux .modal-ux-content {
+.dark .swagger-ui .dialog-ux .modal-ux-content,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content {
+  color: #d4d4d8 !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-content h4,
+.swagger-ui .auth-container h4 {
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  color: #18181b !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.5rem !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5rem !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-content h4,
+.dark .swagger-ui .auth-container h4,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content h4,
+html.dark-mode .swagger-ui .auth-container h4 {
+  color: #ffffff !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-content h4 small,
+.swagger-ui .dialog-ux .modal-ux-content h4 span,
+.swagger-ui .auth-container h4 small,
+.swagger-ui .auth-container h4 span {
+  font-size: 0.75rem !important;
+  font-weight: 600 !important;
+  color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.1) !important;
+  padding: 0.15rem 0.5rem !important;
+  border-radius: 9999px !important;
+  font-family: ui-monospace, monospace !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-content p,
+.swagger-ui .auth-container p,
+.swagger-ui .dialog-ux .modal-ux-content .renderedMarkdown p {
+  color: #52525b !important;
+  font-size: 0.875rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-content p,
+.dark .swagger-ui .auth-container p,
+.dark .swagger-ui .dialog-ux .modal-ux-content .renderedMarkdown p,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content p,
+html.dark-mode .swagger-ui .auth-container p,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content .renderedMarkdown p {
   color: #a1a1aa !important;
 }
 
+.swagger-ui .dialog-ux .modal-ux-content code,
+.swagger-ui .auth-container code {
+  display: inline-block !important;
+  font-family: ui-monospace, monospace !important;
+  font-size: 0.75rem !important;
+  background: #f4f4f5 !important;
+  color: #0284c7 !important;
+  border: 1px solid #e4e4e7 !important;
+  padding: 0.2rem 0.5rem !important;
+  border-radius: 0.375rem !important;
+  margin-right: 0.5rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-content code,
+.dark .swagger-ui .auth-container code,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content code,
+html.dark-mode .swagger-ui .auth-container code {
+  background: #18181b !important;
+  color: #38bdf8 !important;
+  border-color: #27272a !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-content label,
+.swagger-ui .auth-container label {
+  display: block !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  color: #18181b !important;
+  margin-top: 0.75rem !important;
+  margin-bottom: 0.375rem !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-content label,
+.dark .swagger-ui .auth-container label,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content label,
+html.dark-mode .swagger-ui .auth-container label {
+  color: #fafafa !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-content .input-wrapper,
+.swagger-ui .auth-container .input-wrapper {
+  margin-top: 0.25rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-content input[type="text"],
+.swagger-ui .dialog-ux .modal-ux-content input[type="password"],
+.swagger-ui .auth-container input[type="text"],
+.swagger-ui .auth-container input[type="password"] {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  border-radius: 0.5rem !important;
+  font-family: ui-monospace, monospace !important;
+  font-size: 0.875rem !important;
+  padding: 0.625rem 0.875rem !important;
+  background: #ffffff !important;
+  border: 1px solid #d4d4d8 !important;
+  color: #18181b !important;
+  transition: all 0.15s ease !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-content input[type="text"],
+.dark .swagger-ui .dialog-ux .modal-ux-content input[type="password"],
+.dark .swagger-ui .auth-container input[type="text"],
+.dark .swagger-ui .auth-container input[type="password"],
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content input[type="text"],
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content input[type="password"],
+html.dark-mode .swagger-ui .auth-container input[type="text"],
+html.dark-mode .swagger-ui .auth-container input[type="password"] {
+  background: #18181b !important;
+  border-color: #3f3f46 !important;
+  color: #ffffff !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-content input:focus,
+.swagger-ui .auth-container input:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+  outline: none !important;
+}
+
+.swagger-ui .dialog-ux .modal-ux-content .auth-btn-wrapper,
+.swagger-ui .auth-container .auth-btn-wrapper {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 0.75rem !important;
+  margin-top: 1.25rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid #e4e4e7 !important;
+}
+
+.dark .swagger-ui .dialog-ux .modal-ux-content .auth-btn-wrapper,
+.dark .swagger-ui .auth-container .auth-btn-wrapper,
+html.dark-mode .swagger-ui .dialog-ux .modal-ux-content .auth-btn-wrapper,
+html.dark-mode .swagger-ui .auth-container .auth-btn-wrapper {
+  border-top-color: #27272a !important;
+}
+
 .swagger-ui .btn.modal-btn.auth {
-  background: #10b981 !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
   color: #ffffff !important;
   border: none !important;
   border-radius: 0.5rem !important;
-  padding: 0.5rem 1.25rem !important;
+  padding: 0.55rem 1.25rem !important;
+  font-size: 0.8125rem !important;
   font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3) !important;
+  transition: all 0.15s ease !important;
+}
+
+.swagger-ui .btn.modal-btn.auth:hover {
+  opacity: 0.95 !important;
+  transform: translateY(-1px) !important;
 }
 
 .swagger-ui .btn.modal-btn.btn-done {
+  background: #f4f4f5 !important;
+  color: #18181b !important;
+  border: 1px solid #e4e4e7 !important;
   border-radius: 0.5rem !important;
-  padding: 0.5rem 1.25rem !important;
+  padding: 0.55rem 1.25rem !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.swagger-ui .btn.modal-btn.btn-done:hover {
+  background: #e4e4e7 !important;
+}
+
+.dark .swagger-ui .btn.modal-btn.btn-done,
+html.dark-mode .swagger-ui .btn.modal-btn.btn-done {
+  background: #27272a !important;
+  color: #fafafa !important;
+  border-color: #3f3f46 !important;
+}
+
+.dark .swagger-ui .btn.modal-btn.btn-done:hover,
+html.dark-mode .swagger-ui .btn.modal-btn.btn-done:hover {
+  background: #3f3f46 !important;
+}
+
+/* Logout / Unauthorize button state in modal */
+.swagger-ui .btn.modal-btn.auth.authorize,
+.swagger-ui .btn.modal-btn.auth.unauthorize {
+  background: rgba(239, 68, 68, 0.1) !important;
+  color: #ef4444 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  box-shadow: none !important;
+}
+
+.dark .swagger-ui .btn.modal-btn.auth.authorize,
+.dark .swagger-ui .btn.modal-btn.auth.unauthorize,
+html.dark-mode .swagger-ui .btn.modal-btn.auth.authorize,
+html.dark-mode .swagger-ui .btn.modal-btn.auth.unauthorize {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+  border-color: rgba(239, 68, 68, 0.4) !important;
 }

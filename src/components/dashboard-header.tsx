@@ -23,7 +23,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
         <h2 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
           Admin Operations Hub
         </h2>
-        <p className="text-[11px] text-zinc-500">
+        <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
           MMS Studio Centralized Media Delivery
         </p>
       </div>
@@ -63,7 +63,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
                 {user.role || "Admin"}
               </span>
             </div>
-            <span className="text-[11px] text-zinc-500 block line-clamp-1">
+            <span className="text-[11px] text-zinc-600 dark:text-zinc-400 block line-clamp-1">
               {user.email}
             </span>
           </div>
@@ -73,7 +73,7 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}
             title="Sign out of Admin Portal"
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
           >
             <LogOut className="w-4 h-4" />
           </button>

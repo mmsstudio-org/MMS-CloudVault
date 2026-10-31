@@ -26,8 +26,8 @@ export function SwaggerView({ url }: { url: string }) {
           </div>
           <div>
             <span className="font-semibold text-zinc-900 dark:text-zinc-100">Live API Testing:</span>{" "}
-            <span className="text-zinc-500 dark:text-zinc-400">
-              Click the green <strong className="text-emerald-500">Authorize 🔓</strong> button below to input your app&apos;s <code className="font-mono bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-[11px]">x-api-key</code> before running live test requests.
+            <span className="text-zinc-600 dark:text-zinc-300">
+              Click the green <strong className="text-emerald-600 dark:text-emerald-400 font-bold">Authorize 🔓</strong> button below to input your app&apos;s <code className="font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 px-1 py-0.5 rounded text-[11px] font-semibold">x-api-key</code> before running live test requests.
             </span>
           </div>
         </div>

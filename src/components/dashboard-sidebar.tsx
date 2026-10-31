@@ -77,7 +77,7 @@ export function DashboardSidebar() {
 
       {/* Navigation Links */}
       <div className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+        <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Platform Menu
         </div>
         {navItems.map((item) => {
@@ -102,7 +102,7 @@ export function DashboardSidebar() {
           );
         })}
 
-        <div className="pt-4 px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-400 dark:text-zinc-500">
+        <div className="pt-4 px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
           Resources
         </div>
 

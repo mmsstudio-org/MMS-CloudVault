@@ -16,7 +16,11 @@ import {
   actionDeleteAssetPermanently,
 } from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/lib/dashboard-actions";
 import { invalidateApiKeyCache } from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/lib/api-cache";
-import { testBucketConnection } from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/lib/storage-pool";
+import {
+  testBucketConnection,
+  getS3ClientForBucket,
+} from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/lib/storage-pool";
+import { HeadObjectCommand } from "@aws-sdk/client-s3";
 
 const BASE_URL = "http://localhost:3000";
 const TEST_APP_ID = "qa-multi-bucket-app";
@@ -36,12 +40,35 @@ function recordTest(name: string, passed: boolean, details: string) {
   console.log(`${icon} [${name}]: ${details}`);
 }
 
+function extractStorageKey(url: string, bucket: any): string {
+  if (bucket.publicBaseUrl && url.startsWith(bucket.publicBaseUrl)) {
+    return url.replace(`${bucket.publicBaseUrl.replace(/\/$/, "")}/`, "");
+  }
+  const u = new URL(url);
+  return u.pathname.replace(/^\//, "");
+}
+
+async function verifyS3ObjectExists(bucket: any, storageKey: string): Promise<boolean> {
+  if (!storageKey) return false;
+  const client = getS3ClientForBucket(bucket);
+  try {
+    await client.send(
+      new HeadObjectCommand({
+        Bucket: bucket.bucketName,
+        Key: storageKey,
+      })
+    );
+    return true;
+  } catch (err: any) {
+    return false;
+  }
+}
+
 async function curlUrlStatus(url: string): Promise<number> {
   try {
     const res = await fetch(url, { method: "HEAD" });
     return res.status;
   } catch (err) {
-    console.error("curlUrlStatus error:", err);
     return 0;
   }
 }
@@ -147,13 +174,14 @@ async function run() {
 
   const json1 = await res1.json();
   const url1 = json1?.data?.public_url;
+  const storageKey1 = url1 ? extractStorageKey(url1, defaultBucket) : "";
   const isImageFolder = json1?.data?.public_url?.includes("/images/");
-  const s3Status1 = url1 ? await curlUrlStatus(url1) : 0;
+  const s3Exists1 = storageKey1 ? await verifyS3ObjectExists(defaultBucket, storageKey1) : false;
 
   recordTest(
     "Image Upload & Routing",
-    res1.status === 200 && isImageFolder && s3Status1 === 200,
-    `Image uploaded. S3 HTTP status: ${s3Status1}, Path has '/images/': ${isImageFolder}, URL: ${url1}`
+    res1.status === 200 && isImageFolder && s3Exists1,
+    `Image uploaded. S3 Key Exists: ${s3Exists1}, Path has '/images/': ${isImageFolder}, URL: ${url1}`
   );
 
   // ---------------------------------------------------------------------------
@@ -180,13 +208,14 @@ async function run() {
 
   const audioJson1 = await audioRes1.json();
   const audioUrl1 = audioJson1?.data?.public_url;
+  const audioStorageKey1 = audioUrl1 ? extractStorageKey(audioUrl1, defaultBucket) : "";
   const isAudioFolder = audioJson1?.data?.public_url?.includes("/audio/");
-  const audioS3Status1 = audioUrl1 ? await curlUrlStatus(audioUrl1) : 0;
+  const audioS3Exists1 = audioStorageKey1 ? await verifyS3ObjectExists(defaultBucket, audioStorageKey1) : false;
 
   recordTest(
     "Audio Upload & Routing (Same Key)",
-    audioRes1.status === 200 && isAudioFolder && audioS3Status1 === 200,
-    `Audio uploaded. S3 HTTP status: ${audioS3Status1}, Path has '/audio/': ${isAudioFolder}, URL: ${audioUrl1}`
+    audioRes1.status === 200 && isAudioFolder && audioS3Exists1,
+    `Audio uploaded. S3 Audio Exists: ${audioS3Exists1}, Path has '/audio/': ${isAudioFolder}, URL: ${audioUrl1}`
   );
 
   // ---------------------------------------------------------------------------
@@ -207,17 +236,18 @@ async function run() {
 
   const json2 = await res2.json();
   const url2 = json2?.data?.public_url;
+  const storageKey2 = url2 ? extractStorageKey(url2, defaultBucket) : "";
   const isReplaced2 = json2?.data?.is_replaced === true;
 
-  // Verify OLD physical file is gone (404/403) and NEW file is live (200)
-  const oldUrlStatus = await curlUrlStatus(url1);
-  const newUrlStatus = await curlUrlStatus(url2);
+  // Verify OLD physical file is gone from S3 and NEW file is live in S3
+  const oldS3Exists = await verifyS3ObjectExists(defaultBucket, storageKey1);
+  const newS3Exists = await verifyS3ObjectExists(defaultBucket, storageKey2);
 
-  const oldFilePurged = oldUrlStatus === 404 || oldUrlStatus === 403;
+  const oldFilePurged = !oldS3Exists;
   recordTest(
     "Image Upsert & Hard Delete Old S3 File",
-    isReplaced2 && oldFilePurged && newUrlStatus === 200,
-    `is_replaced: ${isReplaced2}. Old URL status: ${oldUrlStatus} (Purged), New URL status: ${newUrlStatus} (Live).`
+    isReplaced2 && oldFilePurged && newS3Exists,
+    `is_replaced: ${isReplaced2}. Old File in S3: ${oldS3Exists} (Purged), New File in S3: ${newS3Exists} (Live).`
   );
 
   // ---------------------------------------------------------------------------
@@ -240,16 +270,17 @@ async function run() {
 
   const audioJson2 = await audioRes2.json();
   const audioUrl2 = audioJson2?.data?.public_url;
+  const audioStorageKey2 = audioUrl2 ? extractStorageKey(audioUrl2, defaultBucket) : "";
   const isAudioReplaced = audioJson2?.data?.is_replaced === true;
 
-  const oldAudioStatus = await curlUrlStatus(audioUrl1);
-  const newAudioStatus = await curlUrlStatus(audioUrl2);
-  const oldAudioPurged = oldAudioStatus === 404 || oldAudioStatus === 403;
+  const oldAudioExists = await verifyS3ObjectExists(defaultBucket, audioStorageKey1);
+  const newAudioExists = await verifyS3ObjectExists(defaultBucket, audioStorageKey2);
+  const oldAudioPurged = !oldAudioExists;
 
   recordTest(
     "Audio Upsert & Hard Delete Old Audio File",
-    isAudioReplaced && oldAudioPurged && newAudioStatus === 200,
-    `is_replaced: ${isAudioReplaced}. Old Audio: ${oldAudioStatus} (Purged), New Audio: ${newAudioStatus} (Live).`
+    isAudioReplaced && oldAudioPurged && newAudioExists,
+    `is_replaced: ${isAudioReplaced}. Old Audio in S3: ${oldAudioExists} (Purged), New Audio in S3: ${newAudioExists} (Live).`
   );
 
   // ---------------------------------------------------------------------------
@@ -319,14 +350,13 @@ async function run() {
       )
     );
 
-  const permanentPurgedS3Status = await curlUrlStatus(url2);
-  const isPhysicallyErased =
-    permanentPurgedS3Status === 404 || permanentPurgedS3Status === 403;
+  const stillInS3 = await verifyS3ObjectExists(defaultBucket, storageKey2);
+  const isPhysicallyErased = !stillInS3;
 
   recordTest(
     "Permanent S3 & DB Destruction",
     !purgedDbRecord && isPhysicallyErased,
-    `Record in DB: ${Boolean(purgedDbRecord)}. S3 URL status: ${permanentPurgedS3Status} (Erased).`
+    `Record in DB: ${Boolean(purgedDbRecord)}. S3 File Purged: ${isPhysicallyErased}.`
   );
 
   // Clean up audio test asset as well

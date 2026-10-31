@@ -208,7 +208,7 @@ export function ApiKeysManager({
           <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
             Application API Keys & Storage Routing
           </h2>
-          <p className="text-xs text-zinc-500 mt-0.5">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
             Dynamic, isolated authentication keys for mobile apps and external
             publishers with optional media-type bucket routing.
           </p>
@@ -267,7 +267,7 @@ export function ApiKeysManager({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+                  <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
                     <span>App ID (Slug):</span>
                     <code className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-[11px] text-zinc-800 dark:text-zinc-200">
                       {key.appId}
@@ -283,7 +283,7 @@ export function ApiKeysManager({
 
                   {/* Secret Key Display */}
                   <div className="flex items-center gap-2 pt-0.5">
-                    <span className="text-xs text-zinc-500">Secret:</span>
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Secret:</span>
                     <code className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-xs text-zinc-800 dark:text-zinc-200">
                       {isVisible
                         ? key.secretKey
@@ -525,7 +525,7 @@ Content-Type: multipart/form-data`}
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                  className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                 >
                   Cancel
                 </button>
@@ -554,7 +554,7 @@ Content-Type: multipart/form-data`}
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                   Storage Routing for {editingRoutingKey.appName}
                 </h3>
-                <p className="text-[11px] text-zinc-500">
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
                   Assign dedicated cloud buckets for images and audio.
                 </p>
               </div>
@@ -624,7 +624,7 @@ Content-Type: multipart/form-data`}
                 <button
                   type="button"
                   onClick={() => setEditingRoutingKey(null)}
-                  className="px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                  className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                 >
                   Cancel
                 </button>

@@ -171,7 +171,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               className={`p-1.5 rounded-lg text-xs transition cursor-pointer ${
                 viewMode === "grid"
                   ? "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-xs"
-                  : "text-zinc-500 hover:text-zinc-900"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
               title="Grid View"
             >
@@ -183,7 +183,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               className={`p-1.5 rounded-lg text-xs transition cursor-pointer ${
                 viewMode === "list"
                   ? "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-xs"
-                  : "text-zinc-500 hover:text-zinc-900"
+                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
               }`}
               title="List View"
             >
@@ -200,7 +200,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
           <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
             No media assets match your criteria.
           </p>
-          <p className="text-xs text-zinc-500 mt-1">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
             Try adjusting your search query or reset the app/folder filters.
           </p>
         </div>
@@ -281,7 +281,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate" title={`ID: ${asset.assetId}`}>
                       ID: {asset.assetId}
                     </p>
-                    <div className="flex items-center gap-2 text-[10px] text-zinc-500 mt-1">
+                    <div className="flex items-center gap-2 text-[10px] text-zinc-600 dark:text-zinc-400 mt-1">
                       {isAudio ? (
                         <>
                           <span className="text-emerald-500 font-medium">Audio Track</span>
@@ -463,7 +463,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
                 {qrModalAsset.assetId}
               </p>
-              <p className="text-[11px] text-zinc-500 truncate">
+              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 truncate">
                 {qrModalAsset.publicUrl}
               </p>
             </div>

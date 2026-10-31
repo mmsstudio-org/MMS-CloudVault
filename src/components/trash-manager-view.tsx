@@ -98,7 +98,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
               30-Day Auto Retention
             </span>
           </div>
-          <p className="text-xs text-zinc-500 max-w-xl">
+          <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-xl">
             Deleted assets remain here for 30 days before permanent garbage collection. You can restore them anytime or trigger an immediate purge.
           </p>
         </div>
@@ -128,7 +128,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
             <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
               Trash bin is empty.
             </p>
-            <p className="text-xs text-zinc-500 mt-0.5">
+            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
               No soft-deleted assets currently pending permanent deletion.
             </p>
           </div>
