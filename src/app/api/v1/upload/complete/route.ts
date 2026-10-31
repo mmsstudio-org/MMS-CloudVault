@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { sendTelegramNotification } from "@/lib/telegram";
+import { deleteObject, headObject } from "@/lib/storage";
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,12 +59,47 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 2.5 Query storage directly to get actual file size and verify object exists
+    const s3Meta = await headObject(storageKey, bucketId);
+    const resolvedFileSizeKb =
+      s3Meta?.contentLength && s3Meta.contentLength > 0
+        ? Math.max(1, Math.round(s3Meta.contentLength / 1024))
+        : fileSizeKb || 0;
+    const resolvedMimeType = mimeType || s3Meta?.contentType || "application/octet-stream";
+
     // 3. Check existing asset for deduplication / replacement
     const [existing] = await db
       .select()
       .from(mediaAssets)
       .where(and(eq(mediaAssets.appId, appId), eq(mediaAssets.assetId, assetId)))
       .limit(1);
+
+    if (existing) {
+      // Idempotency check: If user repeated the exact same confirmation call without changing anything
+      const isIdentical =
+        existing.storageKey === storageKey &&
+        existing.publicUrl === publicUrl &&
+        existing.isDeleted === false &&
+        (uploaderName === undefined || existing.uploaderName === uploaderName) &&
+        (title === undefined || existing.title === title) &&
+        (info === undefined || existing.info === info);
+
+      if (isIdentical) {
+        return NextResponse.json({
+          success: true,
+          message: "Direct upload confirmation received. Asset is already registered and up-to-date in database.",
+          data: existing,
+          is_repeated_call: true,
+        });
+      }
+
+      // If the asset key or bucket changed, physically remove the older file to prevent orphaned cloud storage files!
+      if (existing.storageKey && existing.storageKey !== storageKey) {
+        await deleteObject(existing.storageKey, existing.bucketId || undefined).catch((err) =>
+          console.warn("[Storage] Failed to delete previous file during direct upsert:", err)
+        );
+      }
+    }
 
     let savedAsset;
     let isReplaced = false;
@@ -79,11 +115,11 @@ export async function POST(req: NextRequest) {
           info: info !== undefined ? info : existing.info,
           storageKey,
           publicUrl,
-          originalSizeKb: fileSizeKb || existing.originalSizeKb,
-          optimizedSizeKb: fileSizeKb || existing.optimizedSizeKb,
+          originalSizeKb: resolvedFileSizeKb || existing.originalSizeKb,
+          optimizedSizeKb: resolvedFileSizeKb || existing.optimizedSizeKb,
           width: width || existing.width,
           height: height || existing.height,
-          mimeType: mimeType || existing.mimeType,
+          mimeType: resolvedMimeType || existing.mimeType,
           isDeleted: false,
           deletedAt: null,
           updatedAt: new Date(),
@@ -106,11 +142,11 @@ export async function POST(req: NextRequest) {
           info: info || null,
           storageKey,
           publicUrl,
-          originalSizeKb: fileSizeKb,
-          optimizedSizeKb: fileSizeKb,
+          originalSizeKb: resolvedFileSizeKb,
+          optimizedSizeKb: resolvedFileSizeKb,
           width,
           height,
-          mimeType,
+          mimeType: resolvedMimeType,
           isDeleted: false,
         })
         .returning();
@@ -129,8 +165,8 @@ export async function POST(req: NextRequest) {
         info: info || savedAsset.info || null,
         folder: folder || savedAsset.folder || "general",
         publicUrl,
-        sizeKb: fileSizeKb,
-        mimeType,
+        sizeKb: resolvedFileSizeKb,
+        mimeType: resolvedMimeType,
       });
     } catch {}
 

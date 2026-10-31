@@ -1,6 +1,7 @@
 import {
   PutObjectCommand,
   DeleteObjectCommand,
+  HeadObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { db } from "@/db";
@@ -140,6 +141,56 @@ export async function uploadObject(
     contentType
   );
   return { ...result, bucket };
+}
+
+/**
+ * Inspects an object in a specific StorageBucket using HeadObject.
+ * Returns file size in bytes, contentType, ETag, and lastModified date if found.
+ */
+export async function headObjectFromBucket(
+  bucket: StorageBucket,
+  storageKey: string
+): Promise<{
+  contentLength?: number;
+  contentType?: string;
+  eTag?: string;
+  lastModified?: Date;
+} | null> {
+  try {
+    const s3Client = getS3ClientForBucket(bucket);
+    const command = new HeadObjectCommand({
+      Bucket: bucket.bucketName,
+      Key: storageKey,
+    });
+    const res = await s3Client.send(command);
+    return {
+      contentLength: res.ContentLength,
+      contentType: res.ContentType,
+      eTag: res.ETag,
+      lastModified: res.LastModified,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Helper to inspect an object in storage, optionally targeting a specific bucketId.
+ */
+export async function headObject(
+  storageKey: string,
+  bucketId?: string
+): Promise<{
+  contentLength?: number;
+  contentType?: string;
+  eTag?: string;
+  lastModified?: Date;
+} | null> {
+  const bucket = bucketId
+    ? (await getBucketById(bucketId)) || (await getDefaultActiveBucket())
+    : await getDefaultActiveBucket();
+
+  return headObjectFromBucket(bucket, storageKey);
 }
 
 /**
