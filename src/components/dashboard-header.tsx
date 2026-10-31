@@ -85,7 +85,12 @@ export function DashboardHeader({ user }: DashboardHeaderProps) {
           {/* Logout Button */}
           <button
             type="button"
-            onClick={() => signOut({ callbackUrl: "/login" })}
+            onClick={async () => {
+              try {
+                await fetch("/api/v1/auth/2fa/logout", { method: "POST" });
+              } catch {}
+              await signOut({ callbackUrl: "/login" });
+            }}
             title="Sign out of Admin Portal"
             className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-500 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
           >

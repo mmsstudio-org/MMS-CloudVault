@@ -1,13 +1,89 @@
 import { generateSecret, generateURI, verifySync } from "otplib";
 import QRCode from "qrcode";
+import { createHash } from "crypto";
+import { SignJWT, jwtVerify } from "jose";
 import { db } from "@/db";
 import { adminUsers } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+export const TWO_FACTOR_COOKIE_NAME = "mms_2fa_session";
 
 export interface TotpSetupData {
   secret: string;
   uri: string;
   qrCodeDataUrl: string;
+}
+
+const getSecretKey = () => {
+  const secret =
+    process.env.NEXTAUTH_SECRET || "mms-studio-storage-fallback-secret-2026";
+  return createHash("sha256").update(secret).digest();
+};
+
+/**
+ * Creates a cryptographically signed 2FA session token
+ */
+export async function create2FaSessionToken(email: string): Promise<string> {
+  const secretKey = getSecretKey();
+  return await new SignJWT({ email: email.toLowerCase().trim() })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("30d")
+    .sign(secretKey);
+}
+
+/**
+ * Verifies that a 2FA session token is valid and belongs to the given email
+ */
+export async function verify2FaSessionToken(
+  token: string | undefined | null,
+  expectedEmail: string
+): Promise<boolean> {
+  if (!token) return false;
+  try {
+    const secretKey = getSecretKey();
+    const { payload } = await jwtVerify(token, secretKey);
+    return (
+      typeof payload.email === "string" &&
+      payload.email.toLowerCase().trim() === expectedEmail.toLowerCase().trim()
+    );
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Checks whether an administrator has 2FA enabled in the database
+ */
+export async function isUserTwoFactorEnabled(email: string): Promise<boolean> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await db
+    .select({ isTwoFactorEnabled: adminUsers.isTwoFactorEnabled })
+    .from(adminUsers)
+    .where(eq(adminUsers.email, normalizedEmail))
+    .limit(1);
+
+  return user.length > 0 && user[0].isTwoFactorEnabled === true;
+}
+
+/**
+ * Retrieves the stored TOTP secret for an administrator if 2FA is active
+ */
+export async function getUserTotpSecret(email: string): Promise<string | null> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await db
+    .select({
+      totpSecret: adminUsers.totpSecret,
+      isTwoFactorEnabled: adminUsers.isTwoFactorEnabled,
+    })
+    .from(adminUsers)
+    .where(eq(adminUsers.email, normalizedEmail))
+    .limit(1);
+
+  if (!user.length || !user[0].isTwoFactorEnabled || !user[0].totpSecret) {
+    return null;
+  }
+  return user[0].totpSecret;
 }
 
 /**

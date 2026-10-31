@@ -13,6 +13,7 @@ import {
   QrCode,
   CheckCircle2,
   AlertCircle,
+  ShieldAlert,
   Loader2,
   Save,
 } from "lucide-react";
@@ -26,9 +27,18 @@ import { toast } from "sonner";
 interface SettingsFormProps {
   initialSettings?: SiteSettings;
   userEmail: string;
+  initialTwoFactorEnabled?: boolean;
 }
 
-export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) {
+export function SettingsForm({
+  initialSettings,
+  userEmail,
+  initialTwoFactorEnabled = false,
+}: SettingsFormProps) {
+  const [isTwoFactorActive, setIsTwoFactorActive] = React.useState(
+    initialTwoFactorEnabled
+  );
+  const [isDisabling2FA, setIsDisabling2FA] = React.useState(false);
   // Image Capping
   const [maxDimensionPx, setMaxDimensionPx] = React.useState(
     initialSettings?.maxDimensionPx || 2048
@@ -180,6 +190,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
       const data = await res.json();
       if (data.success) {
         toast.success("Two-Factor Authentication activated successfully!");
+        setIsTwoFactorActive(true);
         setShow2FAModal(false);
       } else {
         toast.error(data.error || "Invalid 6-digit code.");
@@ -188,6 +199,32 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
       toast.error("2FA verification failed.");
     } finally {
       setIsVerifying2FA(false);
+    }
+  };
+
+  const handleDisable2FA = async () => {
+    if (
+      !confirm(
+        "Are you sure you want to disable Two-Factor Authentication? Your account will only be protected by Google OAuth without secondary verification."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsDisabling2FA(true);
+      const res = await fetch("/api/v1/auth/2fa/disable", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setIsTwoFactorActive(false);
+        toast.success("Two-Factor Authentication has been disabled.");
+      } else {
+        toast.error(data.error || "Failed to disable 2FA.");
+      }
+    } catch {
+      toast.error("Error while disabling 2FA.");
+    } finally {
+      setIsDisabling2FA(false);
     }
   };
 
@@ -466,23 +503,48 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
             <span className="text-sm font-bold text-zinc-900 dark:text-white">
               Google Authenticator 2FA (TOTP)
             </span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              Enhanced Security
-            </span>
+            {isTwoFactorActive ? (
+              <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Active & Enforced on Login
+              </span>
+            ) : (
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+                Disabled / Not Active
+              </span>
+            )}
           </div>
           <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-xl">
-            Protect your administrator account with hardware or mobile-based TOTP verification codes.
+            {isTwoFactorActive
+              ? "Two-Factor Authentication is currently active. Every time you log in, you will be prompted for a 6-digit Google Authenticator code."
+              : "Protect your administrator account with hardware or mobile-based TOTP verification codes. When enabled, login will require Authenticator approval."}
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={handleStart2FA}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer self-start sm:self-auto shrink-0"
-        >
-          <QrCode className="w-4 h-4 text-emerald-500" />
-          <span>Setup 2FA Authenticator</span>
-        </button>
+        {isTwoFactorActive ? (
+          <button
+            type="button"
+            onClick={handleDisable2FA}
+            disabled={isDisabling2FA}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/60 transition cursor-pointer self-start sm:self-auto shrink-0 disabled:opacity-50"
+          >
+            {isDisabling2FA ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ShieldAlert className="w-4 h-4" />
+            )}
+            <span>Disable 2FA Security</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={handleStart2FA}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer self-start sm:self-auto shrink-0"
+          >
+            <QrCode className="w-4 h-4 text-emerald-500" />
+            <span>Setup 2FA Authenticator</span>
+          </button>
+        )}
       </div>
 
       {/* Save Button */}

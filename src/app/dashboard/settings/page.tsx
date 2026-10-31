@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { isUserTwoFactorEnabled } from "@/lib/totp";
 import {
   getSiteSettingsData,
   actionGetStorageBuckets,
@@ -16,6 +17,9 @@ export default async function SettingsPage() {
   const session = await auth();
   const settings = await getSiteSettingsData();
   const buckets = await actionGetStorageBuckets();
+  const is2FaActive = session?.user?.email
+    ? await isUserTwoFactorEnabled(session.user.email)
+    : false;
 
   return (
     <div className="space-y-10">
@@ -36,6 +40,7 @@ export default async function SettingsPage() {
       <SettingsForm
         initialSettings={settings}
         userEmail={session?.user?.email || "mr.sabbirmms@gmail.com"}
+        initialTwoFactorEnabled={is2FaActive}
       />
     </div>
   );

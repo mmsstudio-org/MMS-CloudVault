@@ -17,6 +17,9 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
   const handleGoogleSignIn = async () => {
     try {
       setIsGoogleLoading(true);
+      try {
+        await fetch("/api/v1/auth/2fa/logout", { method: "POST" });
+      } catch {}
       await signIn("google", { callbackUrl });
     } catch {
       toast.error("Failed to initiate Google Sign In.");
@@ -28,6 +31,9 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
     e.preventDefault();
     try {
       setIsCredLoading(true);
+      try {
+        await fetch("/api/v1/auth/2fa/logout", { method: "POST" });
+      } catch {}
       const res = await signIn("admin-quick-login", {
         email,
         passcode,
