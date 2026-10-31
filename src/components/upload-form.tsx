@@ -13,12 +13,17 @@ import {
   X,
   AlertCircle,
   FileText,
+  Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CopyButton } from "./copy-button";
 import { toast } from "sonner";
 import { MediaAsset } from "@/db/schema";
 import { optimizeImageClientSide } from "@/lib/client-image-optimizer";
+import {
+  actionGetDashboardPresignedUrl,
+  actionCompleteDashboardUpload,
+} from "@/lib/dashboard-actions";
 
 interface BatchQueueItem {
   id: string;
@@ -80,6 +85,8 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const [batchQueue, setBatchQueue] = React.useState<BatchQueueItem[]>([]);
   const [isBatchUploading, setIsBatchUploading] = React.useState(false);
   const [batchProgress, setBatchProgress] = React.useState({ completed: 0, total: 0 });
+  const [uploadProgress, setUploadProgress] = React.useState<number | null>(null);
+  const [isLargeFileRouting, setIsLargeFileRouting] = React.useState(false);
 
   const [uploadedResult, setUploadedResult] = React.useState<{
     asset: MediaAsset;
@@ -152,6 +159,133 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
     }
   };
 
+  /**
+   * Unified Media Upload Engine with Auto-Switching:
+   * - Files <= 4.0MB: Standard single-call via /api/dashboard/upload
+   * - Files > 4.0MB (e.g. 10MB-50MB audio/media): 3-Step Direct S3 Pre-signed URL Pipeline (bypassing Vercel's 4.5MB limit)
+   */
+  const uploadMediaAssetAutoRoute = async (
+    targetFile: File,
+    targetAssetId: string,
+    targetTitle: string,
+    targetFolder: string,
+    onProgress?: (percent: number) => void
+  ) => {
+    // 1. Client-side image pre-optimization (leaves audio and SVG/GIF untouched)
+    const uploadReadyFile = await optimizeImageClientSide(targetFile);
+
+    // 2. Intelligent Auto-Switching Threshold: 4.0 MB (4 * 1024 * 1024 bytes)
+    const isLarge = uploadReadyFile.size > 4 * 1024 * 1024;
+
+    if (!isLarge) {
+      // 🚀 Path A: Fast Standard Single-Call Upload (<= 4MB)
+      const formData = new FormData();
+      formData.append("file", uploadReadyFile);
+      formData.append("app_id", selectedApp);
+      formData.append("asset_id", targetAssetId.trim());
+      formData.append("title", targetTitle.trim());
+      formData.append("folder", targetFolder || "general");
+      if (uploaderName.trim()) {
+        formData.append("uploader_name", uploaderName.trim());
+      }
+      if (info.trim()) {
+        formData.append("info", info.trim());
+      }
+
+      const isAudio =
+        uploadReadyFile.type.startsWith("audio/") ||
+        /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(uploadReadyFile.name);
+
+      if (isAudio && compressAudio) {
+        formData.append("compress_audio", "true");
+        formData.append("audio_bitrate", audioBitrate);
+      }
+
+      const response = await fetch("/api/dashboard/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const res = await response.json();
+      if (!response.ok || !res.success) {
+        throw new Error(res.error || "Upload failed.");
+      }
+      return res;
+    } else {
+      // ⚡ Path B: Direct S3 Pre-signed URL Pipeline for Large Audio / Media (> 4MB)
+      // Step 1: Request S3 Pre-signed URL from server action
+      const presigned = await actionGetDashboardPresignedUrl({
+        appId: selectedApp,
+        assetId: targetAssetId.trim(),
+        fileName: uploadReadyFile.name,
+        mimeType: uploadReadyFile.type || "application/octet-stream",
+        folder: targetFolder || "general",
+        title: targetTitle.trim(),
+        uploaderName: uploaderName.trim() || undefined,
+        info: info.trim() || undefined,
+      });
+
+      // Step 2: Directly stream raw binary bytes to Neon S3 / Cloudflare R2 bucket with live progress
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", presigned.uploadUrl);
+        xhr.setRequestHeader("Content-Type", presigned.mimeType);
+
+        if (xhr.upload && onProgress) {
+          xhr.upload.onprogress = (evt) => {
+            if (evt.lengthComputable) {
+              const percent = Math.round((evt.loaded / evt.total) * 100);
+              onProgress(percent);
+            }
+          };
+        }
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(
+              new Error(
+                `Direct S3 upload failed (HTTP ${xhr.status}). Ensure S3 bucket CORS allows PUT requests.`
+              )
+            );
+          }
+        };
+
+        xhr.onerror = () => {
+          reject(
+            new Error(
+              "Network connection failed during direct S3 upload. Check storage connectivity or CORS."
+            )
+          );
+        };
+
+        xhr.send(uploadReadyFile);
+      });
+
+      // Step 3: Complete and save in database
+      const completed = await actionCompleteDashboardUpload({
+        appId: selectedApp,
+        assetId: targetAssetId.trim(),
+        storageKey: presigned.storageKey,
+        publicUrl: presigned.publicUrl,
+        bucketId: presigned.bucketId,
+        folder: targetFolder || "general",
+        title: targetTitle.trim(),
+        uploaderName: uploaderName.trim() || undefined,
+        info: info.trim() || undefined,
+        mimeType: presigned.mimeType,
+        fileSizeKb: Math.round(uploadReadyFile.size / 1024),
+      });
+
+      if (!completed.success) {
+        throw new Error("Failed to register direct S3 upload in database.");
+      }
+
+      return completed;
+    }
+  };
+
   const handleBatchUpload = async () => {
     if (batchQueue.length === 0) return;
     setIsBatchUploading(true);
@@ -173,40 +307,12 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       );
 
       try {
-        // Pre-optimize image client-side to ensure payload is under Vercel's 4.5MB limit
-        const uploadReadyFile = await optimizeImageClientSide(item.file);
-
-        const formData = new FormData();
-        formData.append("file", uploadReadyFile);
-        formData.append("app_id", selectedApp);
-        formData.append("asset_id", item.assetId.trim());
-        formData.append("title", item.title.trim());
-        formData.append("folder", finalFolder || "general");
-        if (uploaderName.trim()) {
-          formData.append("uploader_name", uploaderName.trim());
-        }
-        if (info.trim()) {
-          formData.append("info", info.trim());
-        }
-
-        const isAudio =
-          item.file.type.startsWith("audio/") ||
-          /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(item.file.name);
-
-        if (isAudio && compressAudio) {
-          formData.append("compress_audio", "true");
-          formData.append("audio_bitrate", audioBitrate);
-        }
-
-        const res = await fetch("/api/dashboard/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          throw new Error(data.error || "Upload failed");
-        }
+        const data = await uploadMediaAssetAutoRoute(
+          item.file,
+          item.assetId,
+          item.title,
+          finalFolder
+        );
 
         successCount++;
         totalSaved += data.savedKb || 0;
@@ -243,7 +349,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
     setIsBatchUploading(false);
     router.refresh();
     toast.success(
-      `Batch upload complete: ${successCount} of ${batchQueue.length} assets processed! (${totalSaved} KB saved)`
+      `Batch upload complete: ${successCount} of ${batchQueue.length} assets processed!`
     );
   };
 
@@ -259,56 +365,35 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
     }
 
     const finalFolder = isCustomFolder ? customFolder.trim() : folder;
+    const isLarge = file.size > 4 * 1024 * 1024;
+    setIsLargeFileRouting(isLarge);
+    setUploadProgress(isLarge ? 0 : null);
 
     try {
       setIsUploading(true);
-      // Pre-optimize image client-side to ensure payload is under Vercel's 4.5MB limit
-      const uploadReadyFile = await optimizeImageClientSide(file);
-
-      const formData = new FormData();
-      formData.append("file", uploadReadyFile);
-      formData.append("app_id", selectedApp);
-      formData.append("asset_id", assetId.trim());
-      formData.append("title", title.trim());
-      formData.append("folder", finalFolder || "general");
-      if (uploaderName.trim()) {
-        formData.append("uploader_name", uploaderName.trim());
-      }
-      if (info.trim()) {
-        formData.append("info", info.trim());
-      }
-
-      if (
-        file.type.startsWith("audio/") ||
-        /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name)
-      ) {
-        if (compressAudio) {
-          formData.append("compress_audio", "true");
-          formData.append("audio_bitrate", audioBitrate);
-        }
-      }
-
-      const response = await fetch("/api/dashboard/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const res = await response.json();
-      if (!response.ok || !res.success) {
-        throw new Error(res.error || "Upload failed.");
-      }
+      const res = await uploadMediaAssetAutoRoute(
+        file,
+        assetId,
+        title,
+        finalFolder,
+        (pct) => setUploadProgress(pct)
+      );
 
       setUploadedResult(res);
       router.refresh();
       toast.success(
         res.isReplaced
-          ? "Asset successfully replaced existing image!"
+          ? "Asset successfully replaced existing media!"
+          : isLarge
+          ? "Large asset directly uploaded to S3 (bypassing 4.5MB server limit) and saved!"
           : "Asset successfully optimized and saved!"
       );
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Upload failed.");
     } finally {
       setIsUploading(false);
+      setUploadProgress(null);
+      setIsLargeFileRouting(false);
     }
   };
 
@@ -505,9 +590,18 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                       <p className="text-xs font-bold text-white truncate mt-0.5">
                         {file.name}
                       </p>
-                      <p className="text-[11px] text-zinc-400 font-mono">
-                        {Math.round(file.size / 1024)} KB
-                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[11px] text-zinc-400 font-mono">
+                          {file.size > 1024 * 1024
+                            ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+                            : `${Math.round(file.size / 1024)} KB`}
+                        </p>
+                        {file.size > 4 * 1024 * 1024 && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center gap-1">
+                            <Zap className="w-2.5 h-2.5" /> Auto Direct S3 Stream
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -755,6 +849,26 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               </div>
             )}
 
+            {isUploading && isLargeFileRouting && uploadProgress !== null && (
+              <div className="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-left space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-cyan-400">
+                  <span className="flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 animate-pulse" /> Direct S3 Stream (Bypassing 4.5MB Serverless Limit)
+                  </span>
+                  <span>{uploadProgress}%</span>
+                </div>
+                <div className="w-full bg-zinc-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="bg-cyan-500 h-2 rounded-full transition-all duration-150"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-zinc-400">
+                  Streaming binary data directly to object storage. Zero server payload restrictions.
+                </p>
+              </div>
+            )}
+
             <div className="pt-2 flex items-center justify-end gap-3">
               {batchQueue.length > 0 ? (
                 <>
@@ -811,7 +925,13 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     {isUploading ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Processing & Optimizing...</span>
+                        <span>
+                          {isLargeFileRouting
+                            ? uploadProgress !== null && uploadProgress < 100
+                              ? `Direct S3 Uploading (${uploadProgress}%)...`
+                              : "Registering in Database..."
+                            : "Processing & Optimizing..."}
+                        </span>
                       </>
                     ) : (
                       <>

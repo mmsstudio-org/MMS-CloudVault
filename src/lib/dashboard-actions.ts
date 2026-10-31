@@ -27,6 +27,13 @@ import {
   testBucketConnection,
   BucketTestResult,
 } from "./storage-pool";
+import {
+  createPresignedUploadUrl,
+  getDefaultActiveBucket,
+  getBucketById,
+  headObject,
+  deleteObject,
+} from "./storage";
 
 function safeRevalidate(path: string) {
   try {
@@ -909,5 +916,228 @@ export async function actionManualUpload(formData: FormData) {
     asset: result.asset,
     isReplaced: result.isReplaced,
     savedKb: result.savedKb,
+  };
+}
+
+// -----------------------------------------------------------------------------
+// 8. DIRECT S3 PRE-SIGNED UPLOAD ACTIONS FOR LARGE MEDIA (Bypass 4.5MB limit)
+// -----------------------------------------------------------------------------
+
+export async function actionGetDashboardPresignedUrl(params: {
+  appId: string;
+  assetId: string;
+  fileName: string;
+  mimeType: string;
+  folder?: string;
+  title?: string;
+  uploaderName?: string;
+  info?: string;
+}) {
+  const user = await requireAdminAuth();
+  const { appId, assetId, fileName, mimeType } = params;
+  const folder = params.folder?.trim().toLowerCase() || "general";
+  const title = params.title?.trim();
+  const uploaderName =
+    params.uploaderName?.trim() ||
+    user.name ||
+    user.email ||
+    "Admin";
+  const info = params.info?.trim();
+
+  if (!assetId) {
+    throw new Error("Asset ID is required.");
+  }
+
+  const isAudio =
+    mimeType.startsWith("audio/") ||
+    /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(fileName);
+
+  // 1. Resolve storage bucket based on app settings or defaults
+  let targetBucket: StorageBucket | null = null;
+  if (appId && appId !== "general") {
+    const [appKey] = await db
+      .select()
+      .from(apiKeys)
+      .where(eq(apiKeys.appId, appId))
+      .limit(1);
+
+    if (appKey) {
+      if (isAudio && appKey.audioBucketId) {
+        targetBucket = await getBucketById(appKey.audioBucketId);
+      } else if (!isAudio && appKey.imageBucketId) {
+        targetBucket = await getBucketById(appKey.imageBucketId);
+      } else if (appKey.defaultBucketId) {
+        targetBucket = await getBucketById(appKey.defaultBucketId);
+      }
+    }
+  }
+
+  if (!targetBucket) {
+    targetBucket = await getDefaultActiveBucket();
+  }
+
+  // 2. Construct clean storage key
+  const ext = fileName.includes(".")
+    ? fileName.split(".").pop()?.toLowerCase() || (isAudio ? "mp3" : "webp")
+    : isAudio
+    ? "mp3"
+    : "webp";
+  const sanitizedAssetId = assetId.replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase();
+  const storageKey = `${appId}/${folder}/${sanitizedAssetId}.${ext}`;
+
+  // 3. Generate 10-minute Pre-signed URL (600s) for large audio / media
+  const { uploadUrl, publicUrl } = await createPresignedUploadUrl(
+    targetBucket,
+    storageKey,
+    mimeType,
+    600
+  );
+
+  return {
+    uploadUrl,
+    publicUrl,
+    storageKey,
+    bucketId: targetBucket.id,
+    bucketName: targetBucket.name,
+    mimeType,
+    appId,
+    assetId,
+    title,
+    folder,
+    uploaderName,
+    info,
+  };
+}
+
+export async function actionCompleteDashboardUpload(params: {
+  appId: string;
+  assetId: string;
+  storageKey: string;
+  publicUrl: string;
+  bucketId?: string;
+  folder?: string;
+  title?: string;
+  uploaderName?: string;
+  info?: string;
+  mimeType?: string;
+  fileSizeKb?: number;
+}) {
+  const user = await requireAdminAuth();
+  const { appId, assetId, storageKey, publicUrl, bucketId } = params;
+  const folder = params.folder?.trim().toLowerCase() || "general";
+  const title = params.title?.trim();
+  const uploaderName =
+    params.uploaderName?.trim() ||
+    user.name ||
+    user.email ||
+    "Admin";
+  const info = params.info?.trim();
+  const mimeType = params.mimeType || "application/octet-stream";
+
+  if (!assetId || !storageKey || !publicUrl) {
+    throw new Error("Asset ID, storage key, and public URL are required.");
+  }
+
+  // 1. Inspect S3 directly via HeadObject to get exact bytes
+  const s3Meta = await headObject(storageKey, bucketId);
+  const resolvedFileSizeKb =
+    s3Meta?.contentLength && s3Meta.contentLength > 0
+      ? Math.max(1, Math.round(s3Meta.contentLength / 1024))
+      : params.fileSizeKb || 0;
+  const resolvedMimeType = s3Meta?.contentType || mimeType;
+
+  // 2. Check existing asset for deduplication
+  const [existing] = await db
+    .select()
+    .from(mediaAssets)
+    .where(and(eq(mediaAssets.appId, appId), eq(mediaAssets.assetId, assetId)))
+    .limit(1);
+
+  if (existing) {
+    // If physical key changed, clean up previous file from S3
+    if (existing.storageKey && existing.storageKey !== storageKey) {
+      await deleteObject(existing.storageKey, existing.bucketId || undefined).catch(
+        (err) =>
+          console.warn("[Storage] Failed to delete previous file during direct upsert:", err)
+      );
+    }
+  }
+
+  let savedAsset;
+  let isReplaced = false;
+
+  if (existing) {
+    const updated = await db
+      .update(mediaAssets)
+      .set({
+        bucketId: bucketId || existing.bucketId,
+        title: title || existing.title,
+        folder: folder || existing.folder,
+        uploaderName:
+          uploaderName !== undefined ? uploaderName : existing.uploaderName,
+        info: info !== undefined ? info : existing.info,
+        storageKey,
+        publicUrl,
+        originalSizeKb: resolvedFileSizeKb || existing.originalSizeKb,
+        optimizedSizeKb: resolvedFileSizeKb || existing.optimizedSizeKb,
+        mimeType: resolvedMimeType || existing.mimeType,
+        isDeleted: false,
+        deletedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(eq(mediaAssets.id, existing.id))
+      .returning();
+
+    savedAsset = updated[0];
+    isReplaced = true;
+  } else {
+    const inserted = await db
+      .insert(mediaAssets)
+      .values({
+        appId,
+        assetId,
+        bucketId: bucketId || null,
+        title: title || `Asset for ${assetId}`,
+        folder: folder || "general",
+        uploaderName: uploaderName || null,
+        info: info || null,
+        storageKey,
+        publicUrl,
+        originalSizeKb: resolvedFileSizeKb,
+        optimizedSizeKb: resolvedFileSizeKb,
+        mimeType: resolvedMimeType,
+        isDeleted: false,
+      })
+      .returning();
+
+    savedAsset = inserted[0];
+  }
+
+  // 3. Send Telegram notification
+  try {
+    await sendTelegramNotification({
+      event: isReplaced ? "ASSET_REPLACED" : "ASSET_UPLOADED",
+      appName: appId === "general" ? "Studio Global" : appId,
+      assetId,
+      title: title || `Asset for ${assetId}`,
+      uploaderName: uploaderName || savedAsset.uploaderName || null,
+      info: info || savedAsset.info || null,
+      folder: folder || savedAsset.folder || "general",
+      publicUrl,
+      sizeKb: resolvedFileSizeKb,
+      mimeType: resolvedMimeType,
+    });
+  } catch {}
+
+  safeRevalidate("/dashboard/gallery");
+  safeRevalidate("/dashboard/upload");
+  safeRevalidate("/");
+
+  return {
+    success: true,
+    asset: savedAsset,
+    isReplaced,
+    savedKb: 0,
+    bucket: bucketId || "Default Bucket",
   };
 }
