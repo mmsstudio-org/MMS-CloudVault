@@ -85,6 +85,9 @@ export function ApiKeysManager({
     React.useState("");
   const [isUpdatingSecurity, setIsUpdatingSecurity] = React.useState(false);
 
+  // Rotate Key Confirmation Modal State
+  const [keyToRotate, setKeyToRotate] = React.useState<ApiKey | null>(null);
+
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [visibleKeys, setVisibleKeys] = React.useState<Record<string, boolean>>(
     {},
@@ -252,22 +255,22 @@ export function ApiKeysManager({
     }
   };
 
-  const handleRotate = async (key: ApiKey) => {
-    if (
-      !confirm(
-        `Are you sure you want to rotate the secret key for '${key.appName}'? Connected mobile apps must be updated with the new key immediately.`,
-      )
-    ) {
-      return;
-    }
+  const handleRotate = (key: ApiKey) => {
+    setKeyToRotate(key);
+  };
+
+  const confirmRotate = async () => {
+    if (!keyToRotate) return;
+    const targetKey = keyToRotate;
 
     try {
-      setActionLoadingId(key.id);
-      const updated = await actionRotateApiKey(key.id);
-      setKeys((prev) => prev.map((k) => (k.id === key.id ? updated : k)));
+      setActionLoadingId(targetKey.id);
+      const updated = await actionRotateApiKey(targetKey.id);
+      setKeys((prev) => prev.map((k) => (k.id === targetKey.id ? updated : k)));
       toast.success(
-        `Secret key rotated for '${key.appName}'. Cache invalidated.`,
+        `Secret key rotated for '${targetKey.appName}'. Cache invalidated.`,
       );
+      setKeyToRotate(null);
     } catch {
       toast.error("Failed to rotate API key.");
     } finally {
@@ -997,6 +1000,65 @@ Content-Type: multipart/form-data`}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Rotate Secret Key Confirmation Modal */}
+      {keyToRotate && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-zinc-900 border border-amber-200 dark:border-amber-900/60 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0">
+                <RotateCcw className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  Rotate API Secret Key?
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  {keyToRotate.appName} ({keyToRotate.appId})
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 leading-relaxed space-y-1.5">
+              <p className="font-semibold">
+                Warning: Rotating this key will immediately revoke the existing secret.
+              </p>
+              <p className="text-[11px] opacity-90">
+                Any connected mobile app or backend service using the old key will be rejected immediately until updated with the newly generated secret. In-memory validation cache will also be purged.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setKeyToRotate(null)}
+                disabled={actionLoadingId === keyToRotate.id}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmRotate}
+                disabled={actionLoadingId === keyToRotate.id}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-white text-xs font-bold shadow-md shadow-amber-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {actionLoadingId === keyToRotate.id ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Rotating...</span>
+                  </>
+                ) : (
+                  <>
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Rotate Secret Now</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

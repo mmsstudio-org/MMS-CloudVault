@@ -88,6 +88,8 @@ export function SettingsForm({
 
   // 2FA Setup State
   const [show2FAModal, setShow2FAModal] = React.useState(false);
+  const [showDisable2FAModal, setShowDisable2FAModal] = React.useState(false);
+  const [disableConfirmInput, setDisableConfirmInput] = React.useState("");
   const [totpQrUrl, setTotpQrUrl] = React.useState("");
   const [totpSecret, setTotpSecret] = React.useState("");
   const [totpCode, setTotpCode] = React.useState("");
@@ -202,12 +204,14 @@ export function SettingsForm({
     }
   };
 
-  const handleDisable2FA = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to disable Two-Factor Authentication? Your account will only be protected by Google OAuth without secondary verification."
-      )
-    ) {
+  const handleDisable2FA = () => {
+    setDisableConfirmInput("");
+    setShowDisable2FAModal(true);
+  };
+
+  const confirmDisable2FA = async () => {
+    if (disableConfirmInput.trim().toUpperCase() !== "CONFIRM") {
+      toast.error("Please type CONFIRM to proceed with disabling 2FA.");
       return;
     }
 
@@ -217,6 +221,8 @@ export function SettingsForm({
       const data = await res.json();
       if (res.ok && data.success) {
         setIsTwoFactorActive(false);
+        setShowDisable2FAModal(false);
+        setDisableConfirmInput("");
         toast.success("Two-Factor Authentication has been disabled.");
       } else {
         toast.error(data.error || "Failed to disable 2FA.");
@@ -617,6 +623,79 @@ export function SettingsForm({
                 className="w-1/2 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-50"
               >
                 {isVerifying2FA ? "Verifying..." : "Confirm & Enable"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Disable 2FA Security Confirmation Modal with CONFIRM Text Requirement */}
+      {showDisable2FAModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900/60 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center justify-center shrink-0">
+                <ShieldAlert className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  Disable Two-Factor Authentication?
+                </h3>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                  Security Downgrade Warning
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-900/40 text-xs text-red-800 dark:text-red-300 leading-relaxed space-y-1.5">
+              <p className="font-semibold">
+                Warning: Disabling 2FA removes secondary hardware verification.
+              </p>
+              <p className="text-[11px] opacity-90">
+                Anyone with access to your Google account will be able to log directly into the MMS CloudVault Admin Portal.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                To proceed, type <span className="font-mono text-red-600 dark:text-red-400 font-bold">CONFIRM</span> below:
+              </label>
+              <input
+                type="text"
+                value={disableConfirmInput}
+                onChange={(e) => setDisableConfirmInput(e.target.value)}
+                placeholder="Type CONFIRM to proceed"
+                className="w-full text-center tracking-widest font-mono text-sm py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold focus:ring-2 focus:ring-red-500 focus:outline-hidden"
+                autoFocus
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDisable2FAModal(false);
+                  setDisableConfirmInput("");
+                }}
+                disabled={isDisabling2FA}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDisable2FA}
+                disabled={disableConfirmInput.trim().toUpperCase() !== "CONFIRM" || isDisabling2FA}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white text-xs font-bold shadow-md shadow-red-600/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isDisabling2FA ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Disabling...</span>
+                  </>
+                ) : (
+                  <span>Disable 2FA Now</span>
+                )}
               </button>
             </div>
           </div>
