@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { softDeleteAsset, deleteAssetPermanently } from "@/lib/trash-manager";
+import { validateAppCheckToken } from "@/lib/app-check-validator";
 
 interface RouteParams {
   params: Promise<{ asset_id: string }>;
@@ -30,7 +31,32 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { appId } = auth.app;
+    const { appId, enforceAppCheck, firebaseProjectId, allowedAppIds } = auth.app;
+
+    // Verify Google Play Integrity / Firebase App Check (if enforced for this API key)
+    if (enforceAppCheck) {
+      const appCheckHeader =
+        req.headers.get("x-firebase-appcheck") ||
+        req.headers.get("x-app-check-token") ||
+        req.headers.get("X-Firebase-AppCheck") ||
+        req.headers.get("X-App-Check-Token");
+
+      const checkResult = await validateAppCheckToken(appCheckHeader, {
+        enforceAppCheck: true,
+        firebaseProjectId,
+        allowedAppIds,
+      });
+
+      if (!checkResult.isValid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Forbidden: Mobile App Check validation failed (${checkResult.error})`,
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     // Fetch active asset
     const records = await db
@@ -107,7 +133,32 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { appId } = auth.app;
+    const { appId, enforceAppCheck, firebaseProjectId, allowedAppIds } = auth.app;
+
+    // Verify Google Play Integrity / Firebase App Check (if enforced for this API key)
+    if (enforceAppCheck) {
+      const appCheckHeader =
+        req.headers.get("x-firebase-appcheck") ||
+        req.headers.get("x-app-check-token") ||
+        req.headers.get("X-Firebase-AppCheck") ||
+        req.headers.get("X-App-Check-Token");
+
+      const checkResult = await validateAppCheckToken(appCheckHeader, {
+        enforceAppCheck: true,
+        firebaseProjectId,
+        allowedAppIds,
+      });
+
+      if (!checkResult.isValid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Forbidden: Mobile App Check validation failed (${checkResult.error})`,
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     const records = await db
       .select()

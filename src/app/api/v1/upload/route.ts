@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-cache";
 import { processAndSaveAsset } from "@/lib/asset-manager";
+import { validateAppCheckToken } from "@/lib/app-check-validator";
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,7 +22,32 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { appId, appName } = auth.app;
+    const { appId, appName, enforceAppCheck, firebaseProjectId, allowedAppIds } = auth.app;
+
+    // 1.1 Verify Google Play Integrity / Firebase App Check (if enforced for this API key)
+    if (enforceAppCheck) {
+      const appCheckHeader =
+        req.headers.get("x-firebase-appcheck") ||
+        req.headers.get("x-app-check-token") ||
+        req.headers.get("X-Firebase-AppCheck") ||
+        req.headers.get("X-App-Check-Token");
+
+      const checkResult = await validateAppCheckToken(appCheckHeader, {
+        enforceAppCheck: true,
+        firebaseProjectId,
+        allowedAppIds,
+      });
+
+      if (!checkResult.isValid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Forbidden: Mobile App Check validation failed (${checkResult.error})`,
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     // 2. Parse Multipart Form Data
     const formData = await req.formData();

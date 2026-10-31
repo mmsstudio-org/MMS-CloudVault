@@ -20,6 +20,7 @@
     "clsx": "^2.1.1",
     "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.4",
+    "jose": "^6.2.14",
     "lru-cache": "^11.5.3",
     "lucide-react": "^1.65.0",
     "next": "16.4.3",

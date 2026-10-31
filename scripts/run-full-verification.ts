@@ -366,6 +366,122 @@ async function run() {
   });
 
   // ---------------------------------------------------------------------------
+  // STEP 9: FIREBASE APP CHECK / PLAY INTEGRITY SECURITY VERIFICATION
+  // ---------------------------------------------------------------------------
+  console.log("\n--- Step 9: Firebase App Check & Play Integrity Security Verification ---");
+  const APPCHECK_TEST_APP_ID = "qa-appcheck-enforced-app";
+  const APPCHECK_TEST_KEY = "mms_sec_qa_appcheck_test_7788";
+  const APPCHECK_DEBUG_TOKEN = "qa_debug_appcheck_token_xyz999";
+  process.env.DEBUG_APP_CHECK_TOKEN = APPCHECK_DEBUG_TOKEN;
+
+  // Cleanup old app check test key if exists
+  await db.delete(apiKeys).where(eq(apiKeys.appId, APPCHECK_TEST_APP_ID));
+
+  // Insert API Key with App Check strictly enforced
+  await db.insert(apiKeys).values({
+    appName: "QA AppCheck Android App",
+    appId: APPCHECK_TEST_APP_ID,
+    secretKey: APPCHECK_TEST_KEY,
+    isActive: true,
+    enforceAppCheck: true,
+    firebaseProjectId: "mms-studio-test-project",
+  });
+  invalidateApiKeyCache();
+
+  // 9.1 Upload request WITHOUT App Check header -> Must fail with 403 Forbidden
+  const formDataWithoutToken = new FormData();
+  formDataWithoutToken.append("asset_id", "test_appcheck_unauthorized");
+  formDataWithoutToken.append(
+    "file",
+    new Blob([img1Buffer], { type: "image/png" }),
+    "test.png"
+  );
+
+  const resBlocked = await fetch(`${BASE_URL}/api/v1/upload`, {
+    method: "POST",
+    headers: { "x-api-key": APPCHECK_TEST_KEY },
+    body: formDataWithoutToken,
+  });
+
+  const resBlockedJson = await resBlocked.json();
+  const isCorrectlyBlocked =
+    resBlocked.status === 403 &&
+    resBlockedJson.error?.includes("App Check validation failed");
+
+  recordTest(
+    "App Check Block Unauthorized Client",
+    isCorrectlyBlocked,
+    `Status: ${resBlocked.status} (Expected 403). Error message: '${resBlockedJson.error}'`
+  );
+
+  // 9.2 Upload request WITH valid App Check token -> Must succeed with 200 OK
+  const formDataWithToken = new FormData();
+  formDataWithToken.append("asset_id", "test_appcheck_authorized");
+  formDataWithToken.append(
+    "file",
+    new Blob([img1Buffer], { type: "image/png" }),
+    "test.png"
+  );
+
+  const resAllowed = await fetch(`${BASE_URL}/api/v1/upload`, {
+    method: "POST",
+    headers: {
+      "x-api-key": APPCHECK_TEST_KEY,
+      "X-Firebase-AppCheck": APPCHECK_DEBUG_TOKEN,
+    },
+    body: formDataWithToken,
+  });
+
+  const resAllowedJson = await resAllowed.json();
+  const isCorrectlyAllowed =
+    resAllowed.status === 200 && resAllowedJson.success === true;
+
+  recordTest(
+    "App Check Attested Client Verification",
+    isCorrectlyAllowed,
+    `Status: ${resAllowed.status} (Expected 200). Success: ${resAllowedJson.success}`
+  );
+
+  // Clean up App Check test asset and test key
+  if (isCorrectlyAllowed) {
+    await fetch(`${BASE_URL}/api/v1/assets/test_appcheck_authorized`, {
+      method: "DELETE",
+      headers: {
+        "x-api-key": APPCHECK_TEST_KEY,
+        "X-Firebase-AppCheck": APPCHECK_DEBUG_TOKEN,
+      },
+    });
+  }
+  await db.delete(apiKeys).where(eq(apiKeys.appId, APPCHECK_TEST_APP_ID));
+  invalidateApiKeyCache();
+
+  // ---------------------------------------------------------------------------
+  // STEP 10: SWAGGER SERVERS PADDING & CDN RECOVERY GUIDE CHECKS
+  // ---------------------------------------------------------------------------
+  console.log("\n--- Step 10: Swagger CSS & CDN Guide Integrity Checks ---");
+  const cssContent = fs.readFileSync(
+    "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/styles/swagger-custom.css",
+    "utf8"
+  );
+  const hasSchemesServerRule = cssContent.includes(".schemes-server-container");
+  const hasMarginReset = cssContent.includes("margin: 0 !important;");
+
+  recordTest(
+    "Swagger UI Servers Spacing & CSS Reset",
+    hasSchemesServerRule && hasMarginReset,
+    `Swagger CSS contains .schemes-server-container: ${hasSchemesServerRule}, margin reset: ${hasMarginReset}`
+  );
+
+  const guideExists = fs.existsSync(
+    "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/docs/CDN_AND_URL_RECOVERY_GUIDE.md"
+  );
+  recordTest(
+    "CDN & URL Recovery Documentation",
+    guideExists,
+    `docs/CDN_AND_URL_RECOVERY_GUIDE.md exists and is readable: ${guideExists}`
+  );
+
+  // ---------------------------------------------------------------------------
   // FINAL SUMMARY
   // ---------------------------------------------------------------------------
   console.log("\n==================================================================");

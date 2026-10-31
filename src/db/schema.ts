@@ -98,6 +98,11 @@ export const apiKeys = pgTable(
       { onDelete: "set null" }
     ),
 
+    // App Check / Mobile Play Integrity Security (Optional per API key)
+    enforceAppCheck: boolean("enforce_app_check").default(false).notNull(),
+    firebaseProjectId: text("firebase_project_id"),
+    allowedAppIds: text("allowed_app_ids"), // Comma-separated Firebase App IDs (e.g. "1:123456:android:abcd")
+
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

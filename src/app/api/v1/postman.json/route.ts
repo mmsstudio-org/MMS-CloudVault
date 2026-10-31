@@ -54,7 +54,15 @@ export async function GET(request: NextRequest) {
             name: "Upload Media Asset (Image or Audio)",
             request: {
               method: "POST",
-              header: [],
+              header: [
+                {
+                  key: "X-Firebase-AppCheck",
+                  value: "{{appCheckToken}}",
+                  description:
+                    "Optional Firebase App Check / Play Integrity JWT token for mobile apps",
+                  disabled: true,
+                },
+              ],
               body: {
                 mode: "formdata",
                 formdata: [

@@ -49,6 +49,11 @@
    - Direct audio stream delivery with zero database strain.
    - Built-in web audio player in the Admin Gallery and Uploader for instant playback.
 
+9. **Google Play Integrity & Firebase App Check Attestation:**
+   - Optional per-API-key hardware-backed mobile security policy.
+   - Cryptographically verifies incoming requests against Google's public JWKS certificates (`RS256`).
+   - Prevents unauthorized API usage, spoofing, and rogue client access outside your verified Android apps.
+
 ---
 
 ## 📁 Project Architecture & File Map
@@ -280,6 +285,25 @@ x-api-key: mms_sec_demo_2026
 ```http
 Authorization: Bearer <CRON_SECRET>
 ```
+
+---
+
+## 🌐 Custom CDN Subdomains & Zero-Data-Loss URL Recovery
+MMS CloudVault implements an atomic dual-identifier architecture: every asset is stored with its immutable S3 `storage_key` and physical `bucket_id`. The configured `cdn_url` acts as a delivery projection and never mutates the underlying storage path.
+
+- **Zero-Data-Loss Guarantee**: Even if an unlinked, mistyped, or broken CDN subdomain is assigned to a bucket, **all files remain 100% safe in S3/R2**.
+- **1-Click Emergency Fallback**: Clearing or removing the CDN URL in "Bucket Management" instantly falls back to direct S3 / R2 origin URLs across the entire platform.
+- **Detailed Guide**: See the complete step-by-step setup for Cloudflare R2 Custom Domains, Cloudflare Worker Edge Proxies, and Neon DB recovery queries in [docs/CDN_AND_URL_RECOVERY_GUIDE.md](docs/CDN_AND_URL_RECOVERY_GUIDE.md).
+
+---
+
+## 🛡️ Mobile Security: Google Play Integrity & Firebase App Check
+For Android and mobile applications, MMS CloudVault offers bulletproof attestation:
+
+- **Header**: Requests send `X-Firebase-AppCheck: <JWT>` alongside `x-api-key`.
+- **Public Key Verification**: Server cryptographically verifies the token using Google's public JWKS endpoint (`https://firebaseappcheck.googleapis.com/v1/jwks`) with RS256 algorithm.
+- **Audience & App ID Whitelist**: Enforces that requests originate strictly from your Firebase Project and authorized mobile app IDs.
+- **Toggleable Per Key**: Web clients, server scripts, and mobile apps can coexist seamlessly.
 
 ---
 

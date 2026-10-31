@@ -11,6 +11,9 @@ import {
   EyeOff,
   Power,
   ShieldAlert,
+  ShieldCheck,
+  Shield,
+  Smartphone,
   Loader2,
   X,
   HardDrive,
@@ -25,6 +28,7 @@ import {
   actionToggleApiKeyStatus,
   actionRotateApiKey,
   actionUpdateApiKeyBuckets,
+  actionUpdateApiKeySecurity,
 } from "@/lib/dashboard-actions";
 import { toast } from "sonner";
 
@@ -58,6 +62,19 @@ export function ApiKeysManager({
   const [editImageBucketId, setEditImageBucketId] = React.useState<string>("");
   const [editAudioBucketId, setEditAudioBucketId] = React.useState<string>("");
   const [isUpdatingRouting, setIsUpdatingRouting] = React.useState(false);
+
+  // App Check Create Modal State
+  const [createEnforceAppCheck, setCreateEnforceAppCheck] = React.useState(false);
+  const [createFirebaseProjectId, setCreateFirebaseProjectId] = React.useState("");
+  const [createAllowedAppIds, setCreateAllowedAppIds] = React.useState("");
+
+  // Edit Security & App Check Modal State
+  const [editingSecurityKey, setEditingSecurityKey] =
+    React.useState<ApiKey | null>(null);
+  const [editEnforceAppCheck, setEditEnforceAppCheck] = React.useState(false);
+  const [editFirebaseProjectId, setEditFirebaseProjectId] = React.useState("");
+  const [editAllowedAppIds, setEditAllowedAppIds] = React.useState("");
+  const [isUpdatingSecurity, setIsUpdatingSecurity] = React.useState(false);
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [visibleKeys, setVisibleKeys] = React.useState<Record<string, boolean>>(
@@ -100,7 +117,10 @@ export function ApiKeysManager({
         appId,
         createDefaultBucketId || null,
         createImageBucketId || null,
-        createAudioBucketId || null
+        createAudioBucketId || null,
+        createEnforceAppCheck,
+        createFirebaseProjectId || null,
+        createAllowedAppIds || null
       );
       setKeys((prev) => [newKey, ...prev]);
       toast.success(`API Key created for '${appName}'.`);
@@ -108,6 +128,9 @@ export function ApiKeysManager({
       setAppId("");
       setCreateImageBucketId("");
       setCreateAudioBucketId("");
+      setCreateEnforceAppCheck(false);
+      setCreateFirebaseProjectId("");
+      setCreateAllowedAppIds("");
       setShowCreateModal(false);
     } catch (err: unknown) {
       toast.error(
@@ -115,6 +138,45 @@ export function ApiKeysManager({
       );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const openSecurityModal = (k: ApiKey) => {
+    setEditingSecurityKey(k);
+    setEditEnforceAppCheck(k.enforceAppCheck || false);
+    setEditFirebaseProjectId(k.firebaseProjectId || "");
+    setEditAllowedAppIds(k.allowedAppIds || "");
+  };
+
+  const handleSaveSecurity = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSecurityKey) return;
+
+    try {
+      setIsUpdatingSecurity(true);
+      const updated = await actionUpdateApiKeySecurity(editingSecurityKey.id, {
+        enforceAppCheck: editEnforceAppCheck,
+        firebaseProjectId: editFirebaseProjectId || null,
+        allowedAppIds: editAllowedAppIds || null,
+      });
+
+      setKeys((prev) =>
+        prev.map((k) =>
+          k.id === editingSecurityKey.id ? { ...k, ...updated } : k
+        )
+      );
+      toast.success(
+        `Security policies updated for '${editingSecurityKey.appName}'.`
+      );
+      setEditingSecurityKey(null);
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to update security policies."
+      );
+    } finally {
+      setIsUpdatingSecurity(false);
     }
   };
 
@@ -346,6 +408,38 @@ export function ApiKeysManager({
                       Configure Routing
                     </button>
                   </div>
+
+                  {/* Mobile Security (Firebase App Check & Play Integrity) */}
+                  <div className="flex items-center gap-2 pt-0.5 flex-wrap text-[11px]">
+                    <span className="text-zinc-400 font-medium">
+                      Mobile Security:
+                    </span>
+                    {key.enforceAppCheck ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-semibold">
+                        <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                        Play Integrity & App Check Enforced
+                        {key.firebaseProjectId && (
+                          <span className="opacity-75 font-mono text-[10px]">
+                            ({key.firebaseProjectId})
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 font-normal">
+                        <Shield className="w-3 h-3 text-zinc-400" />
+                        Standard (App Check Optional)
+                      </span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => openSecurityModal(key)}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline ml-1"
+                    >
+                      <ShieldAlert className="w-3 h-3" />
+                      Security & App Check
+                    </button>
+                  </div>
                 </div>
 
                 {/* Actions */}
@@ -521,6 +615,68 @@ Content-Type: multipart/form-data`}
                 </div>
               </div>
 
+              {/* Mobile App Security (Firebase App Check & Play Integrity) */}
+              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    <div>
+                      <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                        Firebase App Check & Play Integrity
+                      </p>
+                      <p className="text-[10px] text-zinc-500">
+                        Require Google-signed cryptographic token from Android devices
+                      </p>
+                    </div>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={createEnforceAppCheck}
+                      onChange={(e) => setCreateEnforceAppCheck(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </div>
+
+                {createEnforceAppCheck && (
+                  <div className="space-y-3 pt-2 border-t border-zinc-200 dark:border-zinc-700/60">
+                    <div>
+                      <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Firebase Project ID (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={createFirebaseProjectId}
+                        onChange={(e) => setCreateFirebaseProjectId(e.target.value)}
+                        placeholder="e.g. mms-studio-media-vault"
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                      />
+                      <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                        Verifies that tokens originate exclusively from this Firebase project.
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Allowed Mobile App IDs (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={createAllowedAppIds}
+                        onChange={(e) => setCreateAllowedAppIds(e.target.value)}
+                        placeholder="e.g. 1:1234567890:android:abcdef, 1:1234567890:android:34a0ec8763261a9b"
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                      />
+                      <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                        Comma-separated Firebase App IDs to whitelist. Leave empty to allow any valid app in the project.
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
@@ -538,6 +694,109 @@ Content-Type: multipart/form-data`}
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
                   )}
                   Generate Key
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Security & App Check Policy Modal */}
+      {editingSecurityKey && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                  App Check & Play Integrity Policy
+                </h3>
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                  Configure hardware-backed mobile attestation for &apos;{editingSecurityKey.appName}&apos;.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingSecurityKey(null)}
+                className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSecurity} className="space-y-4">
+              {/* Enforce Switch */}
+              <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-zinc-900 dark:text-white block">
+                    Enforce Firebase App Check
+                  </span>
+                  <span className="text-[11px] text-zinc-500 block">
+                    Blocks all requests missing a valid Google-signed JWT token.
+                  </span>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editEnforceAppCheck}
+                    onChange={(e) => setEditEnforceAppCheck(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                </label>
+              </div>
+
+              {/* Project ID */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Firebase Project ID (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={editFirebaseProjectId}
+                  onChange={(e) => setEditFirebaseProjectId(e.target.value)}
+                  placeholder="e.g. mms-studio-media-vault"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono"
+                />
+                <span className="text-[10px] text-zinc-400 mt-1 block">
+                  Ensures the App Check JWT audience matches your Firebase Project.
+                </span>
+              </div>
+
+              {/* Allowed App IDs */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Whitelisted Mobile App IDs (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={editAllowedAppIds}
+                  onChange={(e) => setEditAllowedAppIds(e.target.value)}
+                  placeholder="e.g. 1:1234567890:android:34a0ec8763261a9b, 1:1234567890:android:fedcba9876543210"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
+                />
+                <span className="text-[10px] text-zinc-400 mt-1 block">
+                  Comma-separated Firebase Android App IDs. Only requests from these apps will be approved.
+                </span>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingSecurityKey(null)}
+                  className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingSecurity}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                >
+                  {isUpdatingSecurity && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  )}
+                  Save Security Policy
                 </button>
               </div>
             </form>

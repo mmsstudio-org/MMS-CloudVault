@@ -34,8 +34,8 @@
   display: block !important;
   background: transparent !important;
   box-shadow: none !important;
-  padding: 0.75rem 0 1.25rem 0 !important;
-  margin: 0 0 1.5rem 0 !important;
+  padding: 1.25rem 0.5rem 1.5rem 0.5rem !important;
+  margin: 0 0 2rem 0 !important;
   border-bottom: 1px solid rgba(228, 228, 231, 0.8) !important;
 }
 
@@ -51,21 +51,26 @@ html.dark-mode .swagger-ui .scheme-container {
   align-items: center !important;
   justify-content: space-between !important;
   flex-wrap: wrap !important;
-  gap: 1.25rem !important;
-  padding: 0.5rem 0 !important;
+  gap: 1.5rem !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* ==========================================================================
-   Servers Selector Container & Label Padding
+   Servers Selector Container & Label Padding (Both .schemes-server-container & .servers)
    ========================================================================== */
+.swagger-ui .scheme-container .schemes > .schemes-server-container,
+.swagger-ui .schemes-server-container,
 .swagger-ui .servers {
   display: flex !important;
   align-items: center !important;
   gap: 0.75rem !important;
   margin: 0 !important;
-  padding: 0.25rem 0 !important;
+  padding: 0.25rem 0.25rem !important;
 }
 
+.swagger-ui .scheme-container .schemes > .schemes-server-container > label,
+.swagger-ui .schemes-server-container > label,
 .swagger-ui .servers > label {
   margin: 0 !important;
   padding: 0 !important;
@@ -74,12 +79,20 @@ html.dark-mode .swagger-ui .scheme-container {
   align-items: flex-start !important;
   gap: 0.5rem !important;
   font-family: inherit !important;
-  color: #18181b !important;
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: #71717a !important;
 }
 
+.dark .swagger-ui .scheme-container .schemes > .schemes-server-container > label,
+.dark .swagger-ui .schemes-server-container > label,
 .dark .swagger-ui .servers > label,
+html.dark-mode .swagger-ui .scheme-container .schemes > .schemes-server-container > label,
+html.dark-mode .swagger-ui .schemes-server-container > label,
 html.dark-mode .swagger-ui .servers > label {
-  color: #fafafa !important;
+  color: #a1a1aa !important;
 }
 
 .swagger-ui .servers .servers-title,
@@ -90,7 +103,7 @@ html.dark-mode .swagger-ui .servers > label {
   letter-spacing: 0.05em !important;
   color: #71717a !important;
   margin: 0 !important;
-  padding: 0.25rem 0 0.15rem 0.25rem !important;
+  padding: 0.25rem 0 0.15rem 0.1rem !important;
   display: block !important;
 }
 
@@ -101,11 +114,13 @@ html.dark-mode .swagger-ui .servers-title {
   color: #a1a1aa !important;
 }
 
+.swagger-ui .scheme-container .schemes > .schemes-server-container > label select,
+.swagger-ui .schemes-server-container select,
 .swagger-ui .servers select {
   font-family: ui-monospace, monospace !important;
   font-size: 0.8125rem !important;
   font-weight: 500 !important;
-  padding: 0.55rem 2.25rem 0.55rem 0.85rem !important;
+  padding: 0.6rem 2.25rem 0.6rem 0.85rem !important;
   border-radius: 0.625rem !important;
   border: 1px solid #d4d4d8 !important;
   background-color: #f4f4f5 !important;
@@ -114,16 +129,23 @@ html.dark-mode .swagger-ui .servers-title {
   cursor: pointer !important;
   min-width: 320px !important;
   max-width: 100% !important;
+  margin-top: 0.25rem !important;
   transition: all 0.15s ease !important;
 }
 
+.dark .swagger-ui .scheme-container .schemes > .schemes-server-container > label select,
+.dark .swagger-ui .schemes-server-container select,
 .dark .swagger-ui .servers select,
+html.dark-mode .swagger-ui .scheme-container .schemes > .schemes-server-container > label select,
+html.dark-mode .swagger-ui .schemes-server-container select,
 html.dark-mode .swagger-ui .servers select {
   background-color: #18181b !important;
   border-color: #3f3f46 !important;
   color: #fafafa !important;
 }
 
+.swagger-ui .scheme-container .schemes > .schemes-server-container > label select:focus,
+.swagger-ui .schemes-server-container select:focus,
 .swagger-ui .servers select:focus {
   border-color: #10b981 !important;
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
@@ -132,11 +154,12 @@ html.dark-mode .swagger-ui .servers select {
 /* ==========================================================================
    Authorization Top Bar & Authorize Button
    ========================================================================== */
+.swagger-ui .scheme-container .schemes .auth-wrapper,
 .swagger-ui .auth-wrapper {
   display: flex !important;
   justify-content: flex-end !important;
   align-items: center !important;
-  padding: 0.25rem 0 !important;
+  padding: 0.25rem 0.25rem !important;
   margin: 0 !important;
   border: none !important;
 }

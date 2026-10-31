@@ -30,6 +30,13 @@ export async function GET() {
           name: "x-api-key",
           description: "MMS Studio App Secret Key (configured per application)",
         },
+        AppCheckAuth: {
+          type: "apiKey",
+          in: "header",
+          name: "X-Firebase-AppCheck",
+          description:
+            "Google Play Integrity / Firebase App Check JWT token (required when App Check policy is enforced on the API Key)",
+        },
       },
     },
     security: [{ ApiKeyAuth: [] }],
@@ -39,7 +46,17 @@ export async function GET() {
           summary: "Upload, optimize and assign media asset",
           description:
             "Uploads a media image or audio file. Images are automatically scaled, converted to WebP, and assigned a BlurHash. Audio files (MP3, WAV, OGG, M4A, AAC) can be optionally compressed via FFmpeg or stored in 100% original fidelity. Automatically replaces duplicate asset IDs under the same application.",
-          security: [{ ApiKeyAuth: [] }],
+          security: [{ ApiKeyAuth: [] }, { AppCheckAuth: [] }],
+          parameters: [
+            {
+              name: "X-Firebase-AppCheck",
+              in: "header",
+              required: false,
+              schema: { type: "string" },
+              description:
+                "Google Play Integrity / Firebase App Check JWT token for mobile app attestation",
+            },
+          ],
           requestBody: {
             required: true,
             content: {

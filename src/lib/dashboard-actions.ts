@@ -509,7 +509,10 @@ export async function actionCreateApiKey(
   appId: string,
   defaultBucketId?: string | null,
   imageBucketId?: string | null,
-  audioBucketId?: string | null
+  audioBucketId?: string | null,
+  enforceAppCheck?: boolean,
+  firebaseProjectId?: string | null,
+  allowedAppIds?: string | null
 ) {
   const cleanAppId = appId.toLowerCase().replace(/[^a-z0-9_-]/g, "-").trim();
   const secretKey = `mms_sec_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`;
@@ -524,12 +527,40 @@ export async function actionCreateApiKey(
       defaultBucketId: defaultBucketId || null,
       imageBucketId: imageBucketId || null,
       audioBucketId: audioBucketId || null,
+      enforceAppCheck: Boolean(enforceAppCheck),
+      firebaseProjectId: firebaseProjectId?.trim() || null,
+      allowedAppIds: allowedAppIds?.trim() || null,
     })
     .returning();
 
   invalidateApiKeyCache();
   safeRevalidate("/dashboard/api-keys");
   return inserted[0];
+}
+
+export async function actionUpdateApiKeySecurity(
+  id: string,
+  settings: {
+    enforceAppCheck: boolean;
+    firebaseProjectId?: string | null;
+    allowedAppIds?: string | null;
+  }
+) {
+  const updated = await db
+    .update(apiKeys)
+    .set({
+      enforceAppCheck: settings.enforceAppCheck,
+      firebaseProjectId: settings.firebaseProjectId?.trim() || null,
+      allowedAppIds: settings.allowedAppIds?.trim() || null,
+    })
+    .where(eq(apiKeys.id, id))
+    .returning();
+
+  if (updated.length > 0) {
+    invalidateApiKeyCache(updated[0].secretKey);
+  }
+  safeRevalidate("/dashboard/api-keys");
+  return updated[0];
 }
 
 export async function actionUpdateApiKeyBuckets(
