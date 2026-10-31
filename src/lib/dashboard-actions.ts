@@ -1,13 +1,32 @@
 "use server";
 
 import { db } from "@/db";
-import { siteSettings, apiKeys, mediaAssets, adminUsers, ApiKey } from "@/db/schema";
+import {
+  siteSettings,
+  apiKeys,
+  mediaAssets,
+  adminUsers,
+  storageBuckets,
+  ApiKey,
+  StorageBucket,
+} from "@/db/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { auth } from "./auth";
 import { invalidateApiKeyCache } from "./api-cache";
-import { purgeTrash, restoreAsset, softDeleteAsset, deleteAssetPermanently } from "./trash-manager";
+import {
+  purgeTrash,
+  restoreAsset,
+  softDeleteAsset,
+  deleteAssetPermanently,
+} from "./trash-manager";
 import { sendTelegramNotification } from "./telegram";
 import { processAndSaveAsset } from "./asset-manager";
+import {
+  invalidateClientPool,
+  testBucketConnection,
+  BucketTestResult,
+} from "./storage-pool";
 
 function safeRevalidate(path: string) {
   try {
@@ -15,6 +34,35 @@ function safeRevalidate(path: string) {
   } catch {
     // Graceful no-op in test environments or CLI scripts without Next.js request context
   }
+}
+
+/**
+ * Security Gate: Ensures that sensitive storage credentials and admin settings
+ * are accessible strictly by authenticated and authorized admin users.
+ */
+async function requireAdminAuth() {
+  const session = await auth();
+  if (!session?.user?.email) {
+    throw new Error("Unauthorized: Admin authentication session required.");
+  }
+
+  const settings = await db.select().from(siteSettings).limit(1);
+  let allowed: string[] = ["mr.sabbirmms@gmail.com"];
+  if (settings[0]?.allowedAdminEmails) {
+    try {
+      allowed = JSON.parse(settings[0].allowedAdminEmails);
+    } catch {
+      allowed = [settings[0].allowedAdminEmails];
+    }
+  }
+
+  if (!allowed.includes(session.user.email)) {
+    throw new Error(
+      "Forbidden: Your email is not authorized for administrative settings."
+    );
+  }
+
+  return session.user;
 }
 
 // -----------------------------------------------------------------------------
@@ -44,16 +92,23 @@ export async function getDashboardMetrics() {
     .from(apiKeys)
     .where(eq(apiKeys.isActive, true));
 
-  const totalOptimizedMb = (Number(storageMetrics?.totalOptimizedKb || 0) / 1024).toFixed(2);
-  const totalOriginalMb = (Number(storageMetrics?.totalOriginalKb || 0) / 1024).toFixed(2);
+  const totalOptimizedMb = (
+    Number(storageMetrics?.totalOptimizedKb || 0) / 1024
+  ).toFixed(2);
+  const totalOriginalMb = (
+    Number(storageMetrics?.totalOriginalKb || 0) / 1024
+  ).toFixed(2);
   const savedKb = Math.max(
     0,
-    Number(storageMetrics?.totalOriginalKb || 0) - Number(storageMetrics?.totalOptimizedKb || 0)
+    Number(storageMetrics?.totalOriginalKb || 0) -
+      Number(storageMetrics?.totalOptimizedKb || 0)
   );
   const savedMb = (savedKb / 1024).toFixed(2);
   const savedPercent =
     Number(storageMetrics?.totalOriginalKb || 0) > 0
-      ? Math.round((savedKb / Number(storageMetrics.totalOriginalKb)) * 100)
+      ? Math.round(
+          (savedKb / Number(storageMetrics.totalOriginalKb)) * 100
+        )
       : 0;
 
   // Recent 6 assets
@@ -158,13 +213,304 @@ export async function actionPurgeTrashNow() {
 }
 
 // -----------------------------------------------------------------------------
-// 4. API KEY MANAGEMENT
+// 4. STORAGE BUCKET MANAGEMENT (Strictly Admin-Secured)
+// -----------------------------------------------------------------------------
+export interface BucketWithAssetStats extends StorageBucket {
+  assetCount: number;
+}
+
+/**
+ * Returns all storage buckets along with live asset counts.
+ * Requires active admin authentication session.
+ */
+export async function actionGetStorageBuckets(): Promise<BucketWithAssetStats[]> {
+  await requireAdminAuth();
+
+  const buckets = await db
+    .select()
+    .from(storageBuckets)
+    .orderBy(desc(storageBuckets.isDefault), desc(storageBuckets.createdAt));
+
+  // Compute asset counts per bucket
+  const counts = await db
+    .select({
+      bucketId: mediaAssets.bucketId,
+      count: sql<number>`count(*)`,
+    })
+    .from(mediaAssets)
+    .where(eq(mediaAssets.isDeleted, false))
+    .groupBy(mediaAssets.bucketId);
+
+  const countMap = new Map<string, number>();
+  for (const c of counts) {
+    if (c.bucketId) {
+      countMap.set(c.bucketId, Number(c.count));
+    }
+  }
+
+  return buckets.map((b) => ({
+    ...b,
+    assetCount: countMap.get(b.id) || 0,
+  }));
+}
+
+/**
+ * Creates a new storage bucket.
+ * Requires admin session.
+ */
+export async function actionCreateStorageBucket(data: {
+  name: string;
+  slug: string;
+  notes?: string;
+  provider: string;
+  endpoint: string;
+  bucketName: string;
+  region: string;
+  accessKeyId: string;
+  secretAccessKey: string;
+  publicBaseUrl?: string;
+  isDefault?: boolean;
+  isActive?: boolean;
+  maxCapacityGb?: number;
+}): Promise<StorageBucket> {
+  await requireAdminAuth();
+
+  const cleanSlug = data.slug.toLowerCase().replace(/[^a-z0-9_-]/g, "-").trim();
+
+  // If set to default, demote existing default bucket
+  if (data.isDefault) {
+    await db
+      .update(storageBuckets)
+      .set({ isDefault: false })
+      .where(eq(storageBuckets.isDefault, true));
+  }
+
+  const inserted = await db
+    .insert(storageBuckets)
+    .values({
+      name: data.name.trim(),
+      slug: cleanSlug,
+      notes: data.notes?.trim() || null,
+      provider: data.provider || "s3_compatible",
+      endpoint: data.endpoint.trim(),
+      bucketName: data.bucketName.trim(),
+      region: data.region?.trim() || "auto",
+      accessKeyId: data.accessKeyId.trim(),
+      secretAccessKey: data.secretAccessKey.trim(),
+      publicBaseUrl: data.publicBaseUrl?.trim() || null,
+      isDefault: Boolean(data.isDefault),
+      isActive: data.isActive !== undefined ? Boolean(data.isActive) : true,
+      maxCapacityGb: Number(data.maxCapacityGb) || 5,
+      usedBytes: 0,
+    })
+    .returning();
+
+  invalidateClientPool();
+  safeRevalidate("/dashboard/settings");
+  safeRevalidate("/dashboard/api-keys");
+  return inserted[0];
+}
+
+/**
+ * Updates an existing storage bucket's configuration.
+ */
+export async function actionUpdateStorageBucket(
+  id: string,
+  data: Partial<{
+    name: string;
+    slug: string;
+    notes: string;
+    provider: string;
+    endpoint: string;
+    bucketName: string;
+    region: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+    publicBaseUrl: string;
+    isDefault: boolean;
+    isActive: boolean;
+    maxCapacityGb: number;
+  }>
+): Promise<StorageBucket> {
+  await requireAdminAuth();
+
+  if (data.isDefault) {
+    await db
+      .update(storageBuckets)
+      .set({ isDefault: false })
+      .where(eq(storageBuckets.isDefault, true));
+  }
+
+  const updated = await db
+    .update(storageBuckets)
+    .set({
+      ...data,
+      updatedAt: new Date(),
+    })
+    .where(eq(storageBuckets.id, id))
+    .returning();
+
+  invalidateClientPool(id);
+  safeRevalidate("/dashboard/settings");
+  safeRevalidate("/dashboard/api-keys");
+  return updated[0];
+}
+
+/**
+ * Sets a specific storage bucket as the system default.
+ */
+export async function actionSetDefaultStorageBucket(id: string): Promise<boolean> {
+  await requireAdminAuth();
+
+  // Demote current default
+  await db
+    .update(storageBuckets)
+    .set({ isDefault: false })
+    .where(eq(storageBuckets.isDefault, true));
+
+  // Promote chosen bucket
+  await db
+    .update(storageBuckets)
+    .set({ isDefault: true, isActive: true, updatedAt: new Date() })
+    .where(eq(storageBuckets.id, id));
+
+  invalidateClientPool();
+  safeRevalidate("/dashboard/settings");
+  safeRevalidate("/dashboard/api-keys");
+  return true;
+}
+
+/**
+ * Deletes a storage bucket.
+ * Protected: Cannot delete default bucket or buckets containing active assets.
+ */
+export async function actionDeleteStorageBucket(id: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  await requireAdminAuth();
+
+  const bucket = (
+    await db.select().from(storageBuckets).where(eq(storageBuckets.id, id)).limit(1)
+  )[0];
+
+  if (!bucket) {
+    return { success: false, error: "Bucket not found." };
+  }
+
+  if (bucket.isDefault) {
+    return {
+      success: false,
+      error: "Cannot delete the active default storage bucket. Set another bucket as default first.",
+    };
+  }
+
+  // Check if any active media assets reference this bucket
+  const [assetCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(mediaAssets)
+    .where(eq(mediaAssets.bucketId, id));
+
+  if (Number(assetCount?.count || 0) > 0) {
+    return {
+      success: false,
+      error: `Cannot delete bucket: ${assetCount.count} media asset(s) are physically stored here. Migrate or purge assets before deleting.`,
+    };
+  }
+
+  await db.delete(storageBuckets).where(eq(storageBuckets.id, id));
+  invalidateClientPool(id);
+  safeRevalidate("/dashboard/settings");
+  safeRevalidate("/dashboard/api-keys");
+  return { success: true };
+}
+
+/**
+ * Live tests an S3/R2 storage bucket's connection.
+ * Can test either an existing bucket by ID or raw test credentials from the modal.
+ */
+export async function actionTestStorageBucketConnection(params: {
+  bucketId?: string;
+  endpoint?: string;
+  bucketName?: string;
+  region?: string;
+  accessKeyId?: string;
+  secretAccessKey?: string;
+}): Promise<BucketTestResult> {
+  await requireAdminAuth();
+
+  let config: {
+    endpoint: string;
+    bucketName: string;
+    region: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+  };
+
+  if (params.bucketId) {
+    const bucket = (
+      await db
+        .select()
+        .from(storageBuckets)
+        .where(eq(storageBuckets.id, params.bucketId))
+        .limit(1)
+    )[0];
+
+    if (!bucket) {
+      return {
+        ok: false,
+        message: "Bucket configuration not found.",
+        latencyMs: 0,
+      };
+    }
+
+    config = {
+      endpoint: bucket.endpoint,
+      bucketName: bucket.bucketName,
+      region: bucket.region,
+      accessKeyId: bucket.accessKeyId,
+      secretAccessKey: bucket.secretAccessKey,
+    };
+  } else {
+    if (
+      !params.endpoint ||
+      !params.bucketName ||
+      !params.accessKeyId ||
+      !params.secretAccessKey
+    ) {
+      return {
+        ok: false,
+        message: "Missing required S3 credentials (endpoint, bucketName, accessKeyId, secretAccessKey).",
+        latencyMs: 0,
+      };
+    }
+
+    config = {
+      endpoint: params.endpoint,
+      bucketName: params.bucketName,
+      region: params.region || "auto",
+      accessKeyId: params.accessKeyId,
+      secretAccessKey: params.secretAccessKey,
+    };
+  }
+
+  return testBucketConnection(config);
+}
+
+// -----------------------------------------------------------------------------
+// 5. API KEY MANAGEMENT
 // -----------------------------------------------------------------------------
 export async function getApiKeysList() {
   return db.select().from(apiKeys).orderBy(desc(apiKeys.createdAt));
 }
 
-export async function actionCreateApiKey(appName: string, appId: string) {
+export async function actionCreateApiKey(
+  appName: string,
+  appId: string,
+  defaultBucketId?: string | null,
+  imageBucketId?: string | null,
+  audioBucketId?: string | null
+) {
   const cleanAppId = appId.toLowerCase().replace(/[^a-z0-9_-]/g, "-").trim();
   const secretKey = `mms_sec_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`;
 
@@ -175,12 +521,40 @@ export async function actionCreateApiKey(appName: string, appId: string) {
       appId: cleanAppId,
       secretKey,
       isActive: true,
+      defaultBucketId: defaultBucketId || null,
+      imageBucketId: imageBucketId || null,
+      audioBucketId: audioBucketId || null,
     })
     .returning();
 
   invalidateApiKeyCache();
-  revalidatePath("/dashboard/api-keys");
+  safeRevalidate("/dashboard/api-keys");
   return inserted[0];
+}
+
+export async function actionUpdateApiKeyBuckets(
+  id: string,
+  bindings: {
+    defaultBucketId?: string | null;
+    imageBucketId?: string | null;
+    audioBucketId?: string | null;
+  }
+) {
+  const updated = await db
+    .update(apiKeys)
+    .set({
+      defaultBucketId: bindings.defaultBucketId || null,
+      imageBucketId: bindings.imageBucketId || null,
+      audioBucketId: bindings.audioBucketId || null,
+    })
+    .where(eq(apiKeys.id, id))
+    .returning();
+
+  if (updated.length > 0) {
+    invalidateApiKeyCache(updated[0].secretKey);
+  }
+  safeRevalidate("/dashboard/api-keys");
+  return updated[0];
 }
 
 export async function actionToggleApiKeyStatus(id: string, currentStatus: boolean) {
@@ -196,7 +570,7 @@ export async function actionToggleApiKeyStatus(id: string, currentStatus: boolea
   if (updated.length > 0) {
     invalidateApiKeyCache(updated[0].secretKey);
   }
-  revalidatePath("/dashboard/api-keys");
+  safeRevalidate("/dashboard/api-keys");
   return updated[0];
 }
 
@@ -219,12 +593,12 @@ export async function actionRotateApiKey(id: string) {
     .returning();
 
   invalidateApiKeyCache(newSecret);
-  revalidatePath("/dashboard/api-keys");
+  safeRevalidate("/dashboard/api-keys");
   return updated[0];
 }
 
 // -----------------------------------------------------------------------------
-// 5. SITE SETTINGS ACTIONS
+// 6. SITE SETTINGS ACTIONS
 // -----------------------------------------------------------------------------
 export async function getSiteSettingsData() {
   const settings = await db.select().from(siteSettings).limit(1);
@@ -242,6 +616,8 @@ export async function actionUpdateSiteSettings(data: {
   googleSearchConsoleTag?: string;
   allowedAdminEmails: string[];
 }) {
+  await requireAdminAuth();
+
   const settings = await db.select().from(siteSettings).limit(1);
 
   const payload = {
@@ -258,17 +634,21 @@ export async function actionUpdateSiteSettings(data: {
   };
 
   if (settings.length > 0) {
-    await db.update(siteSettings).set(payload).where(eq(siteSettings.id, settings[0].id));
+    await db
+      .update(siteSettings)
+      .set(payload)
+      .where(eq(siteSettings.id, settings[0].id));
   } else {
     await db.insert(siteSettings).values(payload);
   }
 
-  revalidatePath("/dashboard/settings");
-  revalidatePath("/");
+  safeRevalidate("/dashboard/settings");
+  safeRevalidate("/");
   return true;
 }
 
 export async function actionSendTestTelegram() {
+  await requireAdminAuth();
   return sendTelegramNotification({
     event: "ASSET_UPLOADED",
     appName: "Test MMS Studio System",
@@ -281,7 +661,7 @@ export async function actionSendTestTelegram() {
 }
 
 // -----------------------------------------------------------------------------
-// 6. MANUAL WEB UPLOADER ACTION
+// 7. MANUAL WEB UPLOADER ACTION
 // -----------------------------------------------------------------------------
 export async function actionManualUpload(formData: FormData) {
   const file = formData.get("file") as File | null;
@@ -289,6 +669,8 @@ export async function actionManualUpload(formData: FormData) {
   const assetId = (formData.get("asset_id") as string | null)?.trim();
   const title = (formData.get("title") as string | null)?.trim() || undefined;
   const folder = (formData.get("folder") as string | null)?.trim() || "general";
+  const targetBucketId =
+    (formData.get("target_bucket_id") as string | null)?.trim() || undefined;
 
   if (!file || !appId || !assetId) {
     throw new Error("Missing required file, appId or assetId.");
@@ -306,10 +688,11 @@ export async function actionManualUpload(formData: FormData) {
     appName: appId,
     fileName: file.name,
     mimeType: file.type,
+    targetBucketId,
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/gallery");
+  safeRevalidate("/dashboard");
+  safeRevalidate("/dashboard/gallery");
 
   return {
     success: true,

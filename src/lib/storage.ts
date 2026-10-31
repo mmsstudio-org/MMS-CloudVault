@@ -1,144 +1,167 @@
 import {
-  S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
-import * as fs from "fs";
-import * as path from "path";
+import { db } from "@/db";
+import { storageBuckets, StorageBucket } from "@/db/schema";
+import { eq, and, sql } from "drizzle-orm";
+import { getS3ClientForBucket } from "./storage-pool";
 
 /**
- * Dynamically resolves S3 / R2 storage configuration from process.env
+ * Resolves the primary default active storage bucket from the database.
+ * The database is the Single Source of Truth (SSOT).
  */
-export function getStorageConfig() {
-  const endpoint = process.env.STORAGE_ENDPOINT;
-  const accessKeyId = process.env.STORAGE_ACCESS_KEY;
-  const secretAccessKey = process.env.STORAGE_SECRET_KEY;
-  const bucketName = process.env.STORAGE_BUCKET_NAME || "mms-cloud-vault";
-  const region = process.env.STORAGE_REGION || "auto";
-  const publicBaseUrl = process.env.STORAGE_PUBLIC_URL;
+export async function getDefaultActiveBucket(): Promise<StorageBucket> {
+  // 1. Designated default active bucket
+  const defaultBuckets = await db
+    .select()
+    .from(storageBuckets)
+    .where(
+      and(eq(storageBuckets.isDefault, true), eq(storageBuckets.isActive, true))
+    )
+    .limit(1);
 
-  const hasCloudStorage = Boolean(endpoint && accessKeyId && secretAccessKey);
-
-  let s3Client: S3Client | null = null;
-  if (hasCloudStorage) {
-    s3Client = new S3Client({
-      region,
-      endpoint,
-      credentials: {
-        accessKeyId: accessKeyId!,
-        secretAccessKey: secretAccessKey!,
-      },
-      // Required for Cloudflare R2 and generic S3 compatibles (Neon, MinIO, etc.)
-      forcePathStyle: true,
-    });
+  if (defaultBuckets.length > 0) {
+    return defaultBuckets[0];
   }
 
-  return {
-    endpoint,
-    bucketName,
-    publicBaseUrl,
-    hasCloudStorage,
-    s3Client,
-  };
+  // 2. Any active bucket
+  const activeBuckets = await db
+    .select()
+    .from(storageBuckets)
+    .where(eq(storageBuckets.isActive, true))
+    .limit(1);
+
+  if (activeBuckets.length > 0) {
+    return activeBuckets[0];
+  }
+
+  throw new Error(
+    "No active storage bucket found in the system. Please register and activate a storage bucket in Settings."
+  );
 }
 
 /**
- * Uploads a buffer to Cloudflare R2 / AWS S3, or falls back to public/uploads in local dev
+ * Resolves a specific storage bucket by ID.
  */
-export async function uploadObject(
+export async function getBucketById(
+  bucketId: string
+): Promise<StorageBucket | null> {
+  const records = await db
+    .select()
+    .from(storageBuckets)
+    .where(eq(storageBuckets.id, bucketId))
+    .limit(1);
+
+  return records[0] || null;
+}
+
+/**
+ * Uploads a buffer directly to the specified target StorageBucket.
+ */
+export async function uploadObjectToBucket(
+  bucket: StorageBucket,
   buffer: Buffer,
   storageKey: string,
   contentType: string = "image/webp"
 ): Promise<{ publicUrl: string; storageKey: string }> {
-  const { endpoint, bucketName, publicBaseUrl, hasCloudStorage, s3Client } =
-    getStorageConfig();
+  const s3Client = getS3ClientForBucket(bucket);
 
-  if (hasCloudStorage && s3Client) {
-    const command = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: storageKey,
-      Body: buffer,
-      ContentType: contentType,
-      CacheControl: "public, max-age=31536000, immutable",
-    });
+  const command = new PutObjectCommand({
+    Bucket: bucket.bucketName,
+    Key: storageKey,
+    Body: buffer,
+    ContentType: contentType,
+    CacheControl: "public, max-age=31536000, immutable",
+  });
 
-    await s3Client.send(command);
+  await s3Client.send(command);
 
-    const publicUrl = publicBaseUrl
-      ? `${publicBaseUrl.replace(/\/$/, "")}/${storageKey}`
-      : `${endpoint?.replace(/\/$/, "")}/${bucketName}/${storageKey}`;
+  // Determine delivery URL (Custom CDN domain takes precedence)
+  const publicUrl = bucket.publicBaseUrl
+    ? `${bucket.publicBaseUrl.replace(/\/$/, "")}/${storageKey}`
+    : `${bucket.endpoint.replace(/\/$/, "")}/${bucket.bucketName}/${storageKey}`;
 
-    console.log(
-      `[Storage] Uploaded "${storageKey}" to S3 bucket "${bucketName}" -> ${publicUrl}`
-    );
+  // Increment bucket usage asynchronously
+  db.update(storageBuckets)
+    .set({
+      usedBytes: sql`${storageBuckets.usedBytes} + ${buffer.length}`,
+      updatedAt: new Date(),
+    })
+    .where(eq(storageBuckets.id, bucket.id))
+    .catch((err) => console.warn("[Storage] Failed to update usedBytes:", err));
 
-    return { publicUrl, storageKey };
-  }
-
-  // Local fallback: write to public/uploads
-  const localDir = path.join(process.cwd(), "public", "uploads");
-  const filePath = path.join(localDir, storageKey);
-  const dirPath = path.dirname(filePath);
-
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-
-  fs.writeFileSync(filePath, buffer);
-
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const publicUrl = `${baseUrl.replace(/\/$/, "")}/uploads/${storageKey}`;
-
-  console.log(`[Storage] Saved locally to ${filePath} -> ${publicUrl}`);
+  console.log(
+    `[Storage] Uploaded "${storageKey}" to bucket "${bucket.name}" (${bucket.bucketName}) -> ${publicUrl}`
+  );
 
   return { publicUrl, storageKey };
 }
 
 /**
- * Deletes an object from Cloudflare R2 / S3 or local disk
+ * Permanently deletes an object from a specified StorageBucket.
  */
-export async function deleteObject(storageKey: string): Promise<boolean> {
-  const { bucketName, hasCloudStorage, s3Client } = getStorageConfig();
-
+export async function deleteObjectFromBucket(
+  bucket: StorageBucket,
+  storageKey: string
+): Promise<boolean> {
   try {
-    if (hasCloudStorage && s3Client) {
-      console.log(
-        `[Storage] Deleting object key "${storageKey}" from S3 bucket "${bucketName}"...`
-      );
+    const s3Client = getS3ClientForBucket(bucket);
+    console.log(
+      `[Storage] Deleting object key "${storageKey}" from bucket "${bucket.name}" (${bucket.bucketName})...`
+    );
 
-      const command = new DeleteObjectCommand({
-        Bucket: bucketName,
-        Key: storageKey,
-      });
+    const command = new DeleteObjectCommand({
+      Bucket: bucket.bucketName,
+      Key: storageKey,
+    });
 
-      const res = await s3Client.send(command);
-      console.log(
-        `[Storage] S3 DeleteObject SUCCESS: key="${storageKey}", HTTP status=${res.$metadata?.httpStatusCode}`
-      );
-      return true;
-    }
-
-    // Local fallback: remove file from public/uploads
-    const filePath = path.join(process.cwd(), "public", "uploads", storageKey);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log(`[Storage] Local file deleted: ${filePath}`);
-    }
+    const res = await s3Client.send(command);
+    console.log(
+      `[Storage] S3 DeleteObject SUCCESS: key="${storageKey}", HTTP status=${res.$metadata?.httpStatusCode}`
+    );
     return true;
   } catch (err) {
-    console.error(`[Storage Error] Failed to delete storage key: ${storageKey}`, err);
+    console.error(
+      `[Storage Error] Failed to delete key "${storageKey}" from bucket "${bucket.name}":`,
+      err
+    );
     return false;
   }
 }
 
 /**
- * Formats public URL for a given key
+ * Helper to upload an object buffer, optionally targeting a specific bucketId.
  */
-export function getPublicUrl(storageKey: string): string {
-  const { hasCloudStorage, publicBaseUrl } = getStorageConfig();
-  if (hasCloudStorage && publicBaseUrl) {
-    return `${publicBaseUrl.replace(/\/$/, "")}/${storageKey}`;
-  }
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  return `${baseUrl.replace(/\/$/, "")}/uploads/${storageKey}`;
+export async function uploadObject(
+  buffer: Buffer,
+  storageKey: string,
+  contentType: string = "image/webp",
+  bucketId?: string
+): Promise<{ publicUrl: string; storageKey: string; bucket: StorageBucket }> {
+  const bucket = bucketId
+    ? (await getBucketById(bucketId)) || (await getDefaultActiveBucket())
+    : await getDefaultActiveBucket();
+
+  const result = await uploadObjectToBucket(
+    bucket,
+    buffer,
+    storageKey,
+    contentType
+  );
+  return { ...result, bucket };
+}
+
+/**
+ * Helper to permanently delete an object, using a specific bucketId if provided.
+ */
+export async function deleteObject(
+  storageKey: string,
+  bucketId?: string
+): Promise<boolean> {
+  const bucket = bucketId
+    ? (await getBucketById(bucketId)) || (await getDefaultActiveBucket())
+    : await getDefaultActiveBucket();
+
+  return deleteObjectFromBucket(bucket, storageKey);
 }

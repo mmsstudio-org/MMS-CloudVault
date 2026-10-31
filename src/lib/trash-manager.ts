@@ -31,10 +31,10 @@ export async function purgeTrash(options?: {
   let errors = 0;
   const idsToDelete: string[] = [];
 
-  // 1. Delete physical files from Object Storage
+  // 1. Delete physical files from originating Object Storage bucket
   for (const item of itemsToPurge) {
     if (item.storageKey) {
-      const ok = await deleteObject(item.storageKey);
+      const ok = await deleteObject(item.storageKey, item.bucketId || undefined);
       if (!ok) errors++;
     }
     idsToDelete.push(item.id);
@@ -94,7 +94,7 @@ export async function softDeleteAsset(id: string): Promise<boolean> {
 }
 
 /**
- * Permanently deletes an asset: destroys physical file from Object Storage (S3 / R2 / disk)
+ * Permanently deletes an asset: destroys physical file from its originating Object Storage bucket
  * and purges record from the database.
  */
 export async function deleteAssetPermanently(
@@ -112,10 +112,12 @@ export async function deleteAssetPermanently(
 
   const asset = records[0];
 
-  // 1. Delete physical file from Object Storage
+  // 1. Delete physical file from originating Object Storage bucket
   if (asset.storageKey) {
-    console.log(`[Permanent Delete] Purging object storage key: "${asset.storageKey}"`);
-    await deleteObject(asset.storageKey);
+    console.log(
+      `[Permanent Delete] Purging object storage key: "${asset.storageKey}" from bucket: "${asset.bucketId}"`
+    );
+    await deleteObject(asset.storageKey, asset.bucketId || undefined);
   }
 
   // 2. Delete database record

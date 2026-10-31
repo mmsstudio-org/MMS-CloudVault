@@ -7,6 +7,7 @@ import {
   uuid,
   serial,
   uniqueIndex,
+  bigint,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -34,7 +35,43 @@ export const siteSettings = pgTable("site_settings", {
 });
 
 // -----------------------------------------------------------------------------
-// 2. API KEYS TABLE (Dynamic multi-app management & key rotation)
+// 2. STORAGE BUCKETS TABLE (Dynamic multi-cloud S3/R2 storage registry)
+// -----------------------------------------------------------------------------
+export const storageBuckets = pgTable("storage_buckets", {
+  id: uuid("id")
+    .default(sql`gen_random_uuid()`)
+    .primaryKey(),
+  name: text("name").notNull(), // e.g. "Primary Neon S3", "Cloudflare R2 Media"
+  slug: text("slug").notNull().unique(), // e.g. "neon-primary", "r2-audio"
+  notes: text("notes"), // Admin understanding/note field
+  provider: text("provider").default("s3_compatible").notNull(), // 's3_compatible' | 'aws' | 'cloudflare_r2' | 'minio'
+
+  // Storage connection credentials (kept safe on server)
+  endpoint: text("endpoint").notNull(),
+  bucketName: text("bucket_name").notNull(),
+  region: text("region").default("auto").notNull(),
+  accessKeyId: text("access_key_id").notNull(),
+  secretAccessKey: text("secret_access_key").notNull(),
+
+  // Public CDN or Direct Delivery Base URL (e.g. "https://cdn.sabbirmms.com")
+  publicBaseUrl: text("public_base_url"),
+
+  // Status & Quotas
+  isDefault: boolean("is_default").default(false).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  maxCapacityGb: integer("max_capacity_gb").default(5).notNull(),
+  usedBytes: bigint("used_bytes", { mode: "number" }).default(0).notNull(),
+
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .default(sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+});
+
+// -----------------------------------------------------------------------------
+// 3. API KEYS TABLE (Dynamic multi-app management & key rotation)
 // -----------------------------------------------------------------------------
 export const apiKeys = pgTable(
   "api_keys",
@@ -46,6 +83,21 @@ export const apiKeys = pgTable(
     appId: text("app_id").notNull().unique(),
     secretKey: text("secret_key").notNull().unique(),
     isActive: boolean("is_active").default(true).notNull(),
+
+    // Storage bucket routing (Optional overrides per media type)
+    defaultBucketId: uuid("default_bucket_id").references(
+      () => storageBuckets.id,
+      { onDelete: "set null" }
+    ),
+    imageBucketId: uuid("image_bucket_id").references(
+      () => storageBuckets.id,
+      { onDelete: "set null" }
+    ),
+    audioBucketId: uuid("audio_bucket_id").references(
+      () => storageBuckets.id,
+      { onDelete: "set null" }
+    ),
+
     createdAt: timestamp("created_at", { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -58,7 +110,7 @@ export const apiKeys = pgTable(
 );
 
 // -----------------------------------------------------------------------------
-// 3. MEDIA ASSETS TABLE (Universal media metadata, replacement & deduplication)
+// 4. MEDIA ASSETS TABLE (Universal media metadata, replacement & deduplication)
 // -----------------------------------------------------------------------------
 export const mediaAssets = pgTable(
   "media_assets",
@@ -68,6 +120,12 @@ export const mediaAssets = pgTable(
       .primaryKey(),
     appId: text("app_id").notNull(),
     assetId: text("asset_id").notNull(),
+
+    // Physical storage bucket reference
+    bucketId: uuid("bucket_id").references(() => storageBuckets.id, {
+      onDelete: "set null",
+    }),
+
     title: text("title"),
     folder: text("folder").default("general").notNull(),
     storageKey: text("storage_key").notNull(),
@@ -97,7 +155,7 @@ export const mediaAssets = pgTable(
 );
 
 // -----------------------------------------------------------------------------
-// 4. ADMIN USERS TABLE (Role-based access, whitelisted Google logins, 2FA TOTP)
+// 5. ADMIN USERS TABLE (Role-based access, whitelisted Google logins, 2FA TOTP)
 // -----------------------------------------------------------------------------
 export const adminUsers = pgTable("admin_users", {
   id: uuid("id")
@@ -120,6 +178,9 @@ export const adminUsers = pgTable("admin_users", {
 // Infer types
 export type SiteSettings = typeof siteSettings.$inferSelect;
 export type NewSiteSettings = typeof siteSettings.$inferInsert;
+
+export type StorageBucket = typeof storageBuckets.$inferSelect;
+export type NewStorageBucket = typeof storageBuckets.$inferInsert;
 
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type NewApiKey = typeof apiKeys.$inferInsert;

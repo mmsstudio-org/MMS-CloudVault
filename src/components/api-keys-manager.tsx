@@ -13,27 +13,65 @@ import {
   ShieldAlert,
   Loader2,
   X,
+  HardDrive,
+  Settings2,
+  Image as ImageIcon,
+  Music,
 } from "lucide-react";
 import { ApiKey } from "@/db/schema";
 import {
+  BucketWithAssetStats,
   actionCreateApiKey,
   actionToggleApiKeyStatus,
   actionRotateApiKey,
+  actionUpdateApiKeyBuckets,
 } from "@/lib/dashboard-actions";
 import { toast } from "sonner";
 
 interface ApiKeysManagerProps {
   initialKeys: ApiKey[];
+  initialBuckets: BucketWithAssetStats[];
 }
 
-export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
+export function ApiKeysManager({
+  initialKeys,
+  initialBuckets,
+}: ApiKeysManagerProps) {
   const [keys, setKeys] = React.useState<ApiKey[]>(initialKeys);
+  const [buckets] = React.useState<BucketWithAssetStats[]>(initialBuckets);
+
+  // Create Modal State
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   const [appName, setAppName] = React.useState("");
   const [appId, setAppId] = React.useState("");
+  const [createDefaultBucketId, setCreateDefaultBucketId] = React.useState<string>(
+    buckets.find((b) => b.isDefault)?.id || buckets[0]?.id || ""
+  );
+  const [createImageBucketId, setCreateImageBucketId] = React.useState<string>("");
+  const [createAudioBucketId, setCreateAudioBucketId] = React.useState<string>("");
+
+  // Edit Routing Modal State
+  const [editingRoutingKey, setEditingRoutingKey] =
+    React.useState<ApiKey | null>(null);
+  const [editDefaultBucketId, setEditDefaultBucketId] =
+    React.useState<string>("");
+  const [editImageBucketId, setEditImageBucketId] = React.useState<string>("");
+  const [editAudioBucketId, setEditAudioBucketId] = React.useState<string>("");
+  const [isUpdatingRouting, setIsUpdatingRouting] = React.useState(false);
+
   const [isSubmitting, setIsSubmitting] = React.useState(false);
-  const [visibleKeys, setVisibleKeys] = React.useState<Record<string, boolean>>({});
-  const [actionLoadingId, setActionLoadingId] = React.useState<string | null>(null);
+  const [visibleKeys, setVisibleKeys] = React.useState<Record<string, boolean>>(
+    {}
+  );
+  const [actionLoadingId, setActionLoadingId] = React.useState<string | null>(
+    null
+  );
+
+  const bucketMap = React.useMemo(() => {
+    const map = new Map<string, BucketWithAssetStats>();
+    buckets.forEach((b) => map.set(b.id, b));
+    return map;
+  }, [buckets]);
 
   const toggleVisibility = (id: string) => {
     setVisibleKeys((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -57,16 +95,68 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
 
     try {
       setIsSubmitting(true);
-      const newKey = await actionCreateApiKey(appName, appId);
+      const newKey = await actionCreateApiKey(
+        appName,
+        appId,
+        createDefaultBucketId || null,
+        createImageBucketId || null,
+        createAudioBucketId || null
+      );
       setKeys((prev) => [newKey, ...prev]);
       toast.success(`API Key created for '${appName}'.`);
       setAppName("");
       setAppId("");
+      setCreateImageBucketId("");
+      setCreateAudioBucketId("");
       setShowCreateModal(false);
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to create API key.");
+      toast.error(
+        err instanceof Error ? err.message : "Failed to create API key."
+      );
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const openRoutingModal = (k: ApiKey) => {
+    setEditingRoutingKey(k);
+    setEditDefaultBucketId(
+      k.defaultBucketId ||
+        buckets.find((b) => b.isDefault)?.id ||
+        buckets[0]?.id ||
+        ""
+    );
+    setEditImageBucketId(k.imageBucketId || "");
+    setEditAudioBucketId(k.audioBucketId || "");
+  };
+
+  const handleSaveRouting = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRoutingKey) return;
+
+    try {
+      setIsUpdatingRouting(true);
+      const updated = await actionUpdateApiKeyBuckets(editingRoutingKey.id, {
+        defaultBucketId: editDefaultBucketId || null,
+        imageBucketId: editImageBucketId || null,
+        audioBucketId: editAudioBucketId || null,
+      });
+
+      setKeys((prev) =>
+        prev.map((k) => (k.id === editingRoutingKey.id ? updated : k))
+      );
+      toast.success(
+        `Storage routing updated for '${editingRoutingKey.appName}'!`
+      );
+      setEditingRoutingKey(null);
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "Failed to update storage routing."
+      );
+    } finally {
+      setIsUpdatingRouting(false);
     }
   };
 
@@ -100,7 +190,9 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
       setActionLoadingId(key.id);
       const updated = await actionRotateApiKey(key.id);
       setKeys((prev) => prev.map((k) => (k.id === key.id ? updated : k)));
-      toast.success(`Secret key rotated for '${key.appName}'. Cache invalidated.`);
+      toast.success(
+        `Secret key rotated for '${key.appName}'. Cache invalidated.`
+      );
     } catch {
       toast.error("Failed to rotate API key.");
     } finally {
@@ -114,10 +206,11 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
         <div>
           <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
-            Application API Keys
+            Application API Keys & Storage Routing
           </h2>
           <p className="text-xs text-zinc-500 mt-0.5">
-            Dynamic, isolated authentication keys for mobile apps and external publishers with in-memory LRU caching.
+            Dynamic, isolated authentication keys for mobile apps and external
+            publishers with optional media-type bucket routing.
           </p>
         </div>
 
@@ -143,13 +236,23 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
             const isVisible = visibleKeys[key.id];
             const isLoading = actionLoadingId === key.id;
 
+            const defaultBucket = key.defaultBucketId
+              ? bucketMap.get(key.defaultBucketId)
+              : buckets.find((b) => b.isDefault);
+            const imageBucket = key.imageBucketId
+              ? bucketMap.get(key.imageBucketId)
+              : null;
+            const audioBucket = key.audioBucketId
+              ? bucketMap.get(key.audioBucketId)
+              : null;
+
             return (
               <div
                 key={key.id}
                 className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
               >
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2">
+                <div className="space-y-2 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-bold text-zinc-900 dark:text-white">
                       {key.appName}
                     </span>
@@ -179,7 +282,7 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
                   </div>
 
                   {/* Secret Key Display */}
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex items-center gap-2 pt-0.5">
                     <span className="text-xs text-zinc-500">Secret:</span>
                     <code className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-xs text-zinc-800 dark:text-zinc-200">
                       {isVisible
@@ -200,11 +303,47 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
                     </button>
                     <button
                       type="button"
-                      onClick={() => copyToClipboard(key.secretKey, "Secret Key")}
+                      onClick={() =>
+                        copyToClipboard(key.secretKey, "Secret Key")
+                      }
                       className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1"
                       title="Copy Secret Key"
                     >
                       <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+
+                  {/* Storage Routing Badges */}
+                  <div className="flex items-center gap-2 pt-1 flex-wrap text-[11px]">
+                    <span className="text-zinc-400 font-medium">
+                      Storage Routing:
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20 font-medium">
+                      <HardDrive className="w-3 h-3" />
+                      Default: {defaultBucket?.name || "System Default"}
+                    </span>
+
+                    {imageBucket && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-medium">
+                        <ImageIcon className="w-3 h-3" />
+                        Images ➔ {imageBucket.name}
+                      </span>
+                    )}
+
+                    {audioBucket && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/20 font-medium">
+                        <Music className="w-3 h-3" />
+                        Audio ➔ {audioBucket.name}
+                      </span>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => openRoutingModal(key)}
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline ml-1"
+                    >
+                      <Settings2 className="w-3 h-3" />
+                      Configure Routing
                     </button>
                   </div>
                 </div>
@@ -250,7 +389,8 @@ export function ApiKeysManager({ initialKeys }: ApiKeysManagerProps) {
           Mobile App Header Integration
         </h3>
         <p className="text-xs text-zinc-300">
-          Pass your secret key in the HTTP request header when uploading from Android/iOS apps:
+          Pass your secret key in the HTTP request header when uploading from
+          Android/iOS apps or backend pipelines:
         </p>
         <pre className="p-3 rounded-xl bg-zinc-950 dark:bg-zinc-900 border border-zinc-800 font-mono text-xs text-emerald-400 overflow-x-auto">
 {`POST /api/v1/upload HTTP/1.1
@@ -263,8 +403,8 @@ Content-Type: multipart/form-data`}
       {/* Create Key Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
               <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                 Register New Application Key
               </h3>
@@ -296,7 +436,7 @@ Content-Type: multipart/form-data`}
                   }}
                   placeholder="e.g. Golpo Ghor iOS App"
                   required
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                 />
               </div>
 
@@ -310,11 +450,75 @@ Content-Type: multipart/form-data`}
                   onChange={(e) => setAppId(e.target.value)}
                   placeholder="e.g. golpo-ghor-ios"
                   required
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none font-mono"
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500 font-mono"
                 />
                 <span className="text-[10px] text-zinc-400 mt-1 block">
                   Used as the namespace directory for asset storage.
                 </span>
+              </div>
+
+              {/* Bucket Routing Options */}
+              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
+                <p className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                  <HardDrive className="w-3.5 h-3.5 text-cyan-500" />
+                  Multi-Bucket Routing (Optional)
+                </p>
+
+                {/* Default Bucket */}
+                <div>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                    Default Storage Bucket
+                  </label>
+                  <select
+                    value={createDefaultBucketId}
+                    onChange={(e) => setCreateDefaultBucketId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                  >
+                    {buckets.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name} {b.isDefault ? "(Active Default)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Dedicated Image Bucket */}
+                <div>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                    Dedicated Image Bucket (Optional)
+                  </label>
+                  <select
+                    value={createImageBucketId}
+                    onChange={(e) => setCreateImageBucketId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                  >
+                    <option value="">-- Inherit Default Bucket --</option>
+                    {buckets.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Dedicated Audio Bucket */}
+                <div>
+                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                    Dedicated Audio Bucket (Optional)
+                  </label>
+                  <select
+                    value={createAudioBucketId}
+                    onChange={(e) => setCreateAudioBucketId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                  >
+                    <option value="">-- Inherit Default Bucket --</option>
+                    {buckets.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-2">
@@ -328,10 +532,111 @@ Content-Type: multipart/form-data`}
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                  className="px-4 py-2 rounded-xl bg-cyan-500 text-white text-xs font-bold hover:bg-cyan-600 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
                 >
-                  {isSubmitting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  {isSubmitting && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  )}
                   Generate Key
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Storage Routing Modal */}
+      {editingRoutingKey && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  Storage Routing for {editingRoutingKey.appName}
+                </h3>
+                <p className="text-[11px] text-zinc-500">
+                  Assign dedicated cloud buckets for images and audio.
+                </p>
+              </div>
+              <button
+                onClick={() => setEditingRoutingKey(null)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveRouting} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Default Storage Bucket
+                </label>
+                <select
+                  value={editDefaultBucketId}
+                  onChange={(e) => setEditDefaultBucketId(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                >
+                  {buckets.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name} {b.isDefault ? "(Active Default)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Dedicated Image Bucket (Optional)
+                </label>
+                <select
+                  value={editImageBucketId}
+                  onChange={(e) => setEditImageBucketId(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                >
+                  <option value="">-- Inherit Default Bucket --</option>
+                  {buckets.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Dedicated Audio Bucket (Optional)
+                </label>
+                <select
+                  value={editAudioBucketId}
+                  onChange={(e) => setEditAudioBucketId(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                >
+                  <option value="">-- Inherit Default Bucket --</option>
+                  {buckets.map((b) => (
+                    <option key={b.id} value={b.id}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingRoutingKey(null)}
+                  className="px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingRouting}
+                  className="px-4 py-2 rounded-xl bg-cyan-500 text-white text-xs font-bold hover:bg-cyan-600 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                >
+                  {isUpdatingRouting && (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  )}
+                  Save Routing
                 </button>
               </div>
             </form>

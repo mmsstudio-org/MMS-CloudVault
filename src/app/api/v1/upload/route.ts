@@ -44,21 +44,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: "Bad Request: 'file' binary image field is required in form-data.",
+          error: "Bad Request: 'file' binary media field is required in form-data.",
         },
         { status: 400 }
       );
     }
 
     // 3. Validate image or audio MIME type
-    const isImage = file.type.startsWith("image/") || !!file.name.match(/\.(jpg|jpeg|png|webp|gif|svg)$/i);
-    const isAudio = file.type.startsWith("audio/") || !!file.name.match(/\.(mp3|wav|ogg|m4a|aac|flac)$/i);
+    const isImage =
+      file.type.startsWith("image/") ||
+      !!file.name.match(/\.(jpg|jpeg|png|webp|gif|svg)$/i);
+    const isAudio =
+      file.type.startsWith("audio/") ||
+      !!file.name.match(/\.(mp3|wav|ogg|m4a|aac|flac)$/i);
 
     if (!isImage && !isAudio) {
       return NextResponse.json(
         {
           success: false,
-          error: "Unsupported Media Type: Uploaded file must be a valid image (JPEG, PNG, WebP, GIF, SVG) or audio file (MP3, WAV, OGG, M4A, AAC, FLAC).",
+          error:
+            "Unsupported Media Type: Uploaded file must be a valid image (JPEG, PNG, WebP, GIF, SVG) or audio file (MP3, WAV, OGG, M4A, AAC, FLAC).",
         },
         { status: 415 }
       );
@@ -68,7 +73,7 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 5. Process, Optimize, Deduplicate & Upload
+    // 5. Process, Optimize, Deduplicate, Route to Bucket & Upload
     const result = await processAndSaveAsset({
       appId,
       appName,
@@ -78,6 +83,7 @@ export async function POST(req: NextRequest) {
       buffer,
       fileName: file.name,
       mimeType: file.type,
+      apiKey: auth.app,
     });
 
     return NextResponse.json(
@@ -95,6 +101,8 @@ export async function POST(req: NextRequest) {
           public_url: result.asset.publicUrl,
           blur_hash: result.asset.blurHash,
           is_replaced: result.isReplaced,
+          storage_bucket: result.bucket.name,
+          storage_provider: result.bucket.provider,
           original_size_kb: result.asset.originalSizeKb,
           optimized_size_kb: result.asset.optimizedSizeKb,
           saved_size_kb: result.savedKb,
