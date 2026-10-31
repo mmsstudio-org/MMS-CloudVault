@@ -23,11 +23,43 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --radius-xl: var(--radius);
+
+  /* Surface and Background semantic extensions */
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-surface-hover: var(--surface-hover);
+
+  /* Foreground / text semantic extensions */
+  --color-text-primary: var(--foreground);
+  --color-text-secondary: var(--muted-foreground);
+  --color-text-subtle: var(--text-subtle);
+
+  /* Border semantic extensions */
+  --color-border-subtle: var(--border-subtle);
+  --color-border-strong: var(--border-strong);
+
+  /* Status semantic colors */
+  --color-status-success-bg: var(--status-success-bg);
+  --color-status-success-text: var(--status-success-text);
+  --color-status-success-border: var(--status-success-border);
+
+  --color-status-warning-bg: var(--status-warning-bg);
+  --color-status-warning-text: var(--status-warning-text);
+  --color-status-warning-border: var(--status-warning-border);
+
+  --color-status-danger-bg: var(--status-danger-bg);
+  --color-status-danger-text: var(--status-danger-text);
+  --color-status-danger-border: var(--status-danger-border);
+
+  --color-status-info-bg: var(--status-info-bg);
+  --color-status-info-text: var(--status-info-text);
+  --color-status-info-border: var(--status-info-border);
 }
 
 @layer base {
   :root {
-    --background: #ffffff;
+    --background: #fcfcfd;
     --foreground: #09090b;
     --card: #ffffff;
     --card-foreground: #09090b;
@@ -47,6 +79,32 @@
     --input: #e4e4e7;
     --ring: #18181b;
     --radius: 0.625rem;
+
+    /* Extended semantic tokens - Light */
+    --surface: #ffffff;
+    --surface-muted: #f4f4f5;
+    --surface-elevated: #ffffff;
+    --surface-hover: #f4f4f5;
+    --text-subtle: #a1a1aa;
+    --border-subtle: #f4f4f5;
+    --border-strong: #d4d4d8;
+
+    /* Status tokens - Light */
+    --status-success-bg: #ecfdf5;
+    --status-success-text: #059669;
+    --status-success-border: #a7f3d0;
+
+    --status-warning-bg: #fffbeb;
+    --status-warning-text: #d97706;
+    --status-warning-border: #fde68a;
+
+    --status-danger-bg: #fef2f2;
+    --status-danger-text: #dc2626;
+    --status-danger-border: #fecaca;
+
+    --status-info-bg: #eff6ff;
+    --status-info-text: #2563eb;
+    --status-info-border: #bfdbfe;
   }
 
   .dark {
@@ -69,6 +127,32 @@
     --border: #27272a;
     --input: #27272a;
     --ring: #d4d4d8;
+
+    /* Extended semantic tokens - Dark */
+    --surface: #111113;
+    --surface-muted: #18181b;
+    --surface-elevated: #1e1e24;
+    --surface-hover: #27272a;
+    --text-subtle: #71717a;
+    --border-subtle: #1e1e24;
+    --border-strong: #3f3f46;
+
+    /* Status tokens - Dark */
+    --status-success-bg: rgba(5, 150, 105, 0.15);
+    --status-success-text: #34d399;
+    --status-success-border: rgba(5, 150, 105, 0.35);
+
+    --status-warning-bg: rgba(217, 119, 6, 0.15);
+    --status-warning-text: #fbbf24;
+    --status-warning-border: rgba(217, 119, 6, 0.35);
+
+    --status-danger-bg: rgba(220, 38, 38, 0.15);
+    --status-danger-text: #f87171;
+    --status-danger-border: rgba(220, 38, 38, 0.35);
+
+    --status-info-bg: rgba(37, 99, 235, 0.15);
+    --status-info-text: #60a5fa;
+    --status-info-border: rgba(37, 99, 235, 0.35);
   }
 }
 
@@ -87,9 +171,9 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: var(--border-strong);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: var(--muted-foreground);
 }
