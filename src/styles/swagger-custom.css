@@ -29,17 +29,18 @@
   display: none !important;
 }
 
-/* Ensure scheme-container (which holds the Authorize button) is cleanly visible */
+/* Ensure scheme-container (which holds the Servers dropdown and Authorize button) is cleanly visible and padded */
 .swagger-ui .scheme-container {
   display: block !important;
   background: transparent !important;
   box-shadow: none !important;
-  padding: 0.5rem 0 1rem 0 !important;
-  margin: 0 0 1rem 0 !important;
+  padding: 0.75rem 0 1.25rem 0 !important;
+  margin: 0 0 1.5rem 0 !important;
   border-bottom: 1px solid rgba(228, 228, 231, 0.8) !important;
 }
 
-.dark .swagger-ui .scheme-container {
+.dark .swagger-ui .scheme-container,
+html.dark-mode .swagger-ui .scheme-container {
   border-bottom-color: rgba(39, 39, 42, 0.8) !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -50,7 +51,82 @@
   align-items: center !important;
   justify-content: space-between !important;
   flex-wrap: wrap !important;
-  gap: 1rem !important;
+  gap: 1.25rem !important;
+  padding: 0.5rem 0 !important;
+}
+
+/* ==========================================================================
+   Servers Selector Container & Label Padding
+   ========================================================================== */
+.swagger-ui .servers {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  margin: 0 !important;
+  padding: 0.25rem 0 !important;
+}
+
+.swagger-ui .servers > label {
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 0.5rem !important;
+  font-family: inherit !important;
+  color: #18181b !important;
+}
+
+.dark .swagger-ui .servers > label,
+html.dark-mode .swagger-ui .servers > label {
+  color: #fafafa !important;
+}
+
+.swagger-ui .servers .servers-title,
+.swagger-ui .servers-title {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  color: #71717a !important;
+  margin: 0 !important;
+  padding: 0.25rem 0 0.15rem 0.25rem !important;
+  display: block !important;
+}
+
+.dark .swagger-ui .servers .servers-title,
+.dark .swagger-ui .servers-title,
+html.dark-mode .swagger-ui .servers .servers-title,
+html.dark-mode .swagger-ui .servers-title {
+  color: #a1a1aa !important;
+}
+
+.swagger-ui .servers select {
+  font-family: ui-monospace, monospace !important;
+  font-size: 0.8125rem !important;
+  font-weight: 500 !important;
+  padding: 0.55rem 2.25rem 0.55rem 0.85rem !important;
+  border-radius: 0.625rem !important;
+  border: 1px solid #d4d4d8 !important;
+  background-color: #f4f4f5 !important;
+  color: #18181b !important;
+  outline: none !important;
+  cursor: pointer !important;
+  min-width: 320px !important;
+  max-width: 100% !important;
+  transition: all 0.15s ease !important;
+}
+
+.dark .swagger-ui .servers select,
+html.dark-mode .swagger-ui .servers select {
+  background-color: #18181b !important;
+  border-color: #3f3f46 !important;
+  color: #fafafa !important;
+}
+
+.swagger-ui .servers select:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
 }
 
 /* ==========================================================================
