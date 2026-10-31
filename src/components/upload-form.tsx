@@ -294,7 +294,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
             onDragOver={(e) => e.preventDefault()}
             onDrop={handleDrop}
             onClick={() => fileInputRef.current?.click()}
-            className="p-8 border-2 border-dashed border-zinc-300 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 rounded-2xl bg-white dark:bg-zinc-900/60 cursor-pointer transition text-center space-y-3 group"
+            className="p-8 border-2 border-dashed border-zinc-300 border-border hover:border-zinc-400 hover:border-border-strong rounded-2xl bg-card/60 cursor-pointer transition text-center space-y-3 group"
           >
             <input
               ref={fileInputRef}
@@ -310,16 +310,16 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                 className="space-y-4"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border">
                   <div className="flex items-center gap-2.5 text-left">
                     <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
                       <Layers className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-xs font-bold text-zinc-900 dark:text-white">
+                      <h3 className="text-xs font-bold text-foreground">
                         Batch Upload Queue ({batchQueue.length} files)
                       </h3>
-                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                      <p className="text-[11px] text-muted-foreground">
                         {batchQueue.filter((q) => q.status === "success").length} uploaded •{" "}
                         {batchQueue.filter((q) => q.status === "pending").length} pending •{" "}
                         {batchQueue.filter((q) => q.status === "error").length} errors
@@ -332,7 +332,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
                       disabled={isBatchUploading}
-                      className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
                     >
                       + Add Files
                     </button>
@@ -340,7 +340,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                       type="button"
                       onClick={() => setBatchQueue([])}
                       disabled={isBatchUploading}
-                      className="px-3 py-1.5 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer disabled:opacity-50"
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold text-red-500 hover:bg-status-danger-bg transition cursor-pointer disabled:opacity-50"
                     >
                       Clear Queue
                     </button>
@@ -348,7 +348,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                 </div>
 
                 {isBatchUploading && (
-                  <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                     <div
                       className="bg-cyan-500 h-2 transition-all duration-300"
                       style={{
@@ -358,14 +358,14 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                   </div>
                 )}
 
-                <div className="max-h-60 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 text-left">
+                <div className="max-h-60 overflow-y-auto divide-y divide-border rounded-xl border border-border text-left">
                   {batchQueue.map((item, idx) => (
                     <div
                       key={item.id}
-                      className="p-3 flex items-center justify-between gap-3 text-xs hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
+                      className="p-3 flex items-center justify-between gap-3 text-xs hover:bg-muted/50 transition"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 shrink-0 relative overflow-hidden flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
+                        <div className="w-10 h-10 rounded-lg bg-muted shrink-0 relative overflow-hidden flex items-center justify-center border border-zinc-200 border-border">
                           {item.previewUrl ? (
                             <Image
                               src={item.previewUrl}
@@ -379,7 +379,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-zinc-900 dark:text-white truncate">
+                          <p className="font-semibold text-foreground truncate">
                             {item.file.name}
                           </p>
                           <div className="flex items-center gap-2 mt-0.5">
@@ -400,7 +400,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                               disabled={
                                 item.status === "success" || isBatchUploading
                               }
-                              className="text-[11px] font-mono px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 w-full focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                              className="text-[11px] font-mono px-2 py-0.5 rounded border border-border bg-muted text-foreground w-full focus:outline-none focus:ring-1 focus:ring-cyan-500"
                             />
                           </div>
                         </div>
@@ -408,7 +408,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
                       <div className="flex items-center gap-2 shrink-0">
                         {item.status === "pending" && (
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-muted text-zinc-500">
                             {Math.round(item.file.size / 1024)} KB
                           </span>
                         )}
@@ -482,7 +482,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                   </p>
                 </div>
               ) : (
-                <div className="relative aspect-video max-w-sm mx-auto rounded-xl overflow-hidden shadow-md border border-zinc-200 dark:border-zinc-700">
+                <div className="relative aspect-video max-w-sm mx-auto rounded-xl overflow-hidden shadow-md border border-zinc-200 border-border">
                   <Image
                     src={previewUrl}
                     alt="Upload Preview"
@@ -496,11 +496,11 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               )
             ) : (
               <div className="space-y-2">
-                <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-500 group-hover:text-emerald-500 flex items-center justify-center mx-auto transition">
+                <div className="w-12 h-12 rounded-2xl bg-muted text-zinc-500 group-hover:text-emerald-500 flex items-center justify-center mx-auto transition">
                   <UploadCloud className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-zinc-900 dark:text-white">
+                  <p className="text-xs font-semibold text-foreground">
                     Click to browse or drag and drop media
                   </p>
                   <p className="text-[11px] text-zinc-400 mt-0.5">
@@ -512,7 +512,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
           </div>
 
           {/* Metadata Inputs */}
-          <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
+          <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-4">
             <h2 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
               Media Asset Routing & Identifier
             </h2>
@@ -520,13 +520,13 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* App Selector */}
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   Assign to Application
                 </label>
                 <select
                   value={selectedApp}
                   onChange={(e) => setSelectedApp(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none"
                 >
                   {apps.map((app) => (
                     <option key={app.appId} value={app.appId}>
@@ -539,7 +539,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               {/* Folder Selector */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  <label className="text-xs font-semibold text-foreground">
                     Target Folder
                   </label>
                   <button
@@ -557,13 +557,13 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     value={customFolder}
                     onChange={(e) => setCustomFolder(e.target.value)}
                     placeholder="e.g. banners, products, avatars"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none"
                   />
                 ) : (
                   <select
                     value={folder}
                     onChange={(e) => setFolder(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none"
                   >
                     <option value="general">general</option>
                     <option value="covers">covers</option>
@@ -587,7 +587,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Asset ID */}
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Asset ID (Unique Identifier) *
                   </label>
                   <input
@@ -596,7 +596,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     onChange={(e) => setAssetId(e.target.value)}
                     placeholder="e.g. item_cover_001"
                     required={batchQueue.length === 0}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none font-mono"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none font-mono"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
                     Duplicate Asset IDs replace existing images automatically.
@@ -605,7 +605,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
                 {/* Title */}
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Asset Title (Optional)
                   </label>
                   <input
@@ -613,7 +613,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g. Main Hero Visual"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none"
                   />
                 </div>
               </div>
@@ -626,32 +626,32 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               batchQueue.some((q) =>
                 /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(q.file.name)
               )) && (
-              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 space-y-3">
+              <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Music className="w-4 h-4 text-emerald-500" />
-                    <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                    <span className="text-xs font-bold text-foreground">
                       Audio Compression & Encoding (Optional)
                     </span>
                   </div>
-                  <label className="flex items-center gap-2 text-xs cursor-pointer text-zinc-600 dark:text-zinc-400">
+                  <label className="flex items-center gap-2 text-xs cursor-pointer text-muted-foreground">
                     <input
                       type="checkbox"
                       checked={compressAudio}
                       onChange={(e) => setCompressAudio(e.target.checked)}
-                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-zinc-300 dark:border-zinc-700"
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-border"
                     />
                     <span>Enable Compression</span>
                   </label>
                 </div>
 
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <p className="text-[11px] text-muted-foreground">
                   By default, audio is preserved in 100% original fidelity without modification. Enable compression to optimize size.
                 </p>
 
                 {compressAudio && (
                   <div className="pt-1">
-                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                       Target Bitrate
                     </label>
                     <select
@@ -661,7 +661,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                           e.target.value as "96k" | "128k" | "192k" | "256k"
                         )
                       }
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card text-foreground"
                     >
                       <option value="128k">
                         128 kbps (Voiceover / Speech - 50% smaller)
@@ -688,7 +688,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     type="button"
                     onClick={() => setBatchQueue([])}
                     disabled={isBatchUploading}
-                    className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer disabled:opacity-50"
+                    className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer disabled:opacity-50"
                   >
                     Clear Queue
                   </button>
@@ -724,7 +724,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     <button
                       type="button"
                       onClick={handleReset}
-                      className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+                      className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       Reset
                     </button>
@@ -732,7 +732,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                   <button
                     type="submit"
                     disabled={!file || isUploading}
-                    className="px-6 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
                   >
                     {isUploading ? (
                       <>
@@ -756,34 +756,34 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       {/* Result / Info Sidebar Column */}
       <div className="space-y-6">
         {batchQueue.length > 0 ? (
-          <div className="p-6 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-zinc-900 dark:text-white space-y-4 shadow-sm animate-in fade-in">
-            <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 font-bold text-sm">
+          <div className="p-6 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-foreground space-y-4 shadow-sm animate-in fade-in">
+            <div className="flex items-center gap-2 text-cyan-500 font-bold text-sm">
               <Layers className="w-5 h-5" />
               <span>Batch Queue Overview</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-3 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-cyan-500/10">
+              <div className="p-3 rounded-xl bg-white/70 bg-muted border border-cyan-500/10">
                 <span className="text-[11px] text-zinc-500">Total Files</span>
-                <p className="text-base font-bold text-zinc-900 dark:text-white mt-0.5">
+                <p className="text-base font-bold text-foreground mt-0.5">
                   {batchQueue.length}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-cyan-500/10">
+              <div className="p-3 rounded-xl bg-white/70 bg-muted border border-cyan-500/10">
                 <span className="text-[11px] text-zinc-500">Completed</span>
-                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                <p className="text-base font-bold text-emerald-500 mt-0.5">
                   {batchQueue.filter((q) => q.status === "success").length}
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-cyan-500/10">
+              <div className="p-3 rounded-xl bg-white/70 bg-muted border border-cyan-500/10">
                 <span className="text-[11px] text-zinc-500">Total Saved</span>
-                <p className="text-base font-bold text-zinc-900 dark:text-white mt-0.5">
+                <p className="text-base font-bold text-foreground mt-0.5">
                   {batchQueue.reduce((acc, q) => acc + (q.savedKb || 0), 0)} KB
                 </p>
               </div>
-              <div className="p-3 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-cyan-500/10">
+              <div className="p-3 rounded-xl bg-white/70 bg-muted border border-cyan-500/10">
                 <span className="text-[11px] text-zinc-500">Target App</span>
-                <p className="text-xs font-semibold text-zinc-900 dark:text-white mt-0.5 truncate">
+                <p className="text-xs font-semibold text-foreground mt-0.5 truncate">
                   {selectedApp === "general" ? "🌐 Global" : selectedApp}
                 </p>
               </div>
@@ -794,8 +794,8 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
             </p>
           </div>
         ) : uploadedResult ? (
-          <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-zinc-900 dark:text-white space-y-4 shadow-sm animate-in fade-in">
-            <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+          <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-foreground space-y-4 shadow-sm animate-in fade-in">
+            <div className="flex items-center gap-2 text-emerald-500 font-bold text-sm">
               <CheckCircle2 className="w-5 h-5" />
               <span>
                 {uploadedResult.isReplaced
@@ -835,13 +835,13 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
             <div className="space-y-2 text-xs">
               <div>
-                <span className="text-zinc-600 dark:text-zinc-400 block text-[11px]">Public CDN URL:</span>
+                <span className="text-muted-foreground block text-[11px]">Public CDN URL:</span>
                 <div className="flex items-center gap-2 mt-0.5">
                   <input
                     type="text"
                     readOnly
                     value={uploadedResult.asset.publicUrl}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-[11px] font-mono text-zinc-900 dark:text-zinc-100"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-card text-[11px] font-mono text-zinc-900 text-foreground"
                   />
                   <CopyButton text={uploadedResult.asset.publicUrl} />
                 </div>
@@ -849,40 +849,40 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
               <div className="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-500/20 text-[11px]">
                 <div>
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-muted-foreground">
                     {uploadedResult.asset.mimeType.startsWith("audio/") ? "Media Type:" : "Dimensions:"}
                   </span>
-                  <p className="font-semibold text-zinc-900 dark:text-white">
+                  <p className="font-semibold text-foreground">
                     {uploadedResult.asset.mimeType.startsWith("audio/")
                       ? "Audio Track"
                       : `${uploadedResult.asset.width}x${uploadedResult.asset.height} px`}
                   </p>
                 </div>
                 <div>
-                  <span className="text-zinc-600 dark:text-zinc-400">
+                  <span className="text-muted-foreground">
                     {uploadedResult.asset.mimeType.startsWith("audio/") ? "Audio Size:" : "Optimized Size:"}
                   </span>
-                  <p className="font-semibold text-emerald-600 dark:text-emerald-400">
+                  <p className="font-semibold text-emerald-500">
                     {uploadedResult.asset.optimizedSizeKb} KB
                   </p>
                 </div>
                 <div>
-                  <span className="text-zinc-600 dark:text-zinc-400">Folder:</span>
-                  <p className="font-semibold text-zinc-900 dark:text-white">{uploadedResult.asset.folder}</p>
+                  <span className="text-muted-foreground">Folder:</span>
+                  <p className="font-semibold text-foreground">{uploadedResult.asset.folder}</p>
                 </div>
                 <div>
-                  <span className="text-zinc-600 dark:text-zinc-400">Asset ID:</span>
-                  <p className="font-mono text-zinc-800 dark:text-zinc-200 truncate">{uploadedResult.asset.assetId}</p>
+                  <span className="text-muted-foreground">Asset ID:</span>
+                  <p className="font-mono text-foreground truncate">{uploadedResult.asset.assetId}</p>
                 </div>
               </div>
             </div>
           </div>
         ) : (
-          <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-4">
+          <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-4">
             <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
               Sharp Optimization Specs
             </h3>
-            <ul className="text-xs text-zinc-600 dark:text-zinc-400 space-y-2.5">
+            <ul className="text-xs text-muted-foreground space-y-2.5">
               <li className="flex items-start gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <span>

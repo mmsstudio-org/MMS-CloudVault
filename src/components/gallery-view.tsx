@@ -191,7 +191,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
   return (
     <div className="space-y-6">
       {/* Control Bar: Filters & Search */}
-      <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-card border border-border shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Search Input */}
         <div className="relative w-full md:w-80">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
@@ -200,7 +200,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by Asset ID or Title..."
-            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-zinc-500"
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none focus:ring-1 focus:ring-zinc-500"
           />
           {search && (
             <button
@@ -218,7 +218,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
           <select
             value={selectedApp}
             onChange={(e) => setSelectedApp(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer"
+            className="px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none cursor-pointer"
           >
             <option value="ALL">All Apps ({apps.length})</option>
             {apps.map((app) => (
@@ -232,7 +232,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
           <select
             value={selectedFolder}
             onChange={(e) => setSelectedFolder(e.target.value)}
-            className="px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer"
+            className="px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none cursor-pointer"
           >
             <option value="ALL">All Folders ({folders.length})</option>
             {folders.map((folder) => (
@@ -246,7 +246,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
           <select
             value={mediaTypeFilter}
             onChange={(e) => setMediaTypeFilter(e.target.value as "ALL" | "IMAGE" | "AUDIO")}
-            className="px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 focus:outline-none cursor-pointer font-medium"
+            className="px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none cursor-pointer font-medium"
           >
             <option value="ALL">All Media Types</option>
             <option value="IMAGE">Images Only</option>
@@ -254,14 +254,14 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
           </select>
 
           {/* View Mode Toggle */}
-          <div className="flex items-center p-1 rounded-xl bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700">
+          <div className="flex items-center p-1 rounded-xl bg-muted border border-zinc-200 border-border">
             <button
               type="button"
               onClick={() => setViewMode("grid")}
               className={`p-1.5 rounded-lg text-xs transition cursor-pointer ${
                 viewMode === "grid"
-                  ? "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-xs"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  ? "bg-white bg-muted text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               title="Grid View"
             >
@@ -272,8 +272,8 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               onClick={() => setViewMode("list")}
               className={`p-1.5 rounded-lg text-xs transition cursor-pointer ${
                 viewMode === "list"
-                  ? "bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white shadow-xs"
-                  : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  ? "bg-white bg-muted text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
               title="List View"
             >
@@ -285,12 +285,12 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
 
       {/* Asset Grid / List Display */}
       {filteredAssets.length === 0 ? (
-        <div className="p-16 text-center rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-white/50 dark:bg-zinc-900/50">
-          <SlidersHorizontal className="w-10 h-10 mx-auto text-zinc-300 dark:text-zinc-700 mb-2" />
-          <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+        <div className="p-16 text-center rounded-2xl border border-dashed border-border bg-white/50 bg-card/50">
+          <SlidersHorizontal className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
+          <p className="text-sm font-semibold text-foreground">
             No media assets match your criteria.
           </p>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Try adjusting your search query or reset the app/folder filters.
           </p>
         </div>
@@ -304,7 +304,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
             return (
               <div
                 key={asset.id}
-                className="group rounded-2xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                className="group rounded-2xl border border-border hover:border-zinc-300 hover:border-border-strong bg-card overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between"
               >
                 {/* Media Preview Container */}
                 {isAudio ? (
@@ -343,7 +343,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     </div>
                   </div>
                 ) : (
-                  <div className="relative aspect-video w-full bg-zinc-100 dark:bg-zinc-950 overflow-hidden">
+                  <div className="relative aspect-video w-full bg-zinc-100 bg-muted overflow-hidden">
                     <Image
                       src={asset.publicUrl}
                       alt={asset.title || asset.assetId}
@@ -365,13 +365,13 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                 {/* Card Meta Content */}
                 <div className="p-4 space-y-3 flex-1 flex flex-col justify-between min-w-0 overflow-hidden">
                   <div className="min-w-0 overflow-hidden">
-                    <h3 className="text-xs font-bold text-zinc-900 dark:text-white line-clamp-1" title={asset.title || asset.assetId}>
+                    <h3 className="text-xs font-bold text-foreground line-clamp-1" title={asset.title || asset.assetId}>
                       {asset.title || asset.assetId}
                     </h3>
                     <p className="text-[11px] text-zinc-400 font-mono mt-0.5 truncate" title={`ID: ${asset.assetId}`}>
                       ID: {asset.assetId}
                     </p>
-                    <div className="flex items-center gap-2 text-[10px] text-zinc-600 dark:text-zinc-400 mt-1">
+                    <div className="flex items-center gap-2 text-[10px] text-muted-foreground mt-1">
                       {isAudio ? (
                         <>
                           <span className="text-emerald-500 font-medium">Audio Track</span>
@@ -389,14 +389,14 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                   </div>
 
                   {/* Actions */}
-                  <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-between gap-2">
+                  <div className="pt-2 border-t border-border/80 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5">
                       <CopyButton text={asset.publicUrl} />
                       <button
                         type="button"
                         onClick={() => handleOpenQr(asset)}
                         title="Show QR Code"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition cursor-pointer"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-muted text-zinc-600 text-muted-foreground hover:text-foreground transition cursor-pointer"
                       >
                         <QrCode className="w-4 h-4" />
                       </button>
@@ -405,7 +405,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                         target="_blank"
                         rel="noreferrer"
                         title="Open in New Tab"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition cursor-pointer"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-muted text-zinc-600 text-muted-foreground hover:text-foreground transition cursor-pointer"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
@@ -413,7 +413,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                         type="button"
                         onClick={() => handleOpenEdit(asset)}
                         title="Edit Metadata (Title & Folder)"
-                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-cyan-500 hover:border-cyan-500/40 transition cursor-pointer"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-muted text-zinc-600 text-muted-foreground hover:text-cyan-500 hover:border-cyan-500/40 transition cursor-pointer"
                       >
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
@@ -423,7 +423,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       type="button"
                       onClick={() => setAssetToDelete(asset)}
                       title="Delete Asset"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-status-danger-bg transition cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -435,8 +435,8 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
         </div>
       ) : (
         /* List View */
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
-          <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+          <div className="divide-y divide-border">
             {displayedAssets.map((asset) => {
               const isAudio =
                 asset.mimeType?.startsWith("audio/") ||
@@ -445,10 +445,10 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               return (
                 <div
                   key={asset.id}
-                  className="p-4 flex items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
+                  className="p-4 flex items-center justify-between gap-4 hover:bg-muted/50 transition"
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1 overflow-hidden">
-                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0 relative border border-border flex items-center justify-center">
                       {isAudio ? (
                         <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-zinc-900 flex items-center justify-center text-emerald-400">
                           <Music className="w-6 h-6 animate-pulse" />
@@ -465,7 +465,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     </div>
                     <div className="min-w-0 flex-1 overflow-hidden">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0">
+                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-muted text-foreground shrink-0">
                           {asset.appId === "general" ? "🌐 global" : asset.appId}
                         </span>
                         <span className="text-[10px] text-zinc-400 font-mono truncate">
@@ -477,7 +477,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                           </span>
                         )}
                       </div>
-                      <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" title={asset.title || asset.assetId}>
+                      <p className="text-xs font-bold text-foreground truncate" title={asset.title || asset.assetId}>
                         {asset.title || asset.assetId}
                       </p>
                       {isAudio ? (
@@ -500,7 +500,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     <button
                       type="button"
                       onClick={() => handleOpenQr(asset)}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-card text-zinc-500 hover:text-foreground"
                     >
                       <QrCode className="w-4 h-4" />
                     </button>
@@ -508,7 +508,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       href={asset.publicUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-card text-zinc-500 hover:text-foreground"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
                     </a>
@@ -516,7 +516,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       type="button"
                       onClick={() => handleOpenEdit(asset)}
                       title="Edit Metadata (Title & Folder)"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-cyan-500 hover:border-cyan-500/40 transition cursor-pointer"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-card text-zinc-500 hover:text-cyan-500 hover:border-cyan-500/40 transition cursor-pointer"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
@@ -524,7 +524,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       type="button"
                       onClick={() => setAssetToDelete(asset)}
                       title="Delete Asset"
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-status-danger-bg transition cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -538,22 +538,22 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
 
       {/* Modern High-Performance Pagination Controls Bar */}
       {filteredAssets.length > 0 && (
-        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-600 dark:text-zinc-400">
+        <div className="p-4 rounded-2xl bg-card border border-border shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
           <div>
             Showing{" "}
-            <span className="font-semibold text-zinc-900 dark:text-white">
+            <span className="font-semibold text-foreground">
               {totalFilteredCount === 0
                 ? 0
                 : (safePage - 1) * (pageSize || totalFilteredCount) + 1}
             </span>{" "}
             to{" "}
-            <span className="font-semibold text-zinc-900 dark:text-white">
+            <span className="font-semibold text-foreground">
               {pageSize === 0
                 ? totalFilteredCount
                 : Math.min(safePage * pageSize, totalFilteredCount)}
             </span>{" "}
             of{" "}
-            <span className="font-semibold text-zinc-900 dark:text-white">
+            <span className="font-semibold text-foreground">
               {totalFilteredCount}
             </span>{" "}
             assets
@@ -569,7 +569,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
                 disabled={safePage === 1}
-                className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                className="p-1.5 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                 title="Previous Page"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -594,8 +594,8 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       }}
                       className={`min-w-8 h-8 px-2 rounded-lg font-medium transition cursor-pointer ${
                         safePage === num
-                          ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-xs"
-                          : "border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                          ? "bg-primary text-primary-foreground font-bold shadow-xs"
+                          : "border border-border hover:bg-muted text-foreground"
                       }`}
                     >
                       {num}
@@ -611,7 +611,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
                 disabled={safePage === totalPages}
-                className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                className="p-1.5 rounded-lg border border-border hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
                 title="Next Page"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -625,7 +625,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
             <select
               value={pageSize}
               onChange={(e) => setPageSize(Number(e.target.value))}
-              className="px-2.5 py-1 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none cursor-pointer"
+              className="px-2.5 py-1 text-xs rounded-lg border border-border bg-muted text-foreground focus:outline-none cursor-pointer"
             >
               <option value={24}>24</option>
               <option value={48}>48</option>
@@ -639,14 +639,14 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
       {/* Edit Metadata Modal Dialog */}
       {editingAsset && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
                   <Pencil className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-foreground">
                     Edit Asset Metadata
                   </h3>
                   <p className="text-[11px] text-zinc-500 font-mono">
@@ -657,7 +657,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               <button
                 type="button"
                 onClick={() => setEditingAsset(null)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition cursor-pointer"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-foreground transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -665,7 +665,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
 
             <form onSubmit={handleSaveMetadata} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                <label className="block text-xs font-semibold text-foreground mb-1">
                   Asset Title
                 </label>
                 <input
@@ -673,13 +673,13 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   placeholder="Descriptive title"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none focus:ring-1 focus:ring-cyan-500"
                 />
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  <label className="text-xs font-semibold text-foreground">
                     Target Folder
                   </label>
                   <button
@@ -697,14 +697,14 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     value={customEditFolder}
                     onChange={(e) => setCustomEditFolder(e.target.value)}
                     placeholder="e.g. banners, products, avatars"
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none focus:ring-1 focus:ring-cyan-500"
                     autoFocus
                   />
                 ) : (
                   <select
                     value={editFolder}
                     onChange={(e) => setEditFolder(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer"
                   >
                     {folders.map((f) => (
                       <option key={f} value={f}>
@@ -715,9 +715,9 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                 )}
               </div>
 
-              <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-500 space-y-1">
+              <div className="p-3 rounded-xl bg-muted/50 border border-border text-[11px] text-zinc-500 space-y-1">
                 <p>
-                  <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                  <span className="font-semibold text-foreground">
                     App Owner:
                   </span>{" "}
                   {editingAsset.appId === "general"
@@ -725,7 +725,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     : editingAsset.appId}
                 </p>
                 <p>
-                  <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                  <span className="font-semibold text-foreground">
                     MIME Type:
                   </span>{" "}
                   {editingAsset.mimeType}
@@ -737,7 +737,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                   type="button"
                   onClick={() => setEditingAsset(null)}
                   disabled={isSavingMetadata}
-                  className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                  className="flex-1 py-2 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -764,14 +764,14 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
       {/* QR Code Modal Dialog */}
       {qrModalAsset && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-card border border-border rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+              <h3 className="text-sm font-bold text-foreground">
                 Scan Asset QR Code
               </h3>
               <button
                 onClick={() => setQrModalAsset(null)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-foreground"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -791,10 +791,10 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
             </div>
 
             <div className="text-center space-y-1">
-              <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
+              <p className="text-xs font-semibold text-foreground truncate">
                 {qrModalAsset.assetId}
               </p>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 truncate">
+              <p className="text-[11px] text-muted-foreground truncate">
                 {qrModalAsset.publicUrl}
               </p>
             </div>
@@ -803,7 +803,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               <button
                 type="button"
                 onClick={() => setQrModalAsset(null)}
-                className="w-full py-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-semibold"
+                className="w-full py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold"
               >
                 Close
               </button>

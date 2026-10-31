@@ -35,7 +35,7 @@ export function CopyButton({
       title={label}
       className={
         className ||
-        "w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer shrink-0"
+        "w-8 h-8 rounded-lg flex items-center justify-center border border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer shrink-0"
       }
     >
       {copied ? (

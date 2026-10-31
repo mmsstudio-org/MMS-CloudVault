@@ -87,17 +87,17 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
   return (
     <div className="space-y-6">
       {/* Purge Controls & Policy Banner */}
-      <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-5 rounded-2xl bg-card border border-border shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex flex-wrap-reverse items-center gap-2 mb-1">
-            <span className="text-sm font-bold text-zinc-900 dark:text-white">
+            <span className="text-sm font-bold text-foreground">
               Trash & Lifecycle Management
             </span>
-            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
               30-Day Auto Retention
             </span>
           </div>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-xl">
+          <p className="text-xs text-muted-foreground max-w-xl">
             Deleted assets remain here for 30 days before permanent garbage collection. You can restore them anytime or trigger an immediate purge.
           </p>
         </div>
@@ -120,14 +120,14 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
       </div>
 
       {/* Trash List */}
-      <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm divide-y divide-border">
         {trash.length === 0 ? (
           <div className="p-16 text-center text-zinc-400">
             <CheckCircle2 className="w-10 h-10 mx-auto text-emerald-500 mb-2" />
-            <p className="text-sm font-semibold text-zinc-700 dark:text-zinc-300">
+            <p className="text-sm font-semibold text-foreground">
               Trash bin is empty.
             </p>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               No soft-deleted assets currently pending permanent deletion.
             </p>
           </div>
@@ -149,10 +149,10 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
             return (
               <div
                 key={item.id}
-                className="p-4 flex items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
+                className="p-4 flex items-center justify-between gap-4 hover:bg-muted/50 transition"
               >
                 <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-800 flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0 relative border border-border flex items-center justify-center">
                     {isAudio ? (
                       <div className="w-full h-full bg-zinc-800 flex items-center justify-center text-zinc-400">
                         <Music className="w-6 h-6" />
@@ -169,7 +169,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
                   </div>
                   <div className="min-w-0 flex-1 overflow-hidden">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-muted text-foreground shrink-0">
                         {item.appId}
                       </span>
                       <span className="text-[10px] text-amber-500 flex items-center gap-1 shrink-0 font-medium">
@@ -177,7 +177,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
                         {daysRemaining} days left
                       </span>
                     </div>
-                    <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" title={item.title || item.assetId}>
+                    <p className="text-xs font-bold text-foreground truncate" title={item.title || item.assetId}>
                       {item.title || item.assetId}
                     </p>
                     <p className="text-[11px] text-zinc-400 font-mono truncate" title={`ID: ${item.assetId}`}>
@@ -191,7 +191,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
                     type="button"
                     onClick={() => setAssetToRestore(item)}
                     disabled={isRestoring || deletingId === item.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card text-xs font-semibold text-emerald-500 hover:bg-muted transition cursor-pointer disabled:opacity-50"
                   >
                     {isRestoring ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -205,7 +205,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
                     type="button"
                     onClick={() => setAssetToDeletePermanently(item)}
                     disabled={isRestoring || deletingId === item.id}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/40 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-xs font-semibold text-red-500 hover:bg-red-500/20 transition cursor-pointer disabled:opacity-50"
                     title="Permanently erase from Object Storage"
                   >
                     {deletingId === item.id ? (
@@ -223,7 +223,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
       </div>
 
       {/* Automated Cron Configuration Documentation */}
-      <div className="p-5 rounded-2xl bg-zinc-900 text-white dark:bg-zinc-950 border border-zinc-800 shadow-sm space-y-3">
+      <div className="p-5 rounded-2xl bg-zinc-900 text-white bg-muted border border-zinc-800 shadow-sm space-y-3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
           <Clock className="w-4 h-4" />
           Scheduled Cron Job Endpoint
@@ -231,7 +231,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
         <p className="text-xs text-zinc-300">
           Automate 30-day trash cleanup on your server or Vercel Cron by calling:
         </p>
-        <pre className="p-3 rounded-xl bg-zinc-950 dark:bg-zinc-900 border border-zinc-800 font-mono text-xs text-amber-400 overflow-x-auto">
+        <pre className="p-3 rounded-xl bg-zinc-950 bg-card border border-zinc-800 font-mono text-xs text-amber-400 overflow-x-auto">
 {`POST /api/v1/cron/cleanup-trash HTTP/1.1
 Authorization: Bearer <CRON_SECRET>`}
         </pre>
@@ -247,7 +247,7 @@ Authorization: Bearer <CRON_SECRET>`}
             onClick={() => !restoringId && setAssetToRestore(null)}
           />
 
-          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -255,10 +255,10 @@ Authorization: Bearer <CRON_SECRET>`}
                   <RotateCcw className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  <h3 className="text-base font-bold text-foreground">
                     Restore Media Asset
                   </h3>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <p className="text-xs text-muted-foreground">
                     Recover asset from trash back to active gallery
                   </p>
                 </div>
@@ -268,15 +268,15 @@ Authorization: Bearer <CRON_SECRET>`}
                 type="button"
                 onClick={() => setAssetToRestore(null)}
                 disabled={Boolean(restoringId)}
-                className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
+                className="w-8 h-8 rounded-lg border border-border text-zinc-400 hover:text-foreground flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Asset Preview Card */}
-            <div className="p-3.5 rounded-xl border border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-950 flex items-center gap-3.5 min-w-0">
-              <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-700 flex items-center justify-center">
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted flex items-center gap-3.5 min-w-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0 relative border border-zinc-200 border-border flex items-center justify-center">
                 {assetToRestore.mimeType?.startsWith("audio/") ||
                 /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(assetToRestore.storageKey) ? (
                   <div className="w-full h-full bg-emerald-950/40 text-emerald-400 flex items-center justify-center">
@@ -295,40 +295,40 @@ Authorization: Bearer <CRON_SECRET>`}
 
               <div className="min-w-0 flex-1 overflow-hidden space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-200 bg-muted text-foreground font-medium">
                     {assetToRestore.appId}
                   </span>
                   <span className="text-[10px] text-zinc-500 font-mono">
                     {assetToRestore.folder}
                   </span>
                 </div>
-                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" title={assetToRestore.title || assetToRestore.assetId}>
+                <p className="text-xs font-bold text-foreground truncate" title={assetToRestore.title || assetToRestore.assetId}>
                   {assetToRestore.title || assetToRestore.assetId}
                 </p>
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                <p className="text-[11px] text-muted-foreground font-mono truncate">
                   ID: {assetToRestore.assetId} • {assetToRestore.optimizedSizeKb} KB
                 </p>
               </div>
             </div>
 
             {/* Explanation Banner */}
-            <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+            <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-500 space-y-1">
               <p className="font-semibold flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                 Restoration Impact
               </p>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
                 This asset will be immediately removed from Trash and made active in the Media Gallery. Public CDN links and application API requests will resume serving this asset normally.
               </p>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border">
               <button
                 type="button"
                 onClick={() => setAssetToRestore(null)}
                 disabled={Boolean(restoringId)}
-                className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -361,7 +361,7 @@ Authorization: Bearer <CRON_SECRET>`}
             onClick={() => !deletingId && setAssetToDeletePermanently(null)}
           />
 
-          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -369,10 +369,10 @@ Authorization: Bearer <CRON_SECRET>`}
                   <Trash2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  <h3 className="text-base font-bold text-foreground">
                     Delete Permanently
                   </h3>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <p className="text-xs text-muted-foreground">
                     Irreversible destruction of asset and physical files
                   </p>
                 </div>
@@ -382,15 +382,15 @@ Authorization: Bearer <CRON_SECRET>`}
                 type="button"
                 onClick={() => setAssetToDeletePermanently(null)}
                 disabled={Boolean(deletingId)}
-                className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
+                className="w-8 h-8 rounded-lg border border-border text-zinc-400 hover:text-foreground flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Asset Preview Card */}
-            <div className="p-3.5 rounded-xl border border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-950 flex items-center gap-3.5 min-w-0">
-              <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-700 flex items-center justify-center">
+            <div className="p-3.5 rounded-xl border border-border/80 bg-muted flex items-center gap-3.5 min-w-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0 relative border border-zinc-200 border-border flex items-center justify-center">
                 {assetToDeletePermanently.mimeType?.startsWith("audio/") ||
                 /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(assetToDeletePermanently.storageKey) ? (
                   <div className="w-full h-full bg-red-950/40 text-red-400 flex items-center justify-center">
@@ -409,40 +409,40 @@ Authorization: Bearer <CRON_SECRET>`}
 
               <div className="min-w-0 flex-1 overflow-hidden space-y-0.5">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-200 bg-muted text-foreground font-medium">
                     {assetToDeletePermanently.appId}
                   </span>
                   <span className="text-[10px] text-zinc-500 font-mono">
                     {assetToDeletePermanently.folder}
                   </span>
                 </div>
-                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" title={assetToDeletePermanently.title || assetToDeletePermanently.assetId}>
+                <p className="text-xs font-bold text-foreground truncate" title={assetToDeletePermanently.title || assetToDeletePermanently.assetId}>
                   {assetToDeletePermanently.title || assetToDeletePermanently.assetId}
                 </p>
-                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                <p className="text-[11px] text-muted-foreground font-mono truncate">
                   ID: {assetToDeletePermanently.assetId} • {assetToDeletePermanently.optimizedSizeKb} KB
                 </p>
               </div>
             </div>
 
             {/* Warning Alert */}
-            <div className="p-3.5 rounded-xl bg-red-50/60 dark:bg-red-950/20 border border-red-500/20 text-xs text-red-800 dark:text-red-300 space-y-1">
+            <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 space-y-1">
               <p className="font-semibold flex items-center gap-1.5">
                 <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />
                 Permanent Destruction Warning
               </p>
-              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
                 The physical file will be immediately erased from cloud object storage (S3/R2) and database records. This action cannot be undone.
               </p>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border">
               <button
                 type="button"
                 onClick={() => setAssetToDeletePermanently(null)}
                 disabled={Boolean(deletingId)}
-                className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>
@@ -475,7 +475,7 @@ Authorization: Bearer <CRON_SECRET>`}
             onClick={() => !isPurging && setShowPurgeAllModal(false)}
           />
 
-          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -483,10 +483,10 @@ Authorization: Bearer <CRON_SECRET>`}
                   <Trash2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  <h3 className="text-base font-bold text-foreground">
                     Purge Entire Trash
                   </h3>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <p className="text-xs text-muted-foreground">
                     Bulk permanent deletion of all {trash.length} items
                   </p>
                 </div>
@@ -496,28 +496,28 @@ Authorization: Bearer <CRON_SECRET>`}
                 type="button"
                 onClick={() => setShowPurgeAllModal(false)}
                 disabled={isPurging}
-                className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
+                className="w-8 h-8 rounded-lg border border-border text-zinc-400 hover:text-foreground flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-4 rounded-xl bg-red-50/60 dark:bg-red-950/20 border border-red-500/20 text-xs space-y-2">
-              <p className="font-bold text-red-700 dark:text-red-400 flex items-center gap-1.5">
+            <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-xs space-y-2">
+              <p className="font-bold text-red-500 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
                 Irreversible Bulk Action
               </p>
-              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
-                Are you sure you want to permanently erase all <strong className="text-zinc-900 dark:text-white">{trash.length} assets</strong> in the trash bin? All corresponding physical objects across all cloud storage buckets and database records will be destroyed immediately.
+              <p className="text-muted-foreground text-[11px] leading-relaxed">
+                Are you sure you want to permanently erase all <strong className="text-foreground">{trash.length} assets</strong> in the trash bin? All corresponding physical objects across all cloud storage buckets and database records will be destroyed immediately.
               </p>
             </div>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-border">
               <button
                 type="button"
                 onClick={() => setShowPurgeAllModal(false)}
                 disabled={isPurging}
-                className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition disabled:opacity-50 cursor-pointer"
               >
                 Cancel
               </button>

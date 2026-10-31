@@ -66,7 +66,7 @@ export function DeleteAssetDialog({
         onClick={() => !isAnyLoading && onClose()}
       />
 
-      <div className="relative w-full max-w-lg rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
+      <div className="relative w-full max-w-lg rounded-2xl border border-border bg-card p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
         {/* Top Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -74,10 +74,10 @@ export function DeleteAssetDialog({
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-zinc-900 dark:text-zinc-100">
+              <h2 className="text-base sm:text-lg font-bold text-foreground">
                 Delete Media Asset
               </h2>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400">
+              <p className="text-xs text-muted-foreground">
                 Choose how you want to remove this media asset
               </p>
             </div>
@@ -87,15 +87,15 @@ export function DeleteAssetDialog({
             type="button"
             onClick={onClose}
             disabled={isAnyLoading}
-            className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
+            className="w-8 h-8 rounded-lg border border-border text-zinc-400 hover:text-foreground flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Asset Preview Card */}
-        <div className="p-3 rounded-xl border border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 flex items-center gap-3 min-w-0">
-          <div className="w-14 h-14 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 shrink-0 relative border border-zinc-300 dark:border-zinc-700 flex items-center justify-center">
+        <div className="p-3 rounded-xl border border-border bg-muted flex items-center gap-3 min-w-0">
+          <div className="w-14 h-14 rounded-lg overflow-hidden bg-muted shrink-0 relative border border-border flex items-center justify-center">
             {isAudio ? (
               <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-zinc-900 flex items-center justify-center text-emerald-400">
                 <Music className="w-6 h-6" />
@@ -112,14 +112,14 @@ export function DeleteAssetDialog({
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
                 {asset.appId}
               </span>
               <span className="text-[10px] text-zinc-400 font-mono truncate">
                 /{asset.folder}
               </span>
             </div>
-            <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate" title={asset.title || asset.assetId}>
+            <p className="text-xs font-bold text-foreground truncate" title={asset.title || asset.assetId}>
               {asset.title || asset.assetId}
             </p>
             <p className="text-[11px] text-zinc-400 font-mono truncate">
@@ -130,22 +130,22 @@ export function DeleteAssetDialog({
 
         {/* Clean, Structured Action Info Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="p-3 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-500">
               <Archive className="w-3.5 h-3.5 shrink-0" />
               <span>Move to Trash (Soft)</span>
             </div>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
               Safe option. Retained in Trash for 30 days and can be restored anytime.
             </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 space-y-1">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-rose-700 dark:text-rose-400">
+          <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-rose-500">
               <Trash2 className="w-3.5 h-3.5 shrink-0" />
               <span>Permanent Delete</span>
             </div>
-            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            <p className="text-[11px] text-muted-foreground leading-relaxed">
               Immediate & irreversible. File is permanently erased from S3 storage.
             </p>
           </div>
@@ -158,7 +158,7 @@ export function DeleteAssetDialog({
             type="button"
             onClick={onClose}
             disabled={isAnyLoading}
-            className="w-full sm:w-auto px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 transition disabled:opacity-50 cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2 rounded-xl border border-border hover:bg-muted text-xs font-medium text-foreground transition disabled:opacity-50 cursor-pointer"
           >
             Cancel
           </button>
@@ -169,7 +169,7 @@ export function DeleteAssetDialog({
               type="button"
               onClick={handlePermanent}
               disabled={isAnyLoading}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/40 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/60 transition disabled:opacity-50 cursor-pointer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-red-500/30 bg-red-500/10 text-xs font-semibold text-red-500 hover:bg-red-500/20 transition disabled:opacity-50 cursor-pointer"
             >
               {isPermanentDeleting ? (
                 <Loader2 className="w-3.5 h-3.5 animate-spin" />
