@@ -1,25 +1,25 @@
 import * as dotenv from "dotenv";
-dotenv.config({ path: "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/.env.local" });
+dotenv.config({ path: ".env.local" });
 dotenv.config();
 
 import * as fs from "fs";
-import { db } from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/db";
+import { db } from "@/db";
 import {
   apiKeys,
   mediaAssets,
   storageBuckets,
-} from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/db/schema";
+} from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import {
   actionSoftDeleteAsset,
   actionRestoreAsset,
   actionDeleteAssetPermanently,
-} from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/lib/dashboard-actions";
-import { invalidateApiKeyCache } from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/lib/api-cache";
+} from "@/lib/dashboard-actions";
+import { invalidateApiKeyCache } from "@/lib/api-cache";
 import {
   testBucketConnection,
   getS3ClientForBucket,
-} from "/Volumes/AntiqueAPFS/01_Workspace/01_Web/mms-studio-storage/src/lib/storage-pool";
+} from "@/lib/storage-pool";
 import { HeadObjectCommand } from "@aws-sdk/client-s3";
 
 const BASE_URL = "http://localhost:3000";
@@ -89,7 +89,7 @@ async function run() {
     throw new Error("No storage buckets registered in database. Run npm run db:seed first.");
   }
 
-  const defaultBucket = buckets.find((b) => b.isDefault) || buckets[0];
+  const defaultBucket = buckets.find((b: any) => b.isDefault) || buckets[0];
   recordTest(
     "Bucket Registry Check",
     true,
