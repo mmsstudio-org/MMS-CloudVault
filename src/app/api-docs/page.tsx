@@ -17,13 +17,13 @@ export default function ApiDocsPage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col antialiased">
       {/* Navigation */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md sticky top-0 z-40">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-40 transition-colors">
+        <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
           <Link
             href="/"
-            className="flex items-center gap-2.5 font-semibold text-sm hover:opacity-80 transition"
+            className="flex items-center gap-2 sm:gap-2.5 font-semibold text-sm hover:opacity-80 transition shrink-0"
           >
-            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center shrink-0 shadow-xs">
               <Image
                 src="/logo.png"
                 alt="MMS Studio Logo"
@@ -32,27 +32,31 @@ export default function ApiDocsPage() {
                 className="object-contain"
               />
             </div>
-            <span>MMS CloudVault</span>
-            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-medium border border-emerald-500/20">
+            <span className="font-bold tracking-tight">
+              <span className="hidden sm:inline">MMS </span>CloudVault
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono font-medium border border-emerald-500/20 hidden xs:inline-flex">
               API Docs
             </span>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <Link
               href="/dashboard"
-              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 px-1.5 py-1 rounded-lg"
+              title="Open Dashboard"
             >
-              Dashboard
-              <ExternalLink className="w-3 h-3" />
+              <span className="hidden sm:inline">Dashboard</span>
+              <ExternalLink className="w-3.5 h-3.5" />
             </Link>
             <ThemeToggle />
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition px-2.5 py-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              title="Back to Homepage"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Back
+              <span className="hidden xs:inline">Back</span>
             </Link>
           </div>
         </div>

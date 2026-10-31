@@ -2,8 +2,9 @@
 
 import Image from "next/image";
 import { signOut } from "next-auth/react";
-import { LogOut, ShieldCheck, User } from "lucide-react";
+import { LogOut, Menu, User } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { useDashboardNav } from "./dashboard-nav-context";
 
 interface DashboardHeaderProps {
   user: {
@@ -16,23 +17,36 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ user }: DashboardHeaderProps) {
   const isSuper = user.role === "superadmin";
+  const { toggleSidebar } = useDashboardNav();
 
   return (
-    <header className="h-16 px-6 border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between">
-      <div>
-        <h2 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white">
-          Admin Operations Hub
-        </h2>
-        <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-          MMS Studio Centralized Media Delivery
-        </p>
+    <header className="h-16 px-4 sm:px-6 border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between transition-colors">
+      <div className="flex items-center gap-3">
+        {/* Mobile Hamburger Button */}
+        <button
+          type="button"
+          onClick={toggleSidebar}
+          className="lg:hidden w-9 h-9 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer shrink-0"
+          aria-label="Open navigation menu"
+        >
+          <Menu className="w-4 h-4" />
+        </button>
+
+        <div>
+          <h2 className="text-sm font-semibold tracking-tight text-zinc-900 dark:text-white line-clamp-1">
+            Admin Operations Hub
+          </h2>
+          <p className="text-[11px] text-zinc-600 dark:text-zinc-400 hidden xs:block line-clamp-1">
+            MMS Studio Centralized Media Delivery
+          </p>
+        </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4">
         <ThemeToggle />
 
         {/* User Profile Pill */}
-        <div className="flex items-center gap-3 pl-3 border-l border-zinc-200 dark:border-zinc-800">
+        <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-3 border-l border-zinc-200 dark:border-zinc-800">
           <div className="w-8 h-8 rounded-full overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
             {user.image ? (
               <Image

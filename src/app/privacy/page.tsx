@@ -12,13 +12,13 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col">
       {/* Navigation */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-50 transition-colors">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2.5 font-semibold text-sm hover:opacity-80 transition"
+            className="flex items-center gap-2 sm:gap-2.5 font-semibold text-sm hover:opacity-80 transition shrink-0"
           >
-            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center shrink-0 shadow-xs">
               <Image
                 src="/logo.png"
                 alt="MMS Studio Logo"
@@ -27,17 +27,18 @@ export default function PrivacyPolicyPage() {
                 className="object-contain"
               />
             </div>
-            <span>MMS CloudVault</span>
+            <span className="font-bold tracking-tight">MMS CloudVault</span>
           </Link>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2.5 sm:gap-4">
             <ThemeToggle />
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Back to Home
+              <span className="hidden xs:inline">Back to Home</span>
+              <span className="xs:hidden">Home</span>
             </Link>
           </div>
         </div>

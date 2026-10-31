@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -12,7 +13,9 @@ import {
   Settings,
   BookOpen,
   ExternalLink,
+  X,
 } from "lucide-react";
+import { useDashboardNav } from "./dashboard-nav-context";
 
 const navItems = [
   {
@@ -49,13 +52,35 @@ const navItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const { sidebarOpen, closeSidebar } = useDashboardNav();
 
-  return (
-    <aside className="w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col shrink-0 h-screen sticky top-0">
+  // Close mobile drawer when route changes
+  React.useEffect(() => {
+    closeSidebar();
+  }, [pathname, closeSidebar]);
+
+  // Close on Escape key
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeSidebar();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [closeSidebar]);
+
+  // Sidebar content (shared between desktop and mobile drawer)
+  const renderSidebarContent = (isMobile = false) => (
+    <>
       {/* Brand Logo & Title */}
-      <div className="h-16 px-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-3">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center shrink-0 shadow-sm">
+      <div className="h-16 px-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+        <Link
+          href="/"
+          onClick={isMobile ? closeSidebar : undefined}
+          className="flex items-center gap-2.5"
+        >
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center shrink-0 shadow-xs">
             <Image
               src="/logo.png"
               alt="MMS Studio Logo"
@@ -73,6 +98,17 @@ export function DashboardSidebar() {
             </span>
           </div>
         </Link>
+
+        {isMobile && (
+          <button
+            type="button"
+            onClick={closeSidebar}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            aria-label="Close menu"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
       {/* Navigation Links */}
@@ -90,9 +126,10 @@ export function DashboardSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={isMobile ? closeSidebar : undefined}
               className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 isActive
-                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-sm font-semibold"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs font-semibold"
                   : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
@@ -109,6 +146,7 @@ export function DashboardSidebar() {
         <Link
           href="/api-docs"
           target="_blank"
+          onClick={isMobile ? closeSidebar : undefined}
           className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white transition"
         >
           <span className="flex items-center gap-3">
@@ -133,7 +171,7 @@ export function DashboardSidebar() {
       </div>
 
       {/* Footer System Status */}
-      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800">
+      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
         <div className="rounded-xl p-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-xs">
           <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 mb-1">
             <span>Storage Status</span>
@@ -147,6 +185,35 @@ export function DashboardSidebar() {
           </div>
         </div>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* 1. Desktop Persistent Sidebar (>= lg) */}
+      <aside className="hidden lg:flex w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex-col shrink-0 h-screen sticky top-0 transition-colors">
+        {renderSidebarContent(false)}
+      </aside>
+
+      {/* 2. Mobile Drawer Overlay & Slide-In Panel (< lg) */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
+            onClick={closeSidebar}
+            aria-hidden="true"
+          />
+
+          {/* Drawer Panel */}
+          <aside
+            className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-zinc-950 shadow-2xl flex flex-col border-r border-zinc-200 dark:border-zinc-800 animate-in slide-in-from-left duration-200"
+            aria-label="Mobile Navigation"
+          >
+            {renderSidebarContent(true)}
+          </aside>
+        </div>
+      )}
+    </>
   );
 }

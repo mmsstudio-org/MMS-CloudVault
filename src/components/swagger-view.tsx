@@ -45,7 +45,7 @@ export function SwaggerView({ url }: { url: string }) {
       </div>
 
       {/* Modernized Swagger UI Card Container */}
-      <div className="swagger-wrapper bg-white dark:bg-zinc-900/90 rounded-2xl p-6 sm:p-10 shadow-sm border border-zinc-200 dark:border-zinc-800">
+      <div className="swagger-wrapper bg-white dark:bg-zinc-900/90 rounded-2xl p-3.5 sm:p-6 lg:p-8 shadow-sm border border-zinc-200 dark:border-zinc-800 overflow-hidden">
         <SwaggerUI url={url} docExpansion="list" defaultModelsExpandDepth={-1} />
       </div>
     </div>

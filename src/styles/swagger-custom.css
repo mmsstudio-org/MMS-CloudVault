@@ -38,12 +38,15 @@
   border: 1px solid #e4e4e7 !important;
   background-color: #f8fafc !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
+  box-sizing: border-box !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .dark .swagger-ui .scheme-container {
-  background-color: rgba(24, 24, 27, 0.65) !important;
-  border-color: rgba(63, 63, 70, 0.5) !important;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2) !important;
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3) !important;
 }
 
 .swagger-ui .scheme-container .schemes {
@@ -54,19 +57,36 @@
   gap: 1.25rem !important;
   padding: 0 !important;
   margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
 }
 
 /* ==========================================================================
    Servers Selector Container & Label Padding
    ========================================================================== */
 .swagger-ui .scheme-container .schemes > .schemes-server-container,
-.swagger-ui .schemes-server-container {
+.swagger-ui .schemes-server-container,
+.swagger-ui .servers {
   display: flex !important;
   flex-direction: column !important;
   align-items: flex-start !important;
-  gap: 0.35rem !important;
+  gap: 0.4rem !important;
   margin: 0 !important;
   padding: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+@media (min-width: 640px) {
+  .swagger-ui .scheme-container .schemes > .schemes-server-container,
+  .swagger-ui .schemes-server-container,
+  .swagger-ui .servers {
+    width: auto !important;
+    max-width: calc(100% - 140px) !important;
+  }
 }
 
 .swagger-ui .servers-title,
@@ -77,8 +97,8 @@
   text-transform: uppercase !important;
   letter-spacing: 0.05em !important;
   color: #71717a !important;
-  margin: 0 0 0.25rem 0.15rem !important;
-  padding: 0 !important;
+  margin: 0 0 0.35rem 0.25rem !important;
+  padding: 0.15rem 0.25rem !important;
   display: inline-block !important;
 }
 
@@ -87,25 +107,21 @@
   color: #a1a1aa !important;
 }
 
-.swagger-ui .servers {
-  display: flex !important;
-  align-items: center !important;
-  gap: 0.75rem !important;
+.swagger-ui .servers > label,
+.swagger-ui .scheme-container .schemes > .schemes-server-container > label,
+.swagger-ui .schemes-server-container label {
   margin: 0 !important;
   padding: 0 !important;
-}
-
-.swagger-ui .servers > label {
-  margin: 0 !important;
-  padding: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 0.35rem !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  display: block !important;
   color: #71717a !important;
 }
 
-.dark .swagger-ui .servers > label {
+.dark .swagger-ui .servers > label,
+.dark .swagger-ui .scheme-container .schemes > .schemes-server-container > label {
   color: #a1a1aa !important;
 }
 
@@ -113,22 +129,35 @@
   font-family: ui-monospace, monospace !important;
   font-size: 0.8125rem !important;
   font-weight: 500 !important;
-  padding: 0.65rem 2.5rem 0.65rem 1rem !important;
+  padding: 0.65rem 2.25rem 0.65rem 0.85rem !important;
   border-radius: 0.625rem !important;
   border: 1px solid #d4d4d8 !important;
   background-color: #ffffff !important;
   color: #18181b !important;
   outline: none !important;
   cursor: pointer !important;
-  min-width: 320px !important;
+  width: 100% !important;
   max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
   margin: 0 !important;
   transition: all 0.15s ease !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
 }
 
+@media (min-width: 640px) {
+  .swagger-ui .servers select {
+    width: auto !important;
+    min-width: 320px !important;
+    max-width: 480px !important;
+  }
+}
+
 .dark .swagger-ui .servers select {
-  background-color: #18181b !important;
+  background-color: #121214 !important;
   border-color: #3f3f46 !important;
   color: #fafafa !important;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
@@ -137,6 +166,30 @@
 .swagger-ui .servers select:focus {
   border-color: #10b981 !important;
   box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25) !important;
+}
+
+@media (max-width: 640px) {
+  .swagger-ui .scheme-container {
+    padding: 0.875rem 1rem !important;
+    margin-bottom: 1.25rem !important;
+  }
+
+  .swagger-ui .scheme-container .schemes {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.85rem !important;
+  }
+
+  .swagger-ui .scheme-container .schemes .auth-wrapper,
+  .swagger-ui .auth-wrapper {
+    width: 100% !important;
+    justify-content: flex-start !important;
+  }
+
+  .swagger-ui .btn.authorize {
+    width: 100% !important;
+    justify-content: center !important;
+  }
 }
 
 /* ==========================================================================
