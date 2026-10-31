@@ -48,6 +48,7 @@ export function ApiKeysManager({
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   const [appName, setAppName] = React.useState("");
   const [appId, setAppId] = React.useState("");
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = React.useState(false);
   const [createDefaultBucketId, setCreateDefaultBucketId] =
     React.useState<string>(
       buckets.find((b) => b.isDefault)?.id || buckets[0]?.id || "",
@@ -139,6 +140,7 @@ export function ApiKeysManager({
       toast.success(`API Key created for '${appName}'.`);
       setAppName("");
       setAppId("");
+      setIsSlugManuallyEdited(false);
       setCreateImageBucketId("");
       setCreateAudioBucketId("");
       setCreateEnforceAppCheck(false);
@@ -294,7 +296,12 @@ export function ApiKeysManager({
 
         <button
           type="button"
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => {
+            setAppName("");
+            setAppId("");
+            setIsSlugManuallyEdited(false);
+            setShowCreateModal(true);
+          }}
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition cursor-pointer self-start sm:self-auto shrink-0 shadow-sm"
         >
           <Plus className="w-4 h-4" />
@@ -550,13 +557,15 @@ Content-Type: multipart/form-data`}
                     type="text"
                     value={appName}
                     onChange={(e) => {
-                      setAppName(e.target.value);
-                      if (!appId) {
-                        setAppId(
-                          e.target.value
-                            .toLowerCase()
-                            .replace(/[^a-z0-9_-]/g, "-"),
-                        );
+                      const newName = e.target.value;
+                      setAppName(newName);
+                      if (!isSlugManuallyEdited) {
+                        const generatedSlug = newName
+                          .toLowerCase()
+                          .trim()
+                          .replace(/[^a-z0-9_-]+/g, "-")
+                          .replace(/^-+|-+$/g, "");
+                        setAppId(generatedSlug);
                       }
                     }}
                     placeholder="e.g. Golpo Ghor iOS App"
@@ -566,13 +575,35 @@ Content-Type: multipart/form-data`}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-foreground mb-1">
-                    App ID (Unique Slug) *
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs font-semibold text-foreground">
+                      App ID (Unique Slug) *
+                    </label>
+                    {isSlugManuallyEdited && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsSlugManuallyEdited(false);
+                          const generatedSlug = appName
+                            .toLowerCase()
+                            .trim()
+                            .replace(/[^a-z0-9_-]+/g, "-")
+                            .replace(/^-+|-+$/g, "");
+                          setAppId(generatedSlug);
+                        }}
+                        className="text-[10px] text-cyan-500 hover:underline cursor-pointer"
+                      >
+                        Reset to Auto-Sync
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="text"
                     value={appId}
-                    onChange={(e) => setAppId(e.target.value)}
+                    onChange={(e) => {
+                      setIsSlugManuallyEdited(true);
+                      setAppId(e.target.value);
+                    }}
                     placeholder="e.g. golpo-ghor-ios"
                     required
                     className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-hidden focus:ring-2 focus:ring-cyan-500 font-mono"

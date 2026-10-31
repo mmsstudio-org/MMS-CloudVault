@@ -98,6 +98,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         asset_id: asset.assetId,
         title: asset.title,
         folder: asset.folder,
+        uploader_name: asset.uploaderName,
+        info: asset.info,
         public_url: asset.publicUrl,
         blur_hash: asset.blurHash,
         width: asset.width,
