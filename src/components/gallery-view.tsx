@@ -17,6 +17,10 @@ import {
   Pencil,
   ChevronLeft,
   ChevronRight,
+  CheckSquare,
+  Square,
+  ShieldCheck,
+  AlertTriangle,
 } from "lucide-react";
 import { MediaAsset } from "@/db/schema";
 import { CopyButton } from "./copy-button";
@@ -24,6 +28,7 @@ import {
   actionSoftDeleteAsset,
   actionDeleteAssetPermanently,
   actionUpdateAssetMetadata,
+  actionBulkSoftDeleteAssets,
 } from "@/lib/dashboard-actions";
 import { DeleteAssetDialog } from "./delete-asset-dialog";
 import { toast } from "sonner";
@@ -45,6 +50,12 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
   const [qrModalAsset, setQrModalAsset] = React.useState<MediaAsset | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = React.useState("");
   const [assetToDelete, setAssetToDelete] = React.useState<MediaAsset | null>(null);
+
+  // Bulk Selection State
+  const [selectedAssetIds, setSelectedAssetIds] = React.useState<Set<string>>(new Set());
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = React.useState(false);
+  const [bulk2FaCode, setBulk2FaCode] = React.useState("");
+  const [isBulkDeleting, setIsBulkDeleting] = React.useState(false);
 
   // Pagination State
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -168,10 +179,63 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
     try {
       await actionSoftDeleteAsset(id);
       setAssets((prev) => prev.filter((a) => a.id !== id));
+      setSelectedAssetIds((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
       toast.success(`Asset '${assetId}' moved to trash. Retained for 30 days.`);
     } catch {
       toast.error("Failed to move asset to trash.");
       throw new Error("Failed to soft delete");
+    }
+  };
+
+  const toggleSelectAsset = (id: string) => {
+    setSelectedAssetIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAllVisible = () => {
+    if (selectedAssetIds.size === displayedAssets.length && displayedAssets.length > 0) {
+      setSelectedAssetIds(new Set());
+    } else {
+      setSelectedAssetIds(new Set(displayedAssets.map((a) => a.id)));
+    }
+  };
+
+  const handleSelectAllFiltered = () => {
+    if (selectedAssetIds.size === filteredAssets.length && filteredAssets.length > 0) {
+      setSelectedAssetIds(new Set());
+    } else {
+      setSelectedAssetIds(new Set(filteredAssets.map((a) => a.id)));
+    }
+  };
+
+  const handleBulkDeleteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedAssetIds.size === 0) return;
+
+    try {
+      setIsBulkDeleting(true);
+      const idsArray = Array.from(selectedAssetIds);
+      const res = await actionBulkSoftDeleteAssets(idsArray, bulk2FaCode);
+      setAssets((prev) => prev.filter((a) => !selectedAssetIds.has(a.id)));
+      setSelectedAssetIds(new Set());
+      setShowBulkDeleteModal(false);
+      setBulk2FaCode("");
+      toast.success(`Successfully moved ${res.count} assets to trash.`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to bulk delete assets.");
+    } finally {
+      setIsBulkDeleting(false);
     }
   };
 
@@ -291,6 +355,59 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
         </div>
       </div>
 
+      {/* Bulk Selection Action Bar */}
+      <div className="p-3.5 rounded-xl border border-border bg-card/70 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSelectAllVisible}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 text-foreground font-medium transition cursor-pointer"
+          >
+            {selectedAssetIds.size > 0 && selectedAssetIds.size >= displayedAssets.length ? (
+              <CheckSquare className="w-3.5 h-3.5 text-emerald-500" />
+            ) : (
+              <Square className="w-3.5 h-3.5 text-muted-foreground" />
+            )}
+            <span>Select Visible ({displayedAssets.length})</span>
+          </button>
+
+          {filteredAssets.length > displayedAssets.length && (
+            <button
+              type="button"
+              onClick={handleSelectAllFiltered}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-muted hover:bg-muted/80 text-foreground font-medium transition cursor-pointer"
+            >
+              <span>Select All Filtered ({filteredAssets.length})</span>
+            </button>
+          )}
+
+          {selectedAssetIds.size > 0 && (
+            <button
+              type="button"
+              onClick={() => setSelectedAssetIds(new Set())}
+              className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer"
+            >
+              Clear Selection
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-semibold text-foreground">
+            {selectedAssetIds.size} selected
+          </span>
+          <button
+            type="button"
+            onClick={() => setShowBulkDeleteModal(true)}
+            disabled={selectedAssetIds.size === 0}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white font-semibold transition cursor-pointer shadow-xs disabled:cursor-not-allowed"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>Bulk Move to Trash</span>
+          </button>
+        </div>
+      </div>
+
       {/* Asset Grid / List Display */}
       {filteredAssets.length === 0 ? (
         <div className="p-16 text-center rounded-2xl border border-dashed border-border bg-white/50 bg-card/50">
@@ -312,8 +429,25 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
             return (
               <div
                 key={asset.id}
-                className="group rounded-2xl border border-border hover:border-zinc-300 hover:border-border-strong bg-card overflow-hidden shadow-sm hover:shadow-md transition flex flex-col justify-between"
+                className={`group rounded-2xl border transition flex flex-col justify-between relative ${
+                  selectedAssetIds.has(asset.id)
+                    ? "border-cyan-500 ring-2 ring-cyan-500/30 bg-cyan-500/5 shadow-md"
+                    : "border-border hover:border-border-strong bg-card shadow-sm hover:shadow-md"
+                }`}
               >
+                {/* Selection Checkbox Pill (Top Right) */}
+                <button
+                  type="button"
+                  onClick={() => toggleSelectAsset(asset.id)}
+                  title={selectedAssetIds.has(asset.id) ? "Deselect" : "Select"}
+                  className="absolute top-2.5 right-2.5 z-20 w-6 h-6 rounded-lg bg-black/70 backdrop-blur-md border border-white/20 flex items-center justify-center transition cursor-pointer hover:scale-110"
+                >
+                  {selectedAssetIds.has(asset.id) ? (
+                    <CheckSquare className="w-4 h-4 text-cyan-400" />
+                  ) : (
+                    <Square className="w-4 h-4 text-white/70" />
+                  )}
+                </button>
                 {/* Media Preview Container */}
                 {isAudio ? (
                   <div className="relative aspect-video w-full bg-gradient-to-br from-zinc-900 via-zinc-950 to-black p-3.5 flex flex-col justify-between overflow-hidden border-b border-zinc-800">
@@ -485,9 +619,25 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
               return (
                 <div
                   key={asset.id}
-                  className="p-4 flex items-center justify-between gap-4 hover:bg-muted/50 transition"
+                  className={`p-4 flex items-center justify-between gap-4 transition ${
+                    selectedAssetIds.has(asset.id)
+                      ? "bg-cyan-500/10 border-l-4 border-l-cyan-500"
+                      : "hover:bg-muted/50"
+                  }`}
                 >
                   <div className="flex items-center gap-3.5 min-w-0 flex-1 overflow-hidden">
+                    {/* List Selection Checkbox */}
+                    <button
+                      type="button"
+                      onClick={() => toggleSelectAsset(asset.id)}
+                      className="p-1 rounded text-muted-foreground hover:text-foreground cursor-pointer shrink-0"
+                    >
+                      {selectedAssetIds.has(asset.id) ? (
+                        <CheckSquare className="w-4 h-4 text-cyan-500" />
+                      ) : (
+                        <Square className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </button>
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-muted shrink-0 relative border border-border flex items-center justify-center">
                       {isAudio ? (
                         <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-zinc-900 flex items-center justify-center text-emerald-400">
@@ -898,6 +1048,86 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete with 2FA Reverification Modal */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-card border border-red-500/30 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">
+                  Bulk Move to Trash ({selectedAssetIds.size} Assets)
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Security-gated administrative operation
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 leading-relaxed space-y-1.5">
+              <p className="font-semibold">
+                Are you sure you want to move {selectedAssetIds.size} media assets to trash?
+              </p>
+              <p className="text-[11px] opacity-90">
+                These assets will be retained in the Trash Bin for 30 days before automated garbage collection permanently erases them from cloud storage.
+              </p>
+            </div>
+
+            <form onSubmit={handleBulkDeleteSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1.5 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                  <span>2FA Security Reverification</span>
+                </label>
+                <input
+                  type="text"
+                  value={bulk2FaCode}
+                  onChange={(e) => setBulk2FaCode(e.target.value)}
+                  placeholder="6-digit Authenticator code or backup code"
+                  className="w-full text-center text-sm font-mono tracking-widest py-2.5 px-3 rounded-xl border border-border bg-muted text-foreground focus:outline-hidden focus:ring-2 focus:ring-red-500"
+                />
+                <span className="text-[10px] text-muted-foreground mt-1 block">
+                  If 2FA is active on your account, enter your current 6-digit TOTP authenticator code or recovery code.
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowBulkDeleteModal(false);
+                    setBulk2FaCode("");
+                  }}
+                  disabled={isBulkDeleting}
+                  className="flex-1 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isBulkDeleting}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white text-xs font-bold shadow-md shadow-red-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                >
+                  {isBulkDeleting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Verifying & Deleting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Confirm Bulk Trash</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
