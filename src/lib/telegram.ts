@@ -99,7 +99,12 @@ export async function sendTelegramNotification(
           (safeFolder ? `• <b>Folder:</b> <code>${safeFolder}</code>\n` : "") +
           (safeUploader ? `• <b>Uploader:</b> 👤 ${safeUploader}\n` : "") +
           (safeInfo ? `• <b>Info:</b> 📝 <i>${safeInfo}</i>\n` : "") +
-          `• <b>Status:</b> ⏳ <i>Retained in Trash for 30 days (Recoverable)</i>`;
+          `• <b>Status:</b> ⏳ <i>Retained in Trash for 30 days (Recoverable)</i>\n` +
+          (params.publicUrl
+            ? isAudio
+              ? `• <b>Preview Audio:</b> <a href="${params.publicUrl}">Listen Audio</a>`
+              : `• <b>Preview Asset:</b> <a href="${params.publicUrl}">View Asset</a>`
+            : "");
         break;
 
       case "ASSET_PERMANENTLY_DELETED":

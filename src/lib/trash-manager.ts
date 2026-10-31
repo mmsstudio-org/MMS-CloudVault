@@ -98,6 +98,8 @@ export async function softDeleteAsset(id: string): Promise<boolean> {
       assetId: asset.assetId,
       title: asset.title || undefined,
       folder: asset.folder || undefined,
+      publicUrl: asset.publicUrl,
+      mimeType: asset.mimeType,
       uploaderName: asset.uploaderName || null,
       info: asset.info || null,
     }).catch((err) => console.warn("Telegram soft delete alert error:", err));
