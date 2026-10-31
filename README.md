@@ -303,7 +303,9 @@ For Android and mobile applications, MMS CloudVault offers bulletproof attestati
 - **Header**: Requests send `X-Firebase-AppCheck: <JWT>` alongside `x-api-key`.
 - **Public Key Verification**: Server cryptographically verifies the token using Google's public JWKS endpoint (`https://firebaseappcheck.googleapis.com/v1/jwks`) with RS256 algorithm.
 - **Audience & App ID Whitelist**: Enforces that requests originate strictly from your Firebase Project and authorized mobile app IDs.
+- **Multi-Device Local Testing**: Supports dynamic debug tokens so you can develop on multiple Macs, laptops, or physical test devices without restarting the server.
 - **Toggleable Per Key**: Web clients, server scripts, and mobile apps can coexist seamlessly.
+- **Complete Step-by-Step Manual**: See [docs/FIREBASE_APP_CHECK_GUIDE.md](docs/FIREBASE_APP_CHECK_GUIDE.md) for how to collect your Firebase Project ID, App IDs, and device debug tokens, with Kotlin and Flutter integration code.
 
 ---
 

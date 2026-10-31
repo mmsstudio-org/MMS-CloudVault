@@ -502,204 +502,210 @@ Content-Type: multipart/form-data`}
 
       {/* Create Key Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 shrink-0 bg-white dark:bg-zinc-900">
               <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                 Register New Application Key
               </h3>
               <button
+                type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Application Title / Name *
-                </label>
-                <input
-                  type="text"
-                  value={appName}
-                  onChange={(e) => {
-                    setAppName(e.target.value);
-                    if (!appId) {
-                      setAppId(
-                        e.target.value
-                          .toLowerCase()
-                          .replace(/[^a-z0-9_-]/g, "-")
-                      );
-                    }
-                  }}
-                  placeholder="e.g. Golpo Ghor iOS App"
-                  required
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  App ID (Unique Slug) *
-                </label>
-                <input
-                  type="text"
-                  value={appId}
-                  onChange={(e) => setAppId(e.target.value)}
-                  placeholder="e.g. golpo-ghor-ios"
-                  required
-                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500 font-mono"
-                />
-                <span className="text-[10px] text-zinc-400 mt-1 block">
-                  Used as the namespace directory for asset storage.
-                </span>
-              </div>
-
-              {/* Bucket Routing Options */}
-              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
-                <p className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
-                  <HardDrive className="w-3.5 h-3.5 text-cyan-500" />
-                  Multi-Bucket Routing (Optional)
-                </p>
-
-                {/* Default Bucket */}
+            <form onSubmit={handleCreate} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                    Default Storage Bucket
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Application Title / Name *
                   </label>
-                  <select
-                    value={createDefaultBucketId}
-                    onChange={(e) => setCreateDefaultBucketId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-                  >
-                    {buckets.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name} {b.isDefault ? "(Active Default)" : ""}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    type="text"
+                    value={appName}
+                    onChange={(e) => {
+                      setAppName(e.target.value);
+                      if (!appId) {
+                        setAppId(
+                          e.target.value
+                            .toLowerCase()
+                            .replace(/[^a-z0-9_-]/g, "-")
+                        );
+                      }
+                    }}
+                    placeholder="e.g. Golpo Ghor iOS App"
+                    required
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                  />
                 </div>
 
-                {/* Dedicated Image Bucket */}
                 <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                    Dedicated Image Bucket (Optional)
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    App ID (Unique Slug) *
                   </label>
-                  <select
-                    value={createImageBucketId}
-                    onChange={(e) => setCreateImageBucketId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-                  >
-                    <option value="">-- Inherit Default Bucket --</option>
-                    {buckets.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    type="text"
+                    value={appId}
+                    onChange={(e) => setAppId(e.target.value)}
+                    placeholder="e.g. golpo-ghor-ios"
+                    required
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500 font-mono"
+                  />
+                  <span className="text-[10px] text-zinc-400 mt-1 block">
+                    Used as the namespace directory for asset storage.
+                  </span>
                 </div>
 
-                {/* Dedicated Audio Bucket */}
-                <div>
-                  <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                    Dedicated Audio Bucket (Optional)
-                  </label>
-                  <select
-                    value={createAudioBucketId}
-                    onChange={(e) => setCreateAudioBucketId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-                  >
-                    <option value="">-- Inherit Default Bucket --</option>
-                    {buckets.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+                {/* Bucket Routing Options */}
+                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
+                  <p className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                    <HardDrive className="w-3.5 h-3.5 text-cyan-500" />
+                    Multi-Bucket Routing (Optional)
+                  </p>
 
-              {/* Mobile App Security (Firebase App Check & Play Integrity) */}
-              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                    <div>
-                      <p className="text-xs font-bold text-zinc-900 dark:text-white">
-                        Firebase App Check & Play Integrity
-                      </p>
-                      <p className="text-[10px] text-zinc-500">
-                        Require Google-signed cryptographic token from Android devices
-                      </p>
-                    </div>
+                  {/* Default Bucket */}
+                  <div>
+                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                      Default Storage Bucket
+                    </label>
+                    <select
+                      value={createDefaultBucketId}
+                      onChange={(e) => setCreateDefaultBucketId(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                    >
+                      {buckets.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name} {b.isDefault ? "(Active Default)" : ""}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={createEnforceAppCheck}
-                      onChange={(e) => setCreateEnforceAppCheck(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                  </label>
+
+                  {/* Dedicated Image Bucket */}
+                  <div>
+                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                      Dedicated Image Bucket (Optional)
+                    </label>
+                    <select
+                      value={createImageBucketId}
+                      onChange={(e) => setCreateImageBucketId(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                    >
+                      <option value="">-- Inherit Default Bucket --</option>
+                      {buckets.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Dedicated Audio Bucket */}
+                  <div>
+                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                      Dedicated Audio Bucket (Optional)
+                    </label>
+                    <select
+                      value={createAudioBucketId}
+                      onChange={(e) => setCreateAudioBucketId(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                    >
+                      <option value="">-- Inherit Default Bucket --</option>
+                      {buckets.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                {createEnforceAppCheck && (
-                  <div className="space-y-3 pt-2 border-t border-zinc-200 dark:border-zinc-700/60">
-                    <div>
-                      <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                        Firebase Project ID (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={createFirebaseProjectId}
-                        onChange={(e) => setCreateFirebaseProjectId(e.target.value)}
-                        placeholder="e.g. mms-studio-media-vault"
-                        className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
-                      />
-                      <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                        Verifies that tokens originate exclusively from this Firebase project.
-                      </span>
+                {/* Mobile App Security (Firebase App Check & Play Integrity) */}
+                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                      <div>
+                        <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                          Firebase App Check & Play Integrity
+                        </p>
+                        <p className="text-[10px] text-zinc-500">
+                          Require Google-signed cryptographic token from Android devices
+                        </p>
+                      </div>
                     </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                        Allowed Mobile App IDs (Optional)
-                      </label>
+                    <label className="relative inline-flex items-center cursor-pointer">
                       <input
-                        type="text"
-                        value={createAllowedAppIds}
-                        onChange={(e) => setCreateAllowedAppIds(e.target.value)}
-                        placeholder="e.g. 1:1234567890:android:abcdef, 1:1234567890:android:34a0ec8763261a9b"
-                        className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                        type="checkbox"
+                        checked={createEnforceAppCheck}
+                        onChange={(e) => setCreateEnforceAppCheck(e.target.checked)}
+                        className="sr-only peer"
                       />
-                      <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                        Comma-separated Firebase App IDs to whitelist. Leave empty to allow any valid app in the project.
-                      </span>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                        Device Debug Secrets / Test Tokens (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        value={createAllowedDebugTokens}
-                        onChange={(e) => setCreateAllowedDebugTokens(e.target.value)}
-                        placeholder="e.g. mac-debug-secret-1, laptop-debug-secret-2"
-                        className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
-                      />
-                      <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                        Comma-separated debug secrets for your Mac, Laptop, physical test phones or QA emulators.
-                      </span>
-                    </div>
+                      <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
                   </div>
-                )}
+
+                  {createEnforceAppCheck && (
+                    <div className="space-y-3 pt-2 border-t border-zinc-200 dark:border-zinc-700/60">
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Firebase Project ID (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={createFirebaseProjectId}
+                          onChange={(e) => setCreateFirebaseProjectId(e.target.value)}
+                          placeholder="e.g. mms-studio-media-vault"
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                        />
+                        <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                          Verifies that tokens originate exclusively from this Firebase project.
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Allowed Mobile App IDs (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={createAllowedAppIds}
+                          onChange={(e) => setCreateAllowedAppIds(e.target.value)}
+                          placeholder="e.g. 1:1234567890:android:abcdef, 1:1234567890:android:34a0ec8763261a9b"
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                        />
+                        <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                          Comma-separated Firebase App IDs to whitelist. Leave empty to allow any valid app in the project.
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                          Device Debug Secrets / Test Tokens (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={createAllowedDebugTokens}
+                          onChange={(e) => setCreateAllowedDebugTokens(e.target.value)}
+                          placeholder="e.g. mac-debug-secret-1, laptop-debug-secret-2"
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                        />
+                        <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                          Comma-separated debug secrets for your Mac, Laptop, physical test phones or QA emulators.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="pt-2 flex items-center justify-end gap-2">
+              {/* Fixed Footer */}
+              <div className="border-t border-zinc-100 dark:border-zinc-800 px-6 py-3.5 shrink-0 bg-zinc-50/70 dark:bg-zinc-900/70 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
@@ -725,9 +731,10 @@ Content-Type: multipart/form-data`}
 
       {/* Edit Security & App Check Policy Modal */}
       {editingSecurityKey && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 shrink-0 bg-white dark:bg-zinc-900">
               <div>
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
@@ -740,86 +747,90 @@ Content-Type: multipart/form-data`}
               <button
                 type="button"
                 onClick={() => setEditingSecurityKey(null)}
-                className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveSecurity} className="space-y-4">
-              {/* Enforce Switch */}
-              <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+            <form onSubmit={handleSaveSecurity} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
+                {/* Enforce Switch */}
+                <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-zinc-900 dark:text-white block">
+                      Enforce Firebase App Check
+                    </span>
+                    <span className="text-[11px] text-zinc-500 block">
+                      Blocks all requests missing a valid Google-signed JWT token.
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editEnforceAppCheck}
+                      onChange={(e) => setEditEnforceAppCheck(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                  </label>
+                </div>
+
+                {/* Project ID */}
                 <div>
-                  <span className="text-xs font-bold text-zinc-900 dark:text-white block">
-                    Enforce Firebase App Check
-                  </span>
-                  <span className="text-[11px] text-zinc-500 block">
-                    Blocks all requests missing a valid Google-signed JWT token.
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Firebase Project ID (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={editFirebaseProjectId}
+                    onChange={(e) => setEditFirebaseProjectId(e.target.value)}
+                    placeholder="e.g. mms-studio-media-vault"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono"
+                  />
+                  <span className="text-[10px] text-zinc-400 mt-1 block">
+                    Ensures the App Check JWT audience matches your Firebase Project.
                   </span>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={editEnforceAppCheck}
-                    onChange={(e) => setEditEnforceAppCheck(e.target.checked)}
-                    className="sr-only peer"
+
+                {/* Allowed App IDs */}
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Whitelisted Mobile App IDs (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={editAllowedAppIds}
+                    onChange={(e) => setEditAllowedAppIds(e.target.value)}
+                    placeholder="e.g. 1:1234567890:android:34a0ec8763261a9b, 1:1234567890:android:fedcba9876543210"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
                   />
-                  <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                </label>
+                  <span className="text-[10px] text-zinc-400 mt-1 block">
+                    Comma-separated Firebase Android App IDs. Only requests from these apps will be approved.
+                  </span>
+                </div>
+
+                {/* Allowed Debug Tokens */}
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Device Debug Secrets / Test Tokens (Optional)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={editAllowedDebugTokens}
+                    onChange={(e) => setEditAllowedDebugTokens(e.target.value)}
+                    placeholder="e.g. mac-debug-123, laptop-debug-456, 12345678-abcd-ef01-2345-6789abcdef01"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
+                  />
+                  <span className="text-[10px] text-zinc-400 mt-1 block">
+                    Add debug tokens for your Mac, Laptop, or test devices. Rotate or update anytime dynamically with zero server restarts.
+                  </span>
+                </div>
               </div>
 
-              {/* Project ID */}
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Firebase Project ID (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={editFirebaseProjectId}
-                  onChange={(e) => setEditFirebaseProjectId(e.target.value)}
-                  placeholder="e.g. mms-studio-media-vault"
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono"
-                />
-                <span className="text-[10px] text-zinc-400 mt-1 block">
-                  Ensures the App Check JWT audience matches your Firebase Project.
-                </span>
-              </div>
-
-              {/* Allowed App IDs */}
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Whitelisted Mobile App IDs (Optional)
-                </label>
-                <textarea
-                  rows={2}
-                  value={editAllowedAppIds}
-                  onChange={(e) => setEditAllowedAppIds(e.target.value)}
-                  placeholder="e.g. 1:1234567890:android:34a0ec8763261a9b, 1:1234567890:android:fedcba9876543210"
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
-                />
-                <span className="text-[10px] text-zinc-400 mt-1 block">
-                  Comma-separated Firebase Android App IDs. Only requests from these apps will be approved.
-                </span>
-              </div>
-
-              {/* Allowed Debug Tokens */}
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Device Debug Secrets / Test Tokens (Optional)
-                </label>
-                <textarea
-                  rows={2}
-                  value={editAllowedDebugTokens}
-                  onChange={(e) => setEditAllowedDebugTokens(e.target.value)}
-                  placeholder="e.g. mac-debug-123, laptop-debug-456, 12345678-abcd-ef01-2345-6789abcdef01"
-                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
-                />
-                <span className="text-[10px] text-zinc-400 mt-1 block">
-                  Add debug tokens for your Mac, Laptop, or test devices. Rotate or update anytime dynamically with zero server restarts.
-                </span>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
+              {/* Fixed Footer */}
+              <div className="border-t border-zinc-100 dark:border-zinc-800 px-6 py-3.5 shrink-0 bg-zinc-50/70 dark:bg-zinc-900/70 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setEditingSecurityKey(null)}
@@ -845,9 +856,10 @@ Content-Type: multipart/form-data`}
 
       {/* Edit Storage Routing Modal */}
       {editingRoutingKey && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 shrink-0 bg-white dark:bg-zinc-900">
               <div>
                 <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
                   Storage Routing for {editingRoutingKey.appName}
@@ -857,68 +869,73 @@ Content-Type: multipart/form-data`}
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setEditingRoutingKey(null)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSaveRouting} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Default Storage Bucket
-                </label>
-                <select
-                  value={editDefaultBucketId}
-                  onChange={(e) => setEditDefaultBucketId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
-                >
-                  {buckets.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name} {b.isDefault ? "(Active Default)" : ""}
-                    </option>
-                  ))}
-                </select>
+            <form onSubmit={handleSaveRouting} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Default Storage Bucket
+                  </label>
+                  <select
+                    value={editDefaultBucketId}
+                    onChange={(e) => setEditDefaultBucketId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                  >
+                    {buckets.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name} {b.isDefault ? "(Active Default)" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Dedicated Image Bucket (Optional)
+                  </label>
+                  <select
+                    value={editImageBucketId}
+                    onChange={(e) => setEditImageBucketId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                  >
+                    <option value="">-- Inherit Default Bucket --</option>
+                    {buckets.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Dedicated Audio Bucket (Optional)
+                  </label>
+                  <select
+                    value={editAudioBucketId}
+                    onChange={(e) => setEditAudioBucketId(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                  >
+                    <option value="">-- Inherit Default Bucket --</option>
+                    {buckets.map((b) => (
+                      <option key={b.id} value={b.id}>
+                        {b.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Dedicated Image Bucket (Optional)
-                </label>
-                <select
-                  value={editImageBucketId}
-                  onChange={(e) => setEditImageBucketId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
-                >
-                  <option value="">-- Inherit Default Bucket --</option>
-                  {buckets.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Dedicated Audio Bucket (Optional)
-                </label>
-                <select
-                  value={editAudioBucketId}
-                  onChange={(e) => setEditAudioBucketId(e.target.value)}
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
-                >
-                  <option value="">-- Inherit Default Bucket --</option>
-                  {buckets.map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="pt-2 flex items-center justify-end gap-2">
+              {/* Fixed Footer */}
+              <div className="border-t border-zinc-100 dark:border-zinc-800 px-6 py-3.5 shrink-0 bg-zinc-50/70 dark:bg-zinc-900/70 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setEditingRoutingKey(null)}
