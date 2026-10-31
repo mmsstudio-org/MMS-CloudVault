@@ -372,12 +372,11 @@ async function run() {
   const APPCHECK_TEST_APP_ID = "qa-appcheck-enforced-app";
   const APPCHECK_TEST_KEY = "mms_sec_qa_appcheck_test_7788";
   const APPCHECK_DEBUG_TOKEN = "qa_debug_appcheck_token_xyz999";
-  process.env.DEBUG_APP_CHECK_TOKEN = APPCHECK_DEBUG_TOKEN;
 
   // Cleanup old app check test key if exists
   await db.delete(apiKeys).where(eq(apiKeys.appId, APPCHECK_TEST_APP_ID));
 
-  // Insert API Key with App Check strictly enforced
+  // Insert API Key with App Check strictly enforced and dynamic allowedDebugTokens in DB
   await db.insert(apiKeys).values({
     appName: "QA AppCheck Android App",
     appId: APPCHECK_TEST_APP_ID,
@@ -385,6 +384,7 @@ async function run() {
     isActive: true,
     enforceAppCheck: true,
     firebaseProjectId: "mms-studio-test-project",
+    allowedDebugTokens: APPCHECK_DEBUG_TOKEN,
   });
   invalidateApiKeyCache();
 

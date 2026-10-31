@@ -512,7 +512,8 @@ export async function actionCreateApiKey(
   audioBucketId?: string | null,
   enforceAppCheck?: boolean,
   firebaseProjectId?: string | null,
-  allowedAppIds?: string | null
+  allowedAppIds?: string | null,
+  allowedDebugTokens?: string | null
 ) {
   const cleanAppId = appId.toLowerCase().replace(/[^a-z0-9_-]/g, "-").trim();
   const secretKey = `mms_sec_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`;
@@ -530,6 +531,7 @@ export async function actionCreateApiKey(
       enforceAppCheck: Boolean(enforceAppCheck),
       firebaseProjectId: firebaseProjectId?.trim() || null,
       allowedAppIds: allowedAppIds?.trim() || null,
+      allowedDebugTokens: allowedDebugTokens?.trim() || null,
     })
     .returning();
 
@@ -544,6 +546,7 @@ export async function actionUpdateApiKeySecurity(
     enforceAppCheck: boolean;
     firebaseProjectId?: string | null;
     allowedAppIds?: string | null;
+    allowedDebugTokens?: string | null;
   }
 ) {
   const updated = await db
@@ -552,6 +555,7 @@ export async function actionUpdateApiKeySecurity(
       enforceAppCheck: settings.enforceAppCheck,
       firebaseProjectId: settings.firebaseProjectId?.trim() || null,
       allowedAppIds: settings.allowedAppIds?.trim() || null,
+      allowedDebugTokens: settings.allowedDebugTokens?.trim() || null,
     })
     .where(eq(apiKeys.id, id))
     .returning();

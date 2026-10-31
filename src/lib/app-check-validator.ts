@@ -15,6 +15,7 @@ export interface AppCheckVerificationOptions {
   enforceAppCheck: boolean;
   firebaseProjectId?: string | null;
   allowedAppIds?: string | null; // Comma-separated app IDs (e.g., "1:1234567890:android:abcdef, 1:1234567890:android:fedcba")
+  allowedDebugTokens?: string | null; // Comma-separated device debug tokens (e.g. Mac, Laptop, QA phone)
 }
 
 export interface AppCheckVerificationResult {
@@ -30,9 +31,10 @@ export interface AppCheckVerificationResult {
  * Verification Steps:
  * 1. Checks if enforcement is required for the specific API key.
  * 2. Ensures token presence.
- * 3. Verifies cryptographic signature using Google's public RS256 JWKS keys.
- * 4. Verifies audience against the configured Firebase Project ID (if specified).
- * 5. Verifies subject against the authorized mobile App IDs (if specified).
+ * 3. Checks if token matches any registered dev/debug tokens for this key (Mac, Laptop, Test Phone).
+ * 4. Otherwise, verifies cryptographic signature using Google's public RS256 JWKS keys.
+ * 5. Verifies audience against the configured Firebase Project ID (if specified).
+ * 6. Verifies subject against the authorized mobile App IDs (if specified).
  */
 export async function validateAppCheckToken(
   token: string | null | undefined,
@@ -52,17 +54,20 @@ export async function validateAppCheckToken(
 
   const cleanToken = token.trim();
 
-  // Allow optional development/test debug tokens in development mode
-  if (
-    process.env.NODE_ENV !== "production" &&
-    process.env.DEBUG_APP_CHECK_TOKEN &&
-    cleanToken === process.env.DEBUG_APP_CHECK_TOKEN
-  ) {
-    return {
-      isValid: true,
-      appId: "debug-test-app-id",
-      projectId: options.firebaseProjectId || "debug-project",
-    };
+  // Dynamic Debug Token Check (Device Whitelist from DB: Mac, Laptop, Emulator, QA phone)
+  if (options.allowedDebugTokens && options.allowedDebugTokens.trim() !== "") {
+    const debugTokens = options.allowedDebugTokens
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    if (debugTokens.includes(cleanToken)) {
+      return {
+        isValid: true,
+        appId: "whitelisted-debug-device",
+        projectId: options.firebaseProjectId || "debug-project",
+      };
+    }
   }
 
   try {

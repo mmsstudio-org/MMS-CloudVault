@@ -31,7 +31,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { appId, enforceAppCheck, firebaseProjectId, allowedAppIds } = auth.app;
+    const {
+      appId,
+      enforceAppCheck,
+      firebaseProjectId,
+      allowedAppIds,
+      allowedDebugTokens,
+    } = auth.app;
 
     // Verify Google Play Integrity / Firebase App Check (if enforced for this API key)
     if (enforceAppCheck) {
@@ -45,6 +51,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         enforceAppCheck: true,
         firebaseProjectId,
         allowedAppIds,
+        allowedDebugTokens,
       });
 
       if (!checkResult.isValid) {
@@ -133,7 +140,13 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    const { appId, enforceAppCheck, firebaseProjectId, allowedAppIds } = auth.app;
+    const {
+      appId,
+      enforceAppCheck,
+      firebaseProjectId,
+      allowedAppIds,
+      allowedDebugTokens,
+    } = auth.app;
 
     // Verify Google Play Integrity / Firebase App Check (if enforced for this API key)
     if (enforceAppCheck) {
@@ -147,6 +160,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         enforceAppCheck: true,
         firebaseProjectId,
         allowedAppIds,
+        allowedDebugTokens,
       });
 
       if (!checkResult.isValid) {

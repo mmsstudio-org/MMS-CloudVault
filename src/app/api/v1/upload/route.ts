@@ -22,7 +22,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { appId, appName, enforceAppCheck, firebaseProjectId, allowedAppIds } = auth.app;
+    const {
+      appId,
+      appName,
+      enforceAppCheck,
+      firebaseProjectId,
+      allowedAppIds,
+      allowedDebugTokens,
+    } = auth.app;
 
     // 1.1 Verify Google Play Integrity / Firebase App Check (if enforced for this API key)
     if (enforceAppCheck) {
@@ -36,6 +43,7 @@ export async function POST(req: NextRequest) {
         enforceAppCheck: true,
         firebaseProjectId,
         allowedAppIds,
+        allowedDebugTokens,
       });
 
       if (!checkResult.isValid) {

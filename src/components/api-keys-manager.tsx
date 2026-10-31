@@ -67,6 +67,7 @@ export function ApiKeysManager({
   const [createEnforceAppCheck, setCreateEnforceAppCheck] = React.useState(false);
   const [createFirebaseProjectId, setCreateFirebaseProjectId] = React.useState("");
   const [createAllowedAppIds, setCreateAllowedAppIds] = React.useState("");
+  const [createAllowedDebugTokens, setCreateAllowedDebugTokens] = React.useState("");
 
   // Edit Security & App Check Modal State
   const [editingSecurityKey, setEditingSecurityKey] =
@@ -74,6 +75,7 @@ export function ApiKeysManager({
   const [editEnforceAppCheck, setEditEnforceAppCheck] = React.useState(false);
   const [editFirebaseProjectId, setEditFirebaseProjectId] = React.useState("");
   const [editAllowedAppIds, setEditAllowedAppIds] = React.useState("");
+  const [editAllowedDebugTokens, setEditAllowedDebugTokens] = React.useState("");
   const [isUpdatingSecurity, setIsUpdatingSecurity] = React.useState(false);
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
@@ -120,7 +122,8 @@ export function ApiKeysManager({
         createAudioBucketId || null,
         createEnforceAppCheck,
         createFirebaseProjectId || null,
-        createAllowedAppIds || null
+        createAllowedAppIds || null,
+        createAllowedDebugTokens || null
       );
       setKeys((prev) => [newKey, ...prev]);
       toast.success(`API Key created for '${appName}'.`);
@@ -131,6 +134,7 @@ export function ApiKeysManager({
       setCreateEnforceAppCheck(false);
       setCreateFirebaseProjectId("");
       setCreateAllowedAppIds("");
+      setCreateAllowedDebugTokens("");
       setShowCreateModal(false);
     } catch (err: unknown) {
       toast.error(
@@ -146,6 +150,7 @@ export function ApiKeysManager({
     setEditEnforceAppCheck(k.enforceAppCheck || false);
     setEditFirebaseProjectId(k.firebaseProjectId || "");
     setEditAllowedAppIds(k.allowedAppIds || "");
+    setEditAllowedDebugTokens(k.allowedDebugTokens || "");
   };
 
   const handleSaveSecurity = async (e: React.FormEvent) => {
@@ -158,6 +163,7 @@ export function ApiKeysManager({
         enforceAppCheck: editEnforceAppCheck,
         firebaseProjectId: editFirebaseProjectId || null,
         allowedAppIds: editAllowedAppIds || null,
+        allowedDebugTokens: editAllowedDebugTokens || null,
       });
 
       setKeys((prev) =>
@@ -673,6 +679,22 @@ Content-Type: multipart/form-data`}
                         Comma-separated Firebase App IDs to whitelist. Leave empty to allow any valid app in the project.
                       </span>
                     </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                        Device Debug Secrets / Test Tokens (Optional)
+                      </label>
+                      <input
+                        type="text"
+                        value={createAllowedDebugTokens}
+                        onChange={(e) => setCreateAllowedDebugTokens(e.target.value)}
+                        placeholder="e.g. mac-debug-secret-1, laptop-debug-secret-2"
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                      />
+                      <span className="text-[10px] text-zinc-400 mt-0.5 block">
+                        Comma-separated debug secrets for your Mac, Laptop, physical test phones or QA emulators.
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>
@@ -777,6 +799,23 @@ Content-Type: multipart/form-data`}
                 />
                 <span className="text-[10px] text-zinc-400 mt-1 block">
                   Comma-separated Firebase Android App IDs. Only requests from these apps will be approved.
+                </span>
+              </div>
+
+              {/* Allowed Debug Tokens */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Device Debug Secrets / Test Tokens (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={editAllowedDebugTokens}
+                  onChange={(e) => setEditAllowedDebugTokens(e.target.value)}
+                  placeholder="e.g. mac-debug-123, laptop-debug-456, 12345678-abcd-ef01-2345-6789abcdef01"
+                  className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
+                />
+                <span className="text-[10px] text-zinc-400 mt-1 block">
+                  Add debug tokens for your Mac, Laptop, or test devices. Rotate or update anytime dynamically with zero server restarts.
                 </span>
               </div>
 
