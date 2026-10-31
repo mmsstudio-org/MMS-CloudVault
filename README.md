@@ -7,6 +7,25 @@
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Neon_Serverless-4169E1?style=flat&logo=postgresql)](https://neon.tech/)
 [![Sharp](https://img.shields.io/badge/Sharp-0.35_WebP-007ACC?style=flat)](https://sharp.pixelplumbing.com/)
 [![OpenAPI](https://img.shields.io/badge/Swagger-OpenAPI_3.0-85EA2D?style=flat&logo=swagger)](http://localhost:3000/api-docs)
+[![Architecture Docs](https://img.shields.io/badge/Architecture_Docs-project--infrastructure.md-00F0FF?style=flat&logo=markdown)](./project-infrastructure.md)
+
+> 📖 **Full Engineering Specification & AI Portfolio Generator**: Read the exhaustive technical breakdown, infrastructure flowcharts, and customizable AI portfolio generation prompt in [**`project-infrastructure.md`**](./project-infrastructure.md).
+
+---
+
+## 🛠️ Complete Technology Stack
+
+| Component | Framework / Tool | Purpose in Project |
+| :--- | :--- | :--- |
+| **Full-Stack Framework** | **Next.js 16 (App Router) + Turbopack** | High-performance Server Components, Route Handlers, Server Actions, sub-second HMR. |
+| **Frontend & UI** | **React 19 + Tailwind CSS v4** | Modern Linear/Vercel styling, custom dark/light theme, Lucide icons, responsive drawer navigation. |
+| **Database & ORM** | **Neon Serverless PostgreSQL + Drizzle ORM** | Type-safe schema definition, composite unique constraints (`appId`, `assetId`), transactional migrations. |
+| **Media Transformation** | **Sharp 0.35.5 (libvips) + BlurHash** | Automated WebP conversion, dimension capping (`withoutEnlargement`), progressive blur placeholders. |
+| **Object Storage** | **Cloudflare R2 + AWS S3 SDK v3** | Multi-cloud S3-compatible storage, $0 egress delivery, runtime multi-bucket routing for images & audio. |
+| **Caching Engine** | **In-Memory LRU Cache (`lru-cache` v11)** | Ultra-fast (0.03ms) API key authorization with auto TTL expiration and instant invalidation. |
+| **Authentication & 2FA** | **NextAuth v5 (Auth.js) + otplib + jose** | Whitelisted Google OAuth, TOTP 2FA (Google Authenticator) with HS256 signed session cookies. |
+| **Mobile Attestation** | **Firebase App Check + Google Play Integrity** | Cryptographic RS256 JWKS validation against Google root certs to prevent client spoofing. |
+| **API Documentation** | **OpenAPI 3.0.3 + Swagger UI + Postman 2.1** | Interactive testing sandbox at `/api-docs` and one-click Postman collection export. |
 
 ---
 
