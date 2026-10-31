@@ -23,11 +23,34 @@
   max-width: 100% !important;
 }
 
-/* Hide redundant default header container & schemes since ApiDocsPage has its own hero section */
+/* Hide redundant default header container & topbar since ApiDocsPage has its own hero section */
 .swagger-ui .information-container,
-.swagger-ui .scheme-container,
 .swagger-ui .topbar {
   display: none !important;
+}
+
+/* Ensure scheme-container (which holds the Authorize button) is cleanly visible */
+.swagger-ui .scheme-container {
+  display: block !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0.5rem 0 1rem 0 !important;
+  margin: 0 0 1rem 0 !important;
+  border-bottom: 1px solid rgba(228, 228, 231, 0.8) !important;
+}
+
+.dark .swagger-ui .scheme-container {
+  border-bottom-color: rgba(39, 39, 42, 0.8) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.swagger-ui .scheme-container .schemes {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 1rem !important;
 }
 
 /* ==========================================================================
@@ -37,13 +60,9 @@
   display: flex !important;
   justify-content: flex-end !important;
   align-items: center !important;
-  padding: 0.75rem 0 1.25rem 0 !important;
-  margin-bottom: 1.5rem !important;
-  border-bottom: 1px solid rgba(228, 228, 231, 0.8) !important;
-}
-
-.dark .swagger-ui .auth-wrapper {
-  border-bottom-color: rgba(39, 39, 42, 0.8) !important;
+  padding: 0.25rem 0 !important;
+  margin: 0 !important;
+  border: none !important;
 }
 
 .swagger-ui .btn.authorize {

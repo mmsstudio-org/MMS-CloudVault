@@ -9,7 +9,7 @@ export async function GET() {
       title: "MMS CloudVault REST API",
       description:
         "High-performance, automated media asset ingestion, Sharp WebP optimization pipeline, progressive BlurHash calculation, and Cloudflare R2 / S3 object delivery for mobile apps, web applications, and media platforms.",
-      version: "1.0.0",
+      version: "2.0.0",
       contact: {
         name: "MMS CloudVault Engineering",
         url: "https://cloud.sabbirmms.com",
@@ -38,7 +38,8 @@ export async function GET() {
         post: {
           summary: "Upload, optimize and assign media asset",
           description:
-            "Uploads a media image or audio file. Images are automatically scaled, converted to WebP, and assigned a BlurHash. Audio files (MP3, WAV, OGG, M4A, AAC) are uploaded directly to Object Storage. Automatically replaces duplicate asset IDs under the same application.",
+            "Uploads a media image or audio file. Images are automatically scaled, converted to WebP, and assigned a BlurHash. Audio files (MP3, WAV, OGG, M4A, AAC) can be optionally compressed via FFmpeg or stored in 100% original fidelity. Automatically replaces duplicate asset IDs under the same application.",
+          security: [{ ApiKeyAuth: [] }],
           requestBody: {
             required: true,
             content: {
@@ -49,23 +50,40 @@ export async function GET() {
                   properties: {
                     asset_id: {
                       type: "string",
-                      description: "Unique identifier of the media item or document from client app",
+                      description:
+                        "Unique identifier of the media item or document from client app",
                       example: "banner_promo_01",
                     },
                     title: {
                       type: "string",
-                      description: "Descriptive human-readable title for the media asset",
+                      description:
+                        "Descriptive human-readable title for the media asset",
                       example: "Seasonal Promotion Banner",
                     },
                     folder: {
                       type: "string",
-                      description: "Category or sub-folder inside the app namespace",
+                      description:
+                        "Category or sub-folder inside the app namespace",
                       example: "banners",
                     },
                     file: {
                       type: "string",
                       format: "binary",
-                      description: "Binary image (JPEG, PNG, WebP, GIF, SVG) or audio file (MP3, WAV, OGG, M4A, AAC, FLAC)",
+                      description:
+                        "Binary image (JPEG, PNG, WebP, GIF, SVG) or audio file (MP3, WAV, OGG, M4A, AAC, FLAC)",
+                    },
+                    compress_audio: {
+                      type: "boolean",
+                      description:
+                        "Optional: Set to true to compress audio tracks. Default is false (100% lossless original fidelity).",
+                      example: false,
+                    },
+                    audio_bitrate: {
+                      type: "string",
+                      enum: ["96k", "128k", "192k", "256k", "320k"],
+                      description:
+                        "Optional: Target bitrate when compress_audio is true. Default is 192k.",
+                      example: "192k",
                     },
                   },
                 },
@@ -83,7 +101,8 @@ export async function GET() {
               description: "Invalid or inactive API Key",
             },
             415: {
-              description: "Uploaded file is not a supported image or audio format",
+              description:
+                "Uploaded file is not a supported image or audio format",
             },
           },
         },
@@ -91,6 +110,7 @@ export async function GET() {
       "/api/v1/assets/{asset_id}": {
         get: {
           summary: "Retrieve direct public URL and metadata for a media asset",
+          security: [{ ApiKeyAuth: [] }],
           parameters: [
             {
               name: "asset_id",
@@ -111,9 +131,11 @@ export async function GET() {
           },
         },
         delete: {
-          summary: "Permanently delete media asset from storage and database",
+          summary:
+            "Permanently delete media asset from storage and database",
           description:
             "Permanently erases the physical media file (image or audio) from Cloud Object Storage and removes the database record. Pass query parameter ?soft=true if you only wish to move it to trash.",
+          security: [{ ApiKeyAuth: [] }],
           parameters: [
             {
               name: "asset_id",
@@ -128,7 +150,8 @@ export async function GET() {
               in: "query",
               required: false,
               schema: { type: "boolean" },
-              description: "Set to true to soft-delete to trash instead of permanent storage destruction",
+              description:
+                "Set to true to soft-delete to trash instead of permanent storage destruction",
               example: false,
             },
           ],
