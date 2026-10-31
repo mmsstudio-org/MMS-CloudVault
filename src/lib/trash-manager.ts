@@ -90,6 +90,19 @@ export async function softDeleteAsset(id: string): Promise<boolean> {
     .where(eq(mediaAssets.id, id))
     .returning();
 
+  if (result.length > 0) {
+    const asset = result[0];
+    sendTelegramNotification({
+      event: "ASSET_SOFT_DELETED",
+      appName: asset.appId,
+      assetId: asset.assetId,
+      title: asset.title || undefined,
+      folder: asset.folder || undefined,
+      uploaderName: asset.uploaderName || null,
+      info: asset.info || null,
+    }).catch((err) => console.warn("Telegram soft delete alert error:", err));
+  }
+
   return result.length > 0;
 }
 
@@ -122,12 +135,13 @@ export async function deleteAssetPermanently(
 
   // 3. Dispatch Telegram alert
   sendTelegramNotification({
-    event: "ASSET_DELETED",
+    event: "ASSET_PERMANENTLY_DELETED",
     appName: asset.appId,
     assetId: asset.assetId,
     title: asset.title || undefined,
+    folder: asset.folder || undefined,
     uploaderName: asset.uploaderName || null,
-  }).catch((err) => console.warn("Telegram alert error:", err));
+  }).catch((err) => console.warn("Telegram hard delete alert error:", err));
 
   return { success: true, assetId: asset.assetId };
 }

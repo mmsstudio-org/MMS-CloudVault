@@ -2,7 +2,13 @@ import { db } from "@/db";
 import { siteSettings } from "@/db/schema";
 
 export interface TelegramNotificationParams {
-  event: "ASSET_UPLOADED" | "ASSET_REPLACED" | "ASSET_DELETED" | "TRASH_PURGED";
+  event:
+    | "ASSET_UPLOADED"
+    | "ASSET_REPLACED"
+    | "ASSET_SOFT_DELETED"
+    | "ASSET_PERMANENTLY_DELETED"
+    | "ASSET_DELETED" // Legacy compatibility alias
+    | "TRASH_PURGED";
   appName: string;
   assetId?: string;
   title?: string;
@@ -85,12 +91,27 @@ export async function sendTelegramNotification(
           (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">View Asset</a>` : "");
         break;
 
-      case "ASSET_DELETED":
-        text = `🗑️ <b>Media Asset Moved to Trash</b>\n` +
+      case "ASSET_SOFT_DELETED":
+        text = `🟡 <b>Media Asset Moved to Trash (Soft Delete)</b>\n` +
           `• <b>App:</b> ${appName}\n` +
           `• <b>Asset ID:</b> <code>${id}</code>\n` +
           (safeTitle ? `• <b>Title:</b> ${safeTitle}\n` : "") +
-          (safeUploader ? `• <b>Original Uploader:</b> 👤 ${safeUploader}\n` : "");
+          (safeFolder ? `• <b>Folder:</b> <code>${safeFolder}</code>\n` : "") +
+          (safeUploader ? `• <b>Uploader:</b> 👤 ${safeUploader}\n` : "") +
+          (safeInfo ? `• <b>Info:</b> 📝 <i>${safeInfo}</i>\n` : "") +
+          `• <b>Status:</b> ⏳ <i>Retained in Trash for 30 days (Recoverable)</i>`;
+        break;
+
+      case "ASSET_PERMANENTLY_DELETED":
+      case "ASSET_DELETED":
+        text = `🔴 <b>Media Asset Permanently Destroyed (Hard Delete)</b>\n` +
+          `• <b>App:</b> ${appName}\n` +
+          `• <b>Asset ID:</b> <code>${id}</code>\n` +
+          (safeTitle ? `• <b>Title:</b> ${safeTitle}\n` : "") +
+          (safeFolder ? `• <b>Folder:</b> <code>${safeFolder}</code>\n` : "") +
+          (safeUploader ? `• <b>Original Uploader:</b> 👤 ${safeUploader}\n` : "") +
+          `• <b>Storage:</b> 💥 <i>Physical file destroyed from Cloud Bucket</i>\n` +
+          `• <b>Status:</b> ❌ <i>Irrevocable (Cannot be recovered)</i>`;
         break;
 
       case "TRASH_PURGED":
