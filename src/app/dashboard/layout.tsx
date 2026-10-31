@@ -47,7 +47,7 @@ export default async function DashboardLayout({
 
   return (
     <DashboardNavProvider>
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-row">
+      <div className="min-h-screen bg-background flex flex-row">
         {/* Sidebar Navigation (Desktop + Mobile Drawer) */}
         <DashboardSidebar />
 

@@ -86,13 +86,13 @@ export function DashboardSidebar() {
   const renderSidebarContent = (isMobile = false) => (
     <>
       {/* Brand Logo & Title */}
-      <div className="h-16 px-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between shrink-0">
+      <div className="h-16 px-5 border-b border-border flex items-center justify-between shrink-0">
         <Link
           href="/"
           onClick={isMobile ? closeSidebar : undefined}
           className="flex items-center gap-2.5"
         >
-          <div className="w-9 h-9 rounded-xl overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-9 h-9 rounded-xl overflow-hidden border border-border bg-black flex items-center justify-center shrink-0 shadow-xs">
             <Image
               src="/logo.png"
               alt="MMS Studio Logo"
@@ -102,10 +102,10 @@ export function DashboardSidebar() {
             />
           </div>
           <div>
-            <span className="font-bold text-sm tracking-tight block text-zinc-900 dark:text-white">
+            <span className="font-bold text-sm tracking-tight block text-foreground">
               MMS Studio
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono tracking-wider uppercase block">
+            <span className="text-[10px] text-muted-foreground font-mono tracking-wider uppercase block">
               Storage Engine
             </span>
           </div>
@@ -115,7 +115,7 @@ export function DashboardSidebar() {
           <button
             type="button"
             onClick={closeSidebar}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition"
             aria-label="Close menu"
           >
             <X className="w-4 h-4" />
@@ -125,7 +125,7 @@ export function DashboardSidebar() {
 
       {/* Navigation Links */}
       <div className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <div className="px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Platform Menu
         </div>
         {navItems.map((item) => {
@@ -141,8 +141,8 @@ export function DashboardSidebar() {
               onClick={isMobile ? closeSidebar : undefined}
               className={`flex items-center gap-3 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
                 isActive
-                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 shadow-xs font-semibold"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white"
+                  ? "bg-primary text-primary-foreground shadow-xs font-semibold"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -151,7 +151,7 @@ export function DashboardSidebar() {
           );
         })}
 
-        <div className="pt-4 px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
+        <div className="pt-4 px-3 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           Resources
         </div>
 
@@ -159,40 +159,40 @@ export function DashboardSidebar() {
           href="/api-docs"
           target="_blank"
           onClick={isMobile ? closeSidebar : undefined}
-          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white transition"
+          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition"
         >
           <span className="flex items-center gap-3">
             <BookOpen className="w-4 h-4 text-emerald-500" />
             <span>Swagger API Docs</span>
           </span>
-          <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
         </Link>
 
         <a
           href="https://studio.sabbirmms.com"
           target="_blank"
           rel="noreferrer"
-          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white transition"
+          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition"
         >
           <span className="flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
             <span>Studio Portfolio</span>
           </span>
-          <ExternalLink className="w-3.5 h-3.5 text-zinc-400" />
+          <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
         </a>
       </div>
 
       {/* Footer System Status */}
-      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
-        <div className="rounded-xl p-3 bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 text-xs">
-          <div className="flex items-center justify-between text-zinc-500 dark:text-zinc-400 mb-1">
+      <div className="p-4 border-t border-border shrink-0">
+        <div className="rounded-xl p-3 bg-surface-muted border border-border text-xs">
+          <div className="flex items-center justify-between text-muted-foreground mb-1">
             <span>Storage Status</span>
             <span className="text-emerald-500 font-semibold flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Online
             </span>
           </div>
-          <div className="text-[11px] text-zinc-400 font-mono">
+          <div className="text-[11px] text-muted-foreground font-mono">
             Sharp 0.35 + Neon Postgres
           </div>
         </div>
@@ -203,11 +203,11 @@ export function DashboardSidebar() {
   return (
     <>
       {/* 1. Desktop Persistent Sidebar (>= lg) */}
-      <aside className="hidden lg:flex w-64 border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex-col shrink-0 h-screen sticky top-0 transition-colors">
+      <aside className="hidden lg:flex w-64 border-r border-border bg-card flex-col shrink-0 h-screen sticky top-0 transition-colors">
         {renderSidebarContent(false)}
       </aside>
 
-      {/* 2. Mobile Drawer Overlay & Slide-In Panel (< lg) with Smooth In & Out Transitions */}
+      {/* 2. Mobile Drawer Overlay & Slide-In Panel (< lg) */}
       <div
         className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ease-in-out ${
           sidebarOpen
@@ -227,7 +227,7 @@ export function DashboardSidebar() {
 
         {/* Drawer Panel: Smooth Slide-In and Slide-Out */}
         <aside
-          className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-zinc-950 shadow-2xl flex flex-col border-r border-zinc-200 dark:border-zinc-800 transition-transform duration-300 ease-in-out transform will-change-transform ${
+          className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-card shadow-2xl flex flex-col border-r border-border transition-transform duration-300 ease-in-out transform will-change-transform ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
           aria-label="Mobile Navigation"
