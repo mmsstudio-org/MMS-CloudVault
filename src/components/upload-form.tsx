@@ -54,14 +54,18 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const [audioBitrate, setAudioBitrate] = React.useState<"96k" | "128k" | "192k" | "256k">("192k");
   const [isUploading, setIsUploading] = React.useState(false);
 
-  // Restore last selected application from localStorage on mount
+  // Restore last selected application from localStorage on mount (with safe fallback if app was deleted)
   React.useEffect(() => {
     try {
       const savedApp = localStorage.getItem(STORAGE_LAST_APP_KEY);
       if (savedApp && apps.some((app) => app.appId === savedApp)) {
         setSelectedApp(savedApp);
+      } else {
+        setSelectedApp(apps[0]?.appId || "general");
       }
-    } catch {}
+    } catch {
+      setSelectedApp(apps[0]?.appId || "general");
+    }
   }, [apps]);
 
   // Handle application change and persist to localStorage
@@ -911,7 +915,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     type="text"
                     readOnly
                     value={uploadedResult.asset.publicUrl}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-card text-[11px] font-mono text-zinc-900 text-foreground"
+                    className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-card text-[11px] font-mono text-foreground"
                   />
                   <CopyButton text={uploadedResult.asset.publicUrl} />
                 </div>

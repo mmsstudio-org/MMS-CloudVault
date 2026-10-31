@@ -359,13 +359,21 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       className="object-cover group-hover:scale-105 transition duration-300"
                       unoptimized
                     />
-                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                    <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 flex-wrap max-w-[85%]">
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/70 text-white backdrop-blur-md">
                         {asset.appId === "general" ? "🌐 global" : asset.appId}
                       </span>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-900/70 text-zinc-300 backdrop-blur-md">
-                        {asset.folder}
+                        /{asset.folder}
                       </span>
+                      {asset.uploaderName && (
+                        <span
+                          className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/30 backdrop-blur-md truncate max-w-[120px]"
+                          title={`Uploader: ${asset.uploaderName}`}
+                        >
+                          👤 {asset.uploaderName}
+                        </span>
+                      )}
                     </div>
                   </div>
                 )}
