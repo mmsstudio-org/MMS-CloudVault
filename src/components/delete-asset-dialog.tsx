@@ -128,14 +128,27 @@ export function DeleteAssetDialog({
           </div>
         </div>
 
-        {/* Informational Guidance */}
-        <div className="space-y-2 text-xs text-zinc-600 dark:text-zinc-400 bg-zinc-100/60 dark:bg-zinc-800/40 p-3 rounded-xl border border-zinc-200/60 dark:border-zinc-800/60">
-          <p>
-            <strong className="text-zinc-900 dark:text-zinc-200">📦 Move to Trash (Soft Delete):</strong> Hides the item from the gallery and holds it in the Trash Bin for 30 days. You can restore it anytime before automated garbage collection.
-          </p>
-          <p>
-            <strong className="text-red-600 dark:text-red-400">🔥 Permanent Delete:</strong> Immediately and irreversibly erases the physical file from Cloud Object Storage (S3 / R2) and deletes the database record. The public CDN URL will instantly return 404.
-          </p>
+        {/* Clean, Structured Action Info Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="p-3 rounded-xl bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-400">
+              <Archive className="w-3.5 h-3.5 shrink-0" />
+              <span>Move to Trash (Soft)</span>
+            </div>
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Safe option. Retained in Trash for 30 days and can be restored anytime.
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 space-y-1">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-rose-700 dark:text-rose-400">
+              <Trash2 className="w-3.5 h-3.5 shrink-0" />
+              <span>Permanent Delete</span>
+            </div>
+            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              Immediate & irreversible. File is permanently erased from S3 storage.
+            </p>
+          </div>
         </div>
 
         {/* Action Button Layout: Left = Cancel | Middle = Permanent Delete | Right (Default) = Move to Trash */}

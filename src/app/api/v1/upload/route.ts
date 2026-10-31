@@ -30,6 +30,23 @@ export async function POST(req: NextRequest) {
     const title = (formData.get("title") as string | null)?.trim() || undefined;
     const folder = (formData.get("folder") as string | null)?.trim() || "general";
 
+    // Optional Audio Compression Parameters
+    const compressAudioParam =
+      (formData.get("compress_audio") as string | null)?.toLowerCase() ===
+        "true" ||
+      (formData.get("compress_audio") as string | null) === "1" ||
+      req.nextUrl.searchParams.get("compress_audio") === "true";
+
+    const audioBitrateParam =
+      ((formData.get("audio_bitrate") as string | null) ||
+        req.nextUrl.searchParams.get("audio_bitrate"))?.toLowerCase() as
+        | "96k"
+        | "128k"
+        | "192k"
+        | "256k"
+        | "320k"
+        | undefined;
+
     if (!assetId) {
       return NextResponse.json(
         {
@@ -84,6 +101,13 @@ export async function POST(req: NextRequest) {
       fileName: file.name,
       mimeType: file.type,
       apiKey: auth.app,
+      audioOptions:
+        isAudio && compressAudioParam
+          ? {
+              compress: true,
+              bitrate: audioBitrateParam || "192k",
+            }
+          : undefined,
     });
 
     return NextResponse.json(

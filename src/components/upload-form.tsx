@@ -29,6 +29,8 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const [customFolder, setCustomFolder] = React.useState("");
   const [assetId, setAssetId] = React.useState("");
   const [title, setTitle] = React.useState("");
+  const [compressAudio, setCompressAudio] = React.useState(false);
+  const [audioBitrate, setAudioBitrate] = React.useState<"96k" | "128k" | "192k" | "256k">("192k");
   const [isUploading, setIsUploading] = React.useState(false);
   const [uploadedResult, setUploadedResult] = React.useState<{
     asset: MediaAsset;
@@ -105,6 +107,16 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       formData.append("asset_id", assetId.trim());
       formData.append("title", title.trim());
       formData.append("folder", finalFolder || "general");
+
+      if (
+        file.type.startsWith("audio/") ||
+        /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name)
+      ) {
+        if (compressAudio) {
+          formData.append("compress_audio", "true");
+          formData.append("audio_bitrate", audioBitrate);
+        }
+      }
 
       const response = await fetch("/api/dashboard/upload", {
         method: "POST",
@@ -325,6 +337,65 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                 />
               </div>
             </div>
+
+            {/* Audio Optimization & Compression Section */}
+            {file &&
+              (file.type.startsWith("audio/") ||
+                /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name)) && (
+                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Music className="w-4 h-4 text-emerald-500" />
+                      <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                        Audio Compression & Encoding (Optional)
+                      </span>
+                    </div>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer text-zinc-600 dark:text-zinc-400">
+                      <input
+                        type="checkbox"
+                        checked={compressAudio}
+                        onChange={(e) => setCompressAudio(e.target.checked)}
+                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-zinc-300 dark:border-zinc-700"
+                      />
+                      <span>Enable Compression</span>
+                    </label>
+                  </div>
+
+                  <p className="text-[11px] text-zinc-500">
+                    By default, audio is preserved in 100% original fidelity without modification. Enable compression to optimize size.
+                  </p>
+
+                  {compressAudio && (
+                    <div className="pt-1">
+                      <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                        Target Bitrate
+                      </label>
+                      <select
+                        value={audioBitrate}
+                        onChange={(e) =>
+                          setAudioBitrate(
+                            e.target.value as "96k" | "128k" | "192k" | "256k"
+                          )
+                        }
+                        className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                      >
+                        <option value="128k">
+                          128 kbps (Voiceover / Speech - 50% smaller)
+                        </option>
+                        <option value="192k">
+                          192 kbps (Standard High Quality - Recommended)
+                        </option>
+                        <option value="256k">
+                          256 kbps (Studio Quality Music)
+                        </option>
+                        <option value="96k">
+                          96 kbps (Ultra-compact Dialogue)
+                        </option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+              )}
 
             <div className="pt-2 flex items-center justify-end gap-3">
               {file && (

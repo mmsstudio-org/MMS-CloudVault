@@ -18,6 +18,19 @@ export async function POST(req: NextRequest) {
     const assetId = (formData.get("asset_id") as string | null)?.trim();
     const title = (formData.get("title") as string | null)?.trim() || undefined;
     const folder = (formData.get("folder") as string | null)?.trim() || "general";
+    const targetBucketId =
+      (formData.get("target_bucket_id") as string | null)?.trim() || undefined;
+
+    const compressAudioParam =
+      (formData.get("compress_audio") as string | null) === "true";
+    const audioBitrateParam =
+      (formData.get("audio_bitrate") as string | null) as
+        | "96k"
+        | "128k"
+        | "192k"
+        | "256k"
+        | "320k"
+        | undefined;
 
     if (!file || !appId || !assetId) {
       return NextResponse.json(
@@ -29,6 +42,10 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
+    const isAudio =
+      file.type.startsWith("audio/") ||
+      !!file.name.match(/\.(mp3|wav|ogg|m4a|aac|flac)$/i);
+
     const result = await processAndSaveAsset({
       appId,
       assetId,
@@ -38,6 +55,14 @@ export async function POST(req: NextRequest) {
       appName: appId,
       fileName: file.name,
       mimeType: file.type,
+      targetBucketId,
+      audioOptions:
+        isAudio && compressAudioParam
+          ? {
+              compress: true,
+              bitrate: audioBitrateParam || "192k",
+            }
+          : undefined,
     });
 
     return NextResponse.json({
@@ -45,6 +70,7 @@ export async function POST(req: NextRequest) {
       asset: result.asset,
       isReplaced: result.isReplaced,
       savedKb: result.savedKb,
+      bucket: result.bucket.name,
     });
   } catch (err: unknown) {
     console.error("Dashboard upload error:", err);

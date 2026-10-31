@@ -8,6 +8,7 @@ import {
   getBucketById,
 } from "./storage";
 import { optimizeImage, ImageOptimizationOptions } from "./image-optimizer";
+import { optimizeAudio, AudioOptimizationOptions } from "./audio-optimizer";
 import { sendTelegramNotification } from "./telegram";
 
 export interface ProcessAssetParams {
@@ -17,6 +18,7 @@ export interface ProcessAssetParams {
   folder?: string;
   buffer: Buffer;
   options?: ImageOptimizationOptions;
+  audioOptions?: AudioOptimizationOptions;
   appName?: string;
   fileName?: string;
   mimeType?: string;
@@ -39,6 +41,7 @@ export async function processAndSaveAsset(
     folder = "general",
     buffer,
     options,
+    audioOptions,
     appName,
     apiKey,
     targetBucketId,
@@ -66,42 +69,20 @@ export async function processAndSaveAsset(
   let savedKb = 0;
 
   if (isAudio) {
-    // Detect audio extension & MIME type
-    if (
-      fileName.endsWith(".mp3") ||
-      inputMime === "audio/mpeg" ||
-      inputMime === "audio/mp3"
-    ) {
-      ext = "mp3";
-      finalMime = "audio/mpeg";
-    } else if (fileName.endsWith(".wav") || inputMime === "audio/wav") {
-      ext = "wav";
-      finalMime = "audio/wav";
-    } else if (fileName.endsWith(".ogg") || inputMime === "audio/ogg") {
-      ext = "ogg";
-      finalMime = "audio/ogg";
-    } else if (
-      fileName.endsWith(".m4a") ||
-      inputMime === "audio/mp4" ||
-      inputMime === "audio/x-m4a"
-    ) {
-      ext = "m4a";
-      finalMime = "audio/mp4";
-    } else if (fileName.endsWith(".aac") || inputMime === "audio/aac") {
-      ext = "aac";
-      finalMime = "audio/aac";
-    } else if (fileName.endsWith(".flac") || inputMime === "audio/flac") {
-      ext = "flac";
-      finalMime = "audio/flac";
-    } else {
-      ext = "mp3";
-      finalMime = inputMime || "audio/mpeg";
-    }
+    // Process / Optimize Audio (Optionally compresses or preserves 100% original fidelity)
+    const audioResult = await optimizeAudio(
+      buffer,
+      fileName,
+      inputMime,
+      audioOptions
+    );
 
-    uploadBuffer = buffer;
-    originalSizeKb = Math.round(buffer.length / 1024) || 1;
-    optimizedSizeKb = originalSizeKb;
-    savedKb = 0;
+    uploadBuffer = audioResult.optimizedBuffer;
+    originalSizeKb = audioResult.originalSizeKb;
+    optimizedSizeKb = audioResult.optimizedSizeKb;
+    savedKb = audioResult.savedKb;
+    ext = audioResult.ext;
+    finalMime = audioResult.mimeType;
   } else {
     // 1. Optimize image through Sharp engine & compute BlurHash
     const optimized = await optimizeImage(buffer, options);
