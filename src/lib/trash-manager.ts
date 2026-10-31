@@ -125,6 +125,8 @@ export async function deleteAssetPermanently(
     event: "ASSET_DELETED",
     appName: asset.appId,
     assetId: asset.assetId,
+    title: asset.title || undefined,
+    uploaderName: asset.uploaderName || null,
   }).catch((err) => console.warn("Telegram alert error:", err));
 
   return { success: true, assetId: asset.assetId };

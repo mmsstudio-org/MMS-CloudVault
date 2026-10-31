@@ -11,6 +11,16 @@ export interface TelegramNotificationParams {
   savedKb?: number;
   count?: number;
   mimeType?: string;
+  uploaderName?: string | null;
+  info?: string | null;
+  folder?: string | null;
+}
+
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
 }
 
 export async function sendTelegramNotification(
@@ -30,9 +40,13 @@ export async function sendTelegramNotification(
     }
 
     let text = "";
-    const appName = params.appName || "MMS Studio Client";
-    const id = params.assetId || "asset";
+    const appName = escapeHtml(params.appName || "MMS Studio Client");
+    const id = escapeHtml(params.assetId || "asset");
     const isAudio = params.mimeType?.startsWith("audio/");
+    const safeTitle = params.title ? escapeHtml(params.title) : "";
+    const safeFolder = params.folder ? escapeHtml(params.folder.trim()) : "";
+    const safeUploader = params.uploaderName ? escapeHtml(params.uploaderName.trim()) : "";
+    const safeInfo = params.info ? escapeHtml(params.info.trim()) : "";
 
     switch (params.event) {
       case "ASSET_UPLOADED":
@@ -40,15 +54,22 @@ export async function sendTelegramNotification(
           ? `🎵 <b>New Audio Track Uploaded</b>\n` +
             `• <b>App:</b> ${appName}\n` +
             `• <b>Asset ID:</b> <code>${id}</code>\n` +
-            (params.title ? `• <b>Title:</b> ${params.title}\n` : "") +
+            (safeTitle ? `• <b>Title:</b> ${safeTitle}\n` : "") +
+            (safeFolder ? `• <b>Folder:</b> <code>${safeFolder}</code>\n` : "") +
+            (safeUploader ? `• <b>Uploader:</b> 👤 <b>${safeUploader}</b>\n` : "") +
+            (safeInfo ? `• <b>Info:</b> 📝 <i>${safeInfo}</i>\n` : "") +
             `• <b>Format:</b> ${params.mimeType || "audio/mpeg"}\n` +
             `• <b>Size:</b> ${params.sizeKb || 0} KB\n` +
             (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">Listen Audio</a>` : "")
           : `🚀 <b>New Media Asset Uploaded</b>\n` +
             `• <b>App:</b> ${appName}\n` +
             `• <b>Asset ID:</b> <code>${id}</code>\n` +
-            (params.title ? `• <b>Title:</b> ${params.title}\n` : "") +
-            `• <b>Size:</b> ${params.sizeKb || 0} KB (Saved ${params.savedKb || 0} KB)\n` +
+            (safeTitle ? `• <b>Title:</b> ${safeTitle}\n` : "") +
+            (safeFolder ? `• <b>Folder:</b> <code>${safeFolder}</code>\n` : "") +
+            (safeUploader ? `• <b>Uploader:</b> 👤 <b>${safeUploader}</b>\n` : "") +
+            (safeInfo ? `• <b>Info:</b> 📝 <i>${safeInfo}</i>\n` : "") +
+            `• <b>Size:</b> ${params.sizeKb || 0} KB` +
+            (params.savedKb ? ` (Saved ${params.savedKb} KB)\n` : `\n`) +
             (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">View Asset</a>` : "");
         break;
 
@@ -56,7 +77,10 @@ export async function sendTelegramNotification(
         text = `🔄 <b>Media Asset Updated & Replaced</b>\n` +
           `• <b>App:</b> ${appName}\n` +
           `• <b>Asset ID:</b> <code>${id}</code>\n` +
-          (params.title ? `• <b>Title:</b> ${params.title}\n` : "") +
+          (safeTitle ? `• <b>Title:</b> ${safeTitle}\n` : "") +
+          (safeFolder ? `• <b>Folder:</b> <code>${safeFolder}</code>\n` : "") +
+          (safeUploader ? `• <b>Uploader:</b> 👤 <b>${safeUploader}</b>\n` : "") +
+          (safeInfo ? `• <b>Info:</b> 📝 <i>${safeInfo}</i>\n` : "") +
           `• <b>New Size:</b> ${params.sizeKb || 0} KB\n` +
           (params.publicUrl ? `• <b>URL:</b> <a href="${params.publicUrl}">View Asset</a>` : "");
         break;
@@ -64,7 +88,9 @@ export async function sendTelegramNotification(
       case "ASSET_DELETED":
         text = `🗑️ <b>Media Asset Moved to Trash</b>\n` +
           `• <b>App:</b> ${appName}\n` +
-          `• <b>Asset ID:</b> <code>${id}</code>`;
+          `• <b>Asset ID:</b> <code>${id}</code>\n` +
+          (safeTitle ? `• <b>Title:</b> ${safeTitle}\n` : "") +
+          (safeUploader ? `• <b>Original Uploader:</b> 👤 ${safeUploader}\n` : "");
         break;
 
       case "TRASH_PURGED":
