@@ -755,7 +755,6 @@ export async function actionUpdateApiKeyDetails(
     .update(apiKeys)
     .set({
       appName: cleanName,
-      updatedAt: new Date(),
     })
     .where(eq(apiKeys.id, id))
     .returning();

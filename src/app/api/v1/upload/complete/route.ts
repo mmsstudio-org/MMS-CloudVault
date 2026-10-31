@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-cache";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { sendTelegramNotification } from "@/lib/telegram";
 
 export async function POST(req: NextRequest) {
@@ -62,8 +62,7 @@ export async function POST(req: NextRequest) {
     const [existing] = await db
       .select()
       .from(mediaAssets)
-      .where(eq(mediaAssets.appId, appId))
-      .where(eq(mediaAssets.assetId, assetId))
+      .where(and(eq(mediaAssets.appId, appId), eq(mediaAssets.assetId, assetId)))
       .limit(1);
 
     let savedAsset;
@@ -122,14 +121,13 @@ export async function POST(req: NextRequest) {
     // 4. Send asynchronous Telegram notification
     try {
       await sendTelegramNotification({
-        appId,
+        event: isReplaced ? "ASSET_REPLACED" : "ASSET_UPLOADED",
         appName,
         assetId,
+        title: title || `Asset for ${assetId}`,
         publicUrl,
         sizeKb: fileSizeKb,
-        originalKb: fileSizeKb,
-        isReplaced,
-        isAudio: mimeType.startsWith("audio/"),
+        mimeType,
       });
     } catch {}
 

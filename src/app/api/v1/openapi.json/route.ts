@@ -136,6 +136,142 @@ export async function GET() {
           },
         },
       },
+      "/api/v1/upload/presigned": {
+        post: {
+          summary: "Request authorized S3 Pre-signed URL for direct client PUT upload",
+          description:
+            "Bypasses server body size limits for large audio tracks or assets (up to 50MB+). Returns a signed, time-limited direct upload URL targeting Neon S3 or Cloudflare R2 object storage.",
+          security: [{ ApiKeyAuth: [] }, { AppCheckAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["asset_id"],
+                  properties: {
+                    asset_id: {
+                      type: "string",
+                      description: "Unique media identifier",
+                      example: "large_podcast_01",
+                    },
+                    file_name: {
+                      type: "string",
+                      description: "Original client filename with extension",
+                      example: "episode_full.mp3",
+                    },
+                    mime_type: {
+                      type: "string",
+                      description: "MIME type of media file",
+                      example: "audio/mpeg",
+                    },
+                    folder: {
+                      type: "string",
+                      description: "Folder or namespace category",
+                      example: "audio",
+                    },
+                    title: {
+                      type: "string",
+                      description: "Optional human-readable title",
+                      example: "Episode 1 Full Track",
+                    },
+                    uploader_name: {
+                      type: "string",
+                      description: "Name of user or service uploading",
+                      example: "Sabbir / Creator App",
+                    },
+                    info: {
+                      type: "string",
+                      description: "Optional context note or remark",
+                      example: "High fidelity lossless master",
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Pre-signed URL successfully generated",
+            },
+            400: {
+              description: "Bad Request: Missing required asset_id",
+            },
+            401: {
+              description: "Unauthorized: Invalid API Key",
+            },
+          },
+        },
+      },
+      "/api/v1/upload/complete": {
+        post: {
+          summary: "Confirm direct S3 Pre-signed upload and register in database",
+          description:
+            "Called immediately after the client successfully PUTs the media file directly to the object storage pre-signed URL. Registers database metadata and triggers telegram notifications.",
+          security: [{ ApiKeyAuth: [] }],
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["asset_id", "storage_key", "public_url"],
+                  properties: {
+                    asset_id: {
+                      type: "string",
+                      example: "large_podcast_01",
+                    },
+                    storage_key: {
+                      type: "string",
+                      example: "golpo-ghor/audio/large_podcast_01.mp3",
+                    },
+                    public_url: {
+                      type: "string",
+                      example: "https://media.sabbirmms.com/golpo-ghor/audio/large_podcast_01.mp3",
+                    },
+                    bucket_id: {
+                      type: "string",
+                      format: "uuid",
+                    },
+                    folder: {
+                      type: "string",
+                      example: "audio",
+                    },
+                    title: {
+                      type: "string",
+                      example: "Episode 1 Full Track",
+                    },
+                    uploader_name: {
+                      type: "string",
+                      example: "Sabbir / Creator App",
+                    },
+                    info: {
+                      type: "string",
+                      example: "High fidelity lossless master",
+                    },
+                    mime_type: {
+                      type: "string",
+                      example: "audio/mpeg",
+                    },
+                    file_size_kb: {
+                      type: "number",
+                      example: 18450,
+                    },
+                  },
+                },
+              },
+            },
+          },
+          responses: {
+            200: {
+              description: "Asset registered and saved in database",
+            },
+            400: {
+              description: "Bad Request: Missing required fields",
+            },
+          },
+        },
+      },
       "/api/v1/assets/{asset_id}": {
         get: {
           summary: "Retrieve direct public URL and metadata for a media asset",
