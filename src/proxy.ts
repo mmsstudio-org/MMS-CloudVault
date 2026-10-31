@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   // Never perform canonical host redirects in development mode or for local/private network addresses
   if (process.env.NODE_ENV === "development") {
     return NextResponse.next();
