@@ -52,15 +52,15 @@ export default async function VerifyTwoFactorPage({
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col justify-between">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       {/* Top Bar Header */}
-      <header className="border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link
             href="/"
             className="flex items-center gap-2.5 font-semibold text-sm hover:opacity-80 transition"
           >
-            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-border bg-black flex items-center justify-center">
               <Image
                 src="/logo.png"
                 alt="MMS Studio Logo"
@@ -89,7 +89,7 @@ export default async function VerifyTwoFactorPage({
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60 py-6 text-center text-xs text-zinc-500 font-mono">
+      <footer className="border-t border-border py-6 text-center text-xs text-zinc-500 font-mono">
         MMS Studio CloudVault &bull; Dynamic S3 Multi-Bucket Infrastructure &bull; 2FA Secured
       </footer>
     </div>

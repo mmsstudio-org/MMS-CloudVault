@@ -20,15 +20,15 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const error = params?.error;
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col justify-between">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between">
       {/* Top Bar Navigation */}
-      <header className="border-b border-zinc-200/60 dark:border-zinc-800/60 bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-border bg-card/60 backdrop-blur-md sticky top-0 z-40">
         <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link
             href="/"
             className="flex items-center gap-2.5 font-semibold text-sm hover:opacity-80 transition"
           >
-            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-border bg-black flex items-center justify-center">
               <Image
                 src="/logo.png"
                 alt="MMS Studio Logo"
@@ -44,7 +44,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             <ThemeToggle />
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition px-2.5 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition px-2.5 py-1.5 rounded-lg hover:bg-muted"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Back to Home</span>
@@ -55,10 +55,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
       {/* Main Login Container */}
       <main className="flex-1 container mx-auto px-4 sm:px-6 py-10 sm:py-16 flex items-center justify-center">
-        <div className="w-full max-w-sm sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 sm:p-8 shadow-xl">
+        <div className="w-full max-w-sm sm:max-w-md bg-card border border-border rounded-2xl p-6 sm:p-8 shadow-xl">
           {/* Logo & Header */}
           <div className="text-center space-y-3 mb-8">
-            <div className="inline-flex w-14 h-14 rounded-2xl overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black items-center justify-center shadow-md">
+            <div className="inline-flex w-14 h-14 rounded-2xl overflow-hidden border border-border bg-black items-center justify-center shadow-md">
               <Image
                 src="/logo.png"
                 alt="MMS Studio Logo"
@@ -72,11 +72,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
                 MMS CloudVault
               </h1>
-              <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Administrative Media & Asset Management Portal
               </p>
             </div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-500/20">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium border border-emerald-500/20">
               <Shield className="w-3.5 h-3.5" />
               Whitelisted Admin Access Only
             </div>
@@ -84,7 +84,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           {/* Error Banner */}
           {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-start gap-2.5">
+            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-start gap-2.5">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <div>
                 <p className="font-semibold">Access Blocked</p>
@@ -101,18 +101,18 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           <LoginForm callbackUrl={params?.callbackUrl} />
 
           {/* Security Notice */}
-          <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800 text-center space-y-2">
-            <p className="text-xs text-zinc-400 dark:text-zinc-500 flex items-center justify-center gap-1">
+          <div className="mt-8 pt-6 border-t border-border text-center space-y-2">
+            <p className="text-xs text-muted-foreground flex items-center justify-center gap-1">
               <Lock className="w-3 h-3 text-emerald-500" />
               256-bit encrypted authentication & Google OAuth 2.0
             </p>
-            <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
+            <p className="text-[11px] text-muted-foreground">
               By continuing, you agree to our{" "}
-              <Link href="/terms" className="underline hover:text-zinc-900 dark:hover:text-white">
+              <Link href="/terms" className="underline hover:text-foreground">
                 Terms
               </Link>{" "}
               and{" "}
-              <Link href="/privacy" className="underline hover:text-zinc-900 dark:hover:text-white">
+              <Link href="/privacy" className="underline hover:text-foreground">
                 Privacy Policy
               </Link>
               .
@@ -122,8 +122,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200/60 dark:border-zinc-800/60 py-6">
-        <div className="container mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-400 dark:text-zinc-500">
+      <footer className="border-t border-border py-6">
+        <div className="container mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <p>© 2026 MMS CloudVault. All rights reserved.</p>
           <p>
             MMS Studio Media Infrastructure •{" "}
@@ -131,7 +131,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               href="https://studio.sabbirmms.com"
               target="_blank"
               rel="noreferrer"
-              className="hover:underline hover:text-zinc-600 dark:hover:text-zinc-300"
+              className="hover:underline hover:text-foreground"
             >
               studio.sabbirmms.com
             </a>

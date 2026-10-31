@@ -24,7 +24,7 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-10">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           System Settings & Storage Management
         </h1>
         <p className="text-xs text-zinc-500 mt-1">

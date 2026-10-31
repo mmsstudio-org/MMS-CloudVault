@@ -10,15 +10,15 @@ export const metadata = {
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       {/* Navigation */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md sticky top-0 z-50 transition-colors">
+      <header className="border-b border-border bg-card/80 backdrop-blur-md sticky top-0 z-50 transition-colors">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link
             href="/"
             className="flex items-center gap-2 sm:gap-2.5 font-semibold text-sm hover:opacity-80 transition shrink-0"
           >
-            <div className="w-8 h-8 rounded-lg overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center shrink-0 shadow-xs">
+            <div className="w-8 h-8 rounded-lg overflow-hidden border border-border bg-black flex items-center justify-center shrink-0 shadow-xs">
               <Image
                 src="/logo.png"
                 alt="MMS Studio Logo"
@@ -34,7 +34,7 @@ export default function PrivacyPolicyPage() {
             <ThemeToggle />
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-lg border border-border text-foreground hover:bg-muted transition"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span className="hidden xs:inline">Back to Home</span>
@@ -47,29 +47,29 @@ export default function PrivacyPolicyPage() {
       {/* Content */}
       <main className="flex-1 container mx-auto w-full px-4 sm:px-6 lg:px-8 py-12">
         <div className="space-y-4 mb-10">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium border border-emerald-500/20">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium border border-emerald-500/20">
             <ShieldCheck className="w-3.5 h-3.5" />
             Google OAuth & App Privacy Compliant
           </div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Privacy Policy
           </h1>
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="text-sm text-muted-foreground">
             Last Updated: October 31, 2026 • Published by{" "}
             <a
               href="https://studio.sabbirmms.com"
               target="_blank"
               rel="noreferrer"
-              className="underline hover:text-zinc-900 dark:hover:text-white"
+              className="underline hover:text-foreground"
             >
               MMS Studio
             </a>
           </p>
         </div>
 
-        <div className="prose prose-zinc dark:prose-invert max-w-none space-y-8 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">
-          <section className="p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-3">
+        <div className="prose prose-zinc max-w-none space-y-8 text-sm leading-relaxed text-foreground">
+          <section className="p-6 rounded-xl border border-border bg-card shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-3">
               <Lock className="w-4 h-4 text-emerald-500" /> 1. Overview and Core Commitment
             </h2>
             <p>
@@ -86,8 +86,8 @@ export default function PrivacyPolicyPage() {
             </p>
           </section>
 
-          <section className="p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-3">
+          <section className="p-6 rounded-xl border border-border bg-card shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-3">
               <Eye className="w-4 h-4 text-sky-500" /> 2. Information We Collect
             </h2>
             <ul className="list-disc pl-5 space-y-2">
@@ -106,8 +106,8 @@ export default function PrivacyPolicyPage() {
             </ul>
           </section>
 
-          <section className="p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-3">
+          <section className="p-6 rounded-xl border border-border bg-card shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-3">
               <Database className="w-4 h-4 text-purple-500" /> 3. How Media Assets Are Processed & Stored
             </h2>
             <p>
@@ -121,8 +121,8 @@ export default function PrivacyPolicyPage() {
             </ul>
           </section>
 
-          <section className="p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white flex items-center gap-2 mb-3">
+          <section className="p-6 rounded-xl border border-border bg-card shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-3">
               <Server className="w-4 h-4 text-amber-500" /> 4. Data Retention, Soft Deletes & Purging
             </h2>
             <p>
@@ -130,14 +130,14 @@ export default function PrivacyPolicyPage() {
             </p>
           </section>
 
-          <section className="p-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 shadow-sm">
-            <h2 className="text-lg font-semibold text-zinc-900 dark:text-white mb-3">
+          <section className="p-6 rounded-xl border border-border bg-card shadow-sm">
+            <h2 className="text-lg font-semibold text-foreground mb-3">
               5. Contact Us
             </h2>
             <p>
               For privacy inquiries, security notifications, or data deletion requests, contact the MMS Studio Engineering Team:
             </p>
-            <div className="mt-3 p-4 rounded-lg bg-zinc-100 dark:bg-zinc-800/60 font-mono text-xs">
+            <div className="mt-3 p-4 rounded-lg bg-muted font-mono text-xs">
               <p>Organization: MMS Studio</p>
               <p>Email: mr.sabbirmms@gmail.com</p>
               <p>Portfolio & Headquarters: https://studio.sabbirmms.com</p>
@@ -147,7 +147,7 @@ export default function PrivacyPolicyPage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-500">
+      <footer className="border-t border-border py-6 text-center text-xs text-zinc-500">
         © 2026 MMS Studio. All rights reserved.
       </footer>
     </div>

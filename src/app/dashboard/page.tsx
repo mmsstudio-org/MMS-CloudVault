@@ -62,7 +62,7 @@ export default async function DashboardPage() {
       {/* Analytics Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Assets */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-medium text-zinc-500">Total Active Assets</span>
             <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
@@ -70,7 +70,7 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold tracking-tight text-foreground">
               {metrics.totalAssets.toLocaleString()}
             </div>
             <Link
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Current Storage */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-medium text-zinc-500">Storage Utilized</span>
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
@@ -91,7 +91,7 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold tracking-tight text-foreground">
               {Number(metrics.totalStorageMb) >= 1024
                 ? `${(Number(metrics.totalStorageMb) / 1024).toFixed(2)} GB`
                 : `${metrics.totalStorageMb} MB`}
@@ -106,7 +106,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Sharp Savings */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-medium text-zinc-500">Sharp Compression</span>
             <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
@@ -124,7 +124,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Connected Apps */}
-        <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between">
+        <div className="p-5 rounded-2xl bg-card border border-border shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-medium text-zinc-500">Connected Apps</span>
             <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
@@ -132,7 +132,7 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div>
-            <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+            <div className="text-2xl font-bold tracking-tight text-foreground">
               {metrics.appsCount} Active
             </div>
             <Link
@@ -146,10 +146,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* Recent Uploads Section */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm">
         <div className="flex items-center justify-between mb-5">
           <div>
-            <h2 className="text-base font-bold tracking-tight text-zinc-900 dark:text-white">
+            <h2 className="text-base font-bold tracking-tight text-foreground">
               Recent Media Assets
             </h2>
             <p className="text-xs text-zinc-500">
@@ -158,22 +158,22 @@ export default async function DashboardPage() {
           </div>
           <Link
             href="/dashboard/gallery"
-            className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1"
+            className="text-xs font-semibold text-emerald-500 hover:underline inline-flex items-center gap-1"
           >
             View All Assets <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
 
         {metrics.recentAssets.length === 0 ? (
-          <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-400">
-            <Images className="w-10 h-10 mx-auto text-zinc-300 dark:text-zinc-700 mb-2" />
+          <div className="text-center py-12 border border-dashed border-border rounded-xl text-zinc-400">
+            <Images className="w-10 h-10 mx-auto text-muted-foreground mb-2" />
             <p className="text-sm font-medium">No media assets uploaded yet.</p>
             <p className="text-xs text-zinc-500 mt-1">
               Use the web uploader or test the API via Swagger.
             </p>
             <Link
               href="/dashboard/upload"
-              className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-medium"
+              className="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium"
             >
               Upload First Asset
             </Link>
@@ -188,9 +188,9 @@ export default async function DashboardPage() {
               return (
                 <div
                   key={asset.id}
-                  className="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-950/50 transition group flex gap-3.5 items-center overflow-hidden min-w-0"
+                  className="p-3.5 rounded-xl border border-border hover:border-border-strong bg-muted/50 transition group flex gap-3.5 items-center overflow-hidden min-w-0"
                 >
-                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-zinc-200 dark:bg-zinc-800 shrink-0 relative border border-zinc-300/50 dark:border-zinc-700/50 flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted shrink-0 relative border border-border flex items-center justify-center">
                     {isAudio ? (
                       <div className="w-full h-full bg-gradient-to-br from-emerald-950 to-zinc-900 flex items-center justify-center text-emerald-400">
                         <Music className="w-6 h-6 animate-pulse" />
@@ -208,7 +208,7 @@ export default async function DashboardPage() {
 
                   <div className="flex-1 min-w-0 overflow-hidden">
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono shrink-0">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-mono shrink-0">
                         {asset.appId}
                       </span>
                       <span className="text-[10px] text-zinc-400 truncate">
@@ -220,7 +220,7 @@ export default async function DashboardPage() {
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate" title={asset.title || asset.assetId}>
+                    <p className="text-xs font-semibold text-foreground truncate" title={asset.title || asset.assetId}>
                       {asset.title || asset.assetId}
                     </p>
                     <p className="text-[11px] text-zinc-400 font-mono truncate" title={`ID: ${asset.assetId}`}>

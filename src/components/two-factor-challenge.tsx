@@ -162,25 +162,25 @@ export function TwoFactorChallenge({
   };
 
   return (
-    <div className="w-full max-w-sm sm:max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
+    <div className="w-full max-w-sm sm:max-w-md bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
       {/* Brand & Security Header */}
       <div className="text-center space-y-3">
-        <div className="inline-flex w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 items-center justify-center shadow-xs">
+        <div className="inline-flex w-14 h-14 rounded-2xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 items-center justify-center shadow-xs">
           <ShieldCheck className="w-7 h-7" />
         </div>
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-white">
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
             Two-Factor Authentication
           </h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             Google Authenticator Verification Required
           </p>
         </div>
       </div>
 
       {/* Authenticated User Identity Pill */}
-      <div className="flex items-center gap-3 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/60 dark:border-zinc-800">
-        <div className="w-9 h-9 rounded-xl overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black shrink-0 relative">
+      <div className="flex items-center gap-3 p-3 rounded-2xl bg-muted border border-zinc-200/60 border-border">
+        <div className="w-9 h-9 rounded-xl overflow-hidden border border-border bg-black shrink-0 relative">
           <Image
             src={image || "/logo.png"}
             alt={name || "Administrator"}
@@ -189,21 +189,21 @@ export function TwoFactorChallenge({
           />
         </div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-zinc-900 dark:text-white truncate">
+          <p className="text-xs font-semibold text-foreground truncate">
             {name || "Administrator"}
           </p>
-          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+          <p className="text-[11px] text-muted-foreground font-mono truncate">
             {email}
           </p>
         </div>
-        <span className="text-[10px] font-semibold font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+        <span className="text-[10px] font-semibold font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 shrink-0">
           2FA Active
         </span>
       </div>
 
       {/* Error Alert Banner */}
       {error && (
-        <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-xs flex items-start gap-2.5 animate-in fade-in duration-150">
+        <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-start gap-2.5 animate-in fade-in duration-150">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <p className="font-medium leading-relaxed">{error}</p>
         </div>
@@ -216,7 +216,7 @@ export function TwoFactorChallenge({
             <div className="flex items-center justify-between mb-1.5">
               <label
                 htmlFor="backup-code"
-                className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5"
+                className="text-xs font-semibold text-foreground flex items-center gap-1.5"
               >
                 <KeyRound className="w-3.5 h-3.5 text-zinc-400" />
                 <span>Single-Use Backup Recovery Code</span>
@@ -236,11 +236,11 @@ export function TwoFactorChallenge({
                 onChange={handleBackupCodeChange}
                 placeholder="XXXX-XXXX"
                 disabled={isLoading}
-                className="w-full text-center text-xl font-mono tracking-widest py-3.5 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition disabled:opacity-50 uppercase"
+                className="w-full text-center text-xl font-mono tracking-widest py-3.5 px-4 rounded-2xl border border-border bg-muted text-foreground font-bold outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition disabled:opacity-50 uppercase"
               />
             </div>
 
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-2 text-center leading-relaxed">
+            <p className="text-[11px] text-muted-foreground mt-2 text-center leading-relaxed">
               Enter one of your 8-character single-use emergency recovery codes. Each code can only be used once.
             </p>
           </div>
@@ -249,7 +249,7 @@ export function TwoFactorChallenge({
             <div className="flex items-center justify-between mb-1.5">
               <label
                 htmlFor="totp-code"
-                className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5"
+                className="text-xs font-semibold text-foreground flex items-center gap-1.5"
               >
                 <Smartphone className="w-3.5 h-3.5 text-zinc-400" />
                 <span>Enter 6-Digit Authenticator Code</span>
@@ -273,11 +273,11 @@ export function TwoFactorChallenge({
                 onPaste={handlePaste}
                 placeholder="000 000"
                 disabled={isLoading}
-                className="w-full text-center text-2xl font-mono tracking-[0.35em] sm:tracking-[0.5em] py-3.5 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-bold outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition disabled:opacity-50"
+                className="w-full text-center text-2xl font-mono tracking-[0.35em] sm:tracking-[0.5em] py-3.5 px-4 rounded-2xl border border-border bg-muted text-foreground font-bold outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition disabled:opacity-50"
               />
             </div>
 
-            <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-2 text-center leading-relaxed">
+            <p className="text-[11px] text-muted-foreground mt-2 text-center leading-relaxed">
               Open the <strong>Google Authenticator</strong> app on your mobile device and enter the dynamic 6-digit code for <strong>MMS CloudVault</strong>.
             </p>
           </div>
@@ -292,7 +292,7 @@ export function TwoFactorChallenge({
               setError(null);
             }}
             disabled={isLoading}
-            className="text-xs text-emerald-600 dark:text-emerald-400 hover:underline cursor-pointer font-medium disabled:opacity-50"
+            className="text-xs text-emerald-500 hover:underline cursor-pointer font-medium disabled:opacity-50"
           >
             {useBackupCode
               ? "← Use Google Authenticator 6-digit code"
@@ -328,12 +328,12 @@ export function TwoFactorChallenge({
       </form>
 
       {/* Switch Account or Cancel */}
-      <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 text-center">
+      <div className="pt-2 border-t border-border text-center">
         <button
           type="button"
           onClick={handleSignOut}
           disabled={isLoading}
-          className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition py-1 cursor-pointer font-medium disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-foreground transition py-1 cursor-pointer font-medium disabled:opacity-50"
         >
           <LogOut className="w-3.5 h-3.5" />
           <span>Sign Out / Switch Account</span>

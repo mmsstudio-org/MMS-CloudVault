@@ -31,7 +31,7 @@ export function PostmanExportButton() {
         <a
           href="/api/v1/postman.json?download=1"
           onClick={handleDownloadCollection}
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-l-lg border border-r-0 border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 text-xs font-semibold transition cursor-pointer"
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-l-lg border border-r-0 border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 text-xs font-semibold transition cursor-pointer"
         >
           {/* Postman Icon SVG */}
           <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
@@ -44,7 +44,7 @@ export function PostmanExportButton() {
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="px-2 py-1.5 rounded-r-lg border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 text-xs font-semibold transition cursor-pointer"
+          className="px-2 py-1.5 rounded-r-lg border border-orange-500/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-500 text-xs font-semibold transition cursor-pointer"
           title="More Postman Options"
         >
           <ChevronDown className="w-3.5 h-3.5" />
@@ -58,12 +58,12 @@ export function PostmanExportButton() {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-72 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 shadow-xl z-50 text-xs">
-            <div className="p-2 border-b border-zinc-100 dark:border-zinc-800/80 mb-1">
-              <p className="font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="absolute right-0 mt-2 w-72 rounded-xl border border-border bg-card p-2 shadow-xl z-50 text-xs">
+            <div className="p-2 border-b border-border mb-1">
+              <p className="font-semibold text-foreground">
                 Postman Integration
               </p>
-              <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mt-0.5">
+              <p className="text-[11px] text-muted-foreground mt-0.5">
                 Ready-to-use requests with headers, variables, and multipart upload schemas.
               </p>
             </div>
@@ -74,11 +74,11 @@ export function PostmanExportButton() {
                 handleDownloadCollection();
                 setIsOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-foreground hover:bg-muted transition cursor-pointer"
             >
               <Download className="w-4 h-4 text-orange-500 shrink-0" />
               <div>
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="font-medium text-foreground">
                   Download Collection (v2.1 JSON)
                 </p>
                 <p className="text-[10px] text-zinc-500">
@@ -93,7 +93,7 @@ export function PostmanExportButton() {
                 handleCopyOpenApiUrl();
                 setIsOpen(false);
               }}
-              className="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+              className="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-lg text-foreground hover:bg-muted transition cursor-pointer"
             >
               {copied ? (
                 <Check className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -101,7 +101,7 @@ export function PostmanExportButton() {
                 <Copy className="w-4 h-4 text-zinc-500 shrink-0" />
               )}
               <div>
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="font-medium text-foreground">
                   Copy OpenAPI URL for Postman
                 </p>
                 <p className="text-[10px] text-zinc-500">
@@ -116,11 +116,11 @@ export function PostmanExportButton() {
                 setShowGuide(true);
                 setIsOpen(false);
               }}
-              className="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+              className="w-full text-left flex items-center gap-2.5 px-3 py-2 rounded-lg text-foreground hover:bg-muted transition cursor-pointer"
             >
               <HelpCircle className="w-4 h-4 text-sky-500 shrink-0" />
               <div>
-                <p className="font-medium text-zinc-900 dark:text-zinc-100">
+                <p className="font-medium text-foreground">
                   How to Import (3 Steps)
                 </p>
                 <p className="text-[10px] text-zinc-500">
@@ -135,46 +135,46 @@ export function PostmanExportButton() {
       {/* Guide Modal */}
       {showGuide && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <FileJson className="w-5 h-5 text-orange-500" />
-                <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
+                <h3 className="text-base font-bold text-foreground">
                   How to Import into Postman
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowGuide(false)}
-                className="w-7 h-7 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center text-sm font-semibold"
+                className="w-7 h-7 rounded-lg text-zinc-400 hover:text-foreground flex items-center justify-center text-sm font-semibold"
               >
                 ✕
               </button>
             </div>
 
-            <ol className="space-y-3 text-xs text-zinc-600 dark:text-zinc-300">
+            <ol className="space-y-3 text-xs text-muted-foreground">
               <li className="flex gap-2.5">
-                <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0 font-bold text-[11px]">
+                <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center shrink-0 font-bold text-[11px]">
                   1
                 </span>
                 <div>
-                  <strong className="text-zinc-900 dark:text-zinc-100">Download Collection:</strong> Click the &ldquo;Export to Postman&rdquo; button above to download the <code className="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">mms-cloudvault.postman_collection.json</code> file.
+                  <strong className="text-foreground">Download Collection:</strong> Click the &ldquo;Export to Postman&rdquo; button above to download the <code className="font-mono text-[11px] bg-muted px-1 py-0.5 rounded">mms-cloudvault.postman_collection.json</code> file.
                 </div>
               </li>
               <li className="flex gap-2.5">
-                <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0 font-bold text-[11px]">
+                <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center shrink-0 font-bold text-[11px]">
                   2
                 </span>
                 <div>
-                  <strong className="text-zinc-900 dark:text-zinc-100">Import into Postman:</strong> Open the Postman Desktop App or Web workspace, click the <span className="font-semibold text-emerald-500">Import</span> button in the top left, and drop the downloaded JSON file (or choose <em>Link</em> and paste the OpenAPI URL).
+                  <strong className="text-foreground">Import into Postman:</strong> Open the Postman Desktop App or Web workspace, click the <span className="font-semibold text-emerald-500">Import</span> button in the top left, and drop the downloaded JSON file (or choose <em>Link</em> and paste the OpenAPI URL).
                 </div>
               </li>
               <li className="flex gap-2.5">
-                <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0 font-bold text-[11px]">
+                <span className="w-5 h-5 rounded-full bg-orange-500/20 text-orange-500 flex items-center justify-center shrink-0 font-bold text-[11px]">
                   3
                 </span>
                 <div>
-                  <strong className="text-zinc-900 dark:text-zinc-100">Set API Key & Test:</strong> Go to the Collection Variables tab in Postman, set the <code className="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded">apiKey</code> variable to your app&apos;s secret key, and hit Send on any request!
+                  <strong className="text-foreground">Set API Key & Test:</strong> Go to the Collection Variables tab in Postman, set the <code className="font-mono text-[11px] bg-muted px-1 py-0.5 rounded">apiKey</code> variable to your app&apos;s secret key, and hit Send on any request!
                 </div>
               </li>
             </ol>
@@ -183,7 +183,7 @@ export function PostmanExportButton() {
               <button
                 type="button"
                 onClick={() => setShowGuide(false)}
-                className="px-4 py-1.5 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-semibold hover:opacity-90 transition"
+                className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition"
               >
                 Got It!
               </button>

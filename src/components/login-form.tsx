@@ -62,7 +62,7 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
         type="button"
         onClick={handleGoogleSignIn}
         disabled={isGoogleLoading || isCredLoading}
-        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/80 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-sm font-medium text-zinc-900 dark:text-white shadow-sm transition hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-border bg-card hover:bg-muted text-sm font-medium text-foreground shadow-sm transition hover:scale-[1.01] active:scale-[0.99] disabled:opacity-60 cursor-pointer"
       >
         {isGoogleLoading ? (
           <Loader2 className="w-5 h-5 animate-spin text-zinc-500" />
@@ -95,7 +95,7 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
           <button
             type="button"
             onClick={() => setShowDevLogin(!showDevLogin)}
-            className="w-full flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition py-1 cursor-pointer"
+            className="w-full flex items-center justify-between text-xs text-muted-foreground hover:text-foreground transition py-1 cursor-pointer"
           >
             <span className="flex items-center gap-1.5 font-medium">
               <KeyRound className="w-3.5 h-3.5 text-amber-500" />
@@ -111,9 +111,9 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
           {showDevLogin && (
             <form
               onSubmit={handleDevSignIn}
-              className="mt-3 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 space-y-3"
+              className="mt-3 p-4 rounded-xl border border-border bg-muted space-y-3"
             >
-              <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-700 dark:text-amber-300">
+              <div className="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-500">
                 <span className="font-semibold block">Local Dev Quick Credentials:</span>
                 Email: <code className="font-mono font-bold">mr.sabbirmms@gmail.com</code>
                 <br />
@@ -121,7 +121,7 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                   Whitelisted Email
                 </label>
                 <input
@@ -129,13 +129,13 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 font-mono"
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card focus:outline-none focus:ring-1 focus:ring-zinc-500 font-mono"
                   placeholder="mr.sabbirmms@gmail.com"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-300 mb-1">
+                <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                   Admin Passcode
                 </label>
                 <input
@@ -143,7 +143,7 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
                   value={passcode}
                   onChange={(e) => setPasscode(e.target.value)}
                   required
-                  className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-500 font-mono"
+                  className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card focus:outline-none focus:ring-1 focus:ring-zinc-500 font-mono"
                   placeholder="admin123"
                 />
               </div>
@@ -151,7 +151,7 @@ export function LoginForm({ callbackUrl = "/dashboard" }: { callbackUrl?: string
               <button
                 type="submit"
                 disabled={isCredLoading}
-                className="w-full py-2 px-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-medium hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                className="w-full py-2 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
               >
                 {isCredLoading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
                 Sign In as Administrator

@@ -16,7 +16,7 @@ export default async function GalleryPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+        <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
           Media Asset Gallery
         </h1>
         <p className="text-xs text-zinc-500 mt-1">
