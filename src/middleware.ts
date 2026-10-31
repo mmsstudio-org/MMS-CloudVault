@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export function middleware(req: NextRequest) {
+  // Never perform canonical host redirects in development mode or for local/private network addresses
+  if (process.env.NODE_ENV === "development") {
+    return NextResponse.next();
+  }
+
   const publicAppUrl = process.env.NEXT_PUBLIC_APP_URL;
 
   if (!publicAppUrl) {
@@ -8,15 +13,27 @@ export function middleware(req: NextRequest) {
   }
 
   try {
-    const targetUrl = new URL(publicAppUrl);
-    const targetHost = targetUrl.host.toLowerCase(); // includes port if specified (e.g. localhost:3000)
-    const targetProtocol = targetUrl.protocol; // "http:" or "https:"
-
     const rawHost =
       req.headers.get("x-forwarded-host") ||
       req.headers.get("host") ||
       req.nextUrl.host;
-    const currentHost = rawHost.toLowerCase().split(",")[0].trim();
+    const currentHost = (rawHost || "").toLowerCase().split(",")[0].trim();
+
+    const isCurrentLocal =
+      currentHost.includes("localhost") ||
+      currentHost.includes("127.0.0.1") ||
+      currentHost.includes("0.0.0.0") ||
+      currentHost.startsWith("192.168.") ||
+      currentHost.startsWith("10.") ||
+      currentHost.startsWith("172.");
+
+    if (isCurrentLocal) {
+      return NextResponse.next();
+    }
+
+    const targetUrl = new URL(publicAppUrl);
+    const targetHost = targetUrl.host.toLowerCase();
+    const targetProtocol = targetUrl.protocol;
 
     const currentProto = (
       req.headers.get("x-forwarded-proto") ||
@@ -26,27 +43,16 @@ export function middleware(req: NextRequest) {
       .split(",")[0]
       .trim();
 
-    const isCurrentLocal =
-      currentHost.includes("localhost") || currentHost.includes("127.0.0.1");
-    const isTargetLocal =
-      targetHost.includes("localhost") || targetHost.includes("127.0.0.1");
-
-    // Guard: Prevent disrupting local testing if production URL is configured in dev
-    if (process.env.NODE_ENV === "development" && isCurrentLocal && !isTargetLocal) {
-      return NextResponse.next();
-    }
-
     const hostMismatch = currentHost !== targetHost;
-    const protoMismatch =
-      targetProtocol === "https:" && currentProto === "http" && !isCurrentLocal;
+    const protoMismatch = targetProtocol === "https:" && currentProto === "http";
 
     if (hostMismatch || protoMismatch) {
       const redirectUrl = new URL(
         `${targetUrl.origin}${req.nextUrl.pathname}${req.nextUrl.search}`
       );
 
-      // 308 Permanent Redirect for canonical URL enforcement
-      return NextResponse.redirect(redirectUrl, { status: 308 });
+      // Temporary redirect (307) instead of 308 to avoid permanent browser cache poisoning
+      return NextResponse.redirect(redirectUrl, { status: 307 });
     }
   } catch (err) {
     console.error("[Middleware] Canonical URL redirect error:", err);
