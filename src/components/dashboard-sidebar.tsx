@@ -59,6 +59,18 @@ export function DashboardSidebar() {
     closeSidebar();
   }, [pathname, closeSidebar]);
 
+  // Prevent background scroll when mobile sidebar drawer is open
+  React.useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [sidebarOpen]);
+
   // Close on Escape key
   React.useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -195,25 +207,34 @@ export function DashboardSidebar() {
         {renderSidebarContent(false)}
       </aside>
 
-      {/* 2. Mobile Drawer Overlay & Slide-In Panel (< lg) */}
-      {sidebarOpen && (
-        <div className="lg:hidden fixed inset-0 z-50 overflow-hidden">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200"
-            onClick={closeSidebar}
-            aria-hidden="true"
-          />
+      {/* 2. Mobile Drawer Overlay & Slide-In Panel (< lg) with Smooth In & Out Transitions */}
+      <div
+        className={`lg:hidden fixed inset-0 z-50 transition-all duration-300 ease-in-out ${
+          sidebarOpen
+            ? "pointer-events-auto visible"
+            : "pointer-events-none invisible delay-300"
+        }`}
+        aria-hidden={!sidebarOpen}
+      >
+        {/* Backdrop: Smooth Fade-In and Fade-Out */}
+        <div
+          className={`fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+            sidebarOpen ? "opacity-100" : "opacity-0"
+          }`}
+          onClick={closeSidebar}
+          aria-hidden="true"
+        />
 
-          {/* Drawer Panel */}
-          <aside
-            className="fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-zinc-950 shadow-2xl flex flex-col border-r border-zinc-200 dark:border-zinc-800 animate-in slide-in-from-left duration-200"
-            aria-label="Mobile Navigation"
-          >
-            {renderSidebarContent(true)}
-          </aside>
-        </div>
-      )}
+        {/* Drawer Panel: Smooth Slide-In and Slide-Out */}
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-72 max-w-[85vw] bg-white dark:bg-zinc-950 shadow-2xl flex flex-col border-r border-zinc-200 dark:border-zinc-800 transition-transform duration-300 ease-in-out transform will-change-transform ${
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
+          aria-label="Mobile Navigation"
+        >
+          {renderSidebarContent(true)}
+        </aside>
+      </div>
     </>
   );
 }
