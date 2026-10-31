@@ -255,14 +255,14 @@ export function StorageBucketsManager({
         const updated = await actionUpdateStorageBucket(editingBucket.id, {
           name,
           slug: finalSlug,
-          notes,
+          notes: notes.trim() || null,
           provider,
           endpoint,
           bucketName,
           region,
           accessKeyId,
           secretAccessKey,
-          publicBaseUrl: publicBaseUrl.trim() || undefined,
+          publicBaseUrl: publicBaseUrl.trim() || null,
           maxCapacityGb: Number(maxCapacityGb) || 5,
           isDefault,
         });

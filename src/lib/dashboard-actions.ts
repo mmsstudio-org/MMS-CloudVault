@@ -319,14 +319,14 @@ export async function actionUpdateStorageBucket(
   data: Partial<{
     name: string;
     slug: string;
-    notes: string;
+    notes: string | null;
     provider: string;
     endpoint: string;
     bucketName: string;
     region: string;
     accessKeyId: string;
     secretAccessKey: string;
-    publicBaseUrl: string;
+    publicBaseUrl: string | null;
     isDefault: boolean;
     isActive: boolean;
     maxCapacityGb: number;
@@ -341,12 +341,27 @@ export async function actionUpdateStorageBucket(
       .where(eq(storageBuckets.isDefault, true));
   }
 
+  // Ensure publicBaseUrl and notes can be explicitly cleared to null
+  const updatePayload: Record<string, any> = {
+    ...data,
+    updatedAt: new Date(),
+  };
+
+  if ("publicBaseUrl" in data) {
+    updatePayload.publicBaseUrl = data.publicBaseUrl && data.publicBaseUrl.trim() !== ""
+      ? data.publicBaseUrl.trim()
+      : null;
+  }
+
+  if ("notes" in data) {
+    updatePayload.notes = data.notes && data.notes.trim() !== ""
+      ? data.notes.trim()
+      : null;
+  }
+
   const updated = await db
     .update(storageBuckets)
-    .set({
-      ...data,
-      updatedAt: new Date(),
-    })
+    .set(updatePayload)
     .where(eq(storageBuckets.id, id))
     .returning();
 
