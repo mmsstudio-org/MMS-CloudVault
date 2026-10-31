@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: [
+    "next.aponabd.com",
+    "*.aponabd.com",
+    "*.sabbirmms.com",
+    "localhost:3000",
+  ],
   images: {
     remotePatterns: [
       {
@@ -17,6 +23,14 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
+        hostname: "next.aponabd.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.aponabd.com",
+      },
+      {
+        protocol: "https",
         hostname: "*.r2.cloudflarestorage.com",
       },
       {
@@ -28,6 +42,12 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       bodySizeLimit: "50mb",
+      allowedOrigins: [
+        "next.aponabd.com",
+        "*.aponabd.com",
+        "localhost:3000",
+        "127.0.0.1:3000",
+      ],
     },
   },
   turbopack: {

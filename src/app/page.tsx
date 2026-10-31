@@ -14,93 +14,29 @@ import {
   Database,
   Cloud,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { LandingNavbar } from "@/components/landing-navbar";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex flex-col selection:bg-emerald-500 selection:text-white">
       {/* Top Notification Banner */}
-      <div className="bg-zinc-900 text-zinc-300 text-xs py-2 px-4 border-b border-zinc-800 text-center flex items-center justify-center gap-2">
-        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-        <span>
-          A dedicated sub-system of <strong>MMS Studio</strong>. Looking for our creative agency & software portfolio?
+      <div className="bg-zinc-900 text-zinc-300 text-xs py-2 px-4 border-b border-zinc-800 text-center flex flex-wrap sm:flex-nowrap items-center justify-center gap-1.5 sm:gap-2">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" />
+        <span className="text-zinc-300">
+          A dedicated sub-system of <strong>MMS Studio</strong>. Looking for our creative agency?
         </span>
         <a
           href="https://studio.sabbirmms.com"
           target="_blank"
           rel="noreferrer"
-          className="text-emerald-400 font-semibold hover:underline inline-flex items-center gap-1 ml-1"
+          className="text-emerald-400 font-semibold hover:underline inline-flex items-center gap-1 ml-1 shrink-0"
         >
           Visit studio.sabbirmms.com <ExternalLink className="w-3 h-3" />
         </a>
       </div>
 
-      {/* Main Navigation Bar */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800/80 bg-white/70 dark:bg-zinc-950/70 backdrop-blur-md sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          {/* Logo & Brand */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl overflow-hidden border border-zinc-300 dark:border-zinc-700 bg-black flex items-center justify-center shadow-sm group-hover:scale-105 transition">
-              <Image
-                src="/logo.png"
-                alt="MMS Studio Logo"
-                width={36}
-                height={36}
-                className="object-contain"
-                priority
-              />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-sm tracking-tight text-zinc-900 dark:text-white">
-                  MMS Studio
-                </span>
-                <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                  Storage
-                </span>
-              </div>
-              <span className="text-[10px] text-zinc-400 font-mono block">
-                Media Delivery Infrastructure
-              </span>
-            </div>
-          </Link>
-
-          {/* Nav Links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-medium text-zinc-600 dark:text-zinc-400">
-            <a href="#features" className="hover:text-zinc-900 dark:hover:text-white transition">
-              Features
-            </a>
-            <a href="#architecture" className="hover:text-zinc-900 dark:hover:text-white transition">
-              Architecture
-            </a>
-            <Link href="/api-docs" className="hover:text-zinc-900 dark:hover:text-white transition flex items-center gap-1">
-              <span>Swagger API</span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            </Link>
-            <a
-              href="https://studio.sabbirmms.com"
-              target="_blank"
-              rel="noreferrer"
-              className="text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-            >
-              <span>Main Portfolio</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
-          </nav>
-
-          {/* Action Buttons & Theme */}
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-semibold hover:opacity-90 transition shadow-sm cursor-pointer"
-            >
-              <span>Admin Portal</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* Main Responsive Navigation Bar */}
+      <LandingNavbar />
 
       {/* Hero Section */}
       <section className="relative overflow-hidden pt-16 pb-20 sm:pt-24 sm:pb-28">

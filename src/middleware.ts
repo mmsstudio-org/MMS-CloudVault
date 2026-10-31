@@ -27,7 +27,13 @@ export function middleware(req: NextRequest) {
       currentHost.startsWith("10.") ||
       currentHost.startsWith("172.");
 
-    if (isCurrentLocal) {
+    // Allow Cloudflare tunnels and custom tunnels (e.g. next.aponabd.com)
+    const isTunnelOrAllowedHost =
+      currentHost.includes("aponabd.com") ||
+      currentHost.includes("trycloudflare.com") ||
+      currentHost.includes("ngrok");
+
+    if (isCurrentLocal || isTunnelOrAllowedHost) {
       return NextResponse.next();
     }
 
