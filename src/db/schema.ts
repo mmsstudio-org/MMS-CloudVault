@@ -173,6 +173,7 @@ export const adminUsers = pgTable("admin_users", {
   role: text("role").default("admin").notNull(), // 'superadmin' | 'admin'
   totpSecret: text("totp_secret"),
   isTwoFactorEnabled: boolean("is_two_factor_enabled").default(false).notNull(),
+  recoveryCodes: text("recovery_codes").array(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

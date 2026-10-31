@@ -1,10 +1,10 @@
 import { generateSecret, generateURI, verifySync } from "otplib";
 import QRCode from "qrcode";
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
 import { SignJWT, jwtVerify } from "jose";
 import { db } from "@/db";
 import { adminUsers } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 export const TWO_FACTOR_COOKIE_NAME = "mms_2fa_session";
 
@@ -130,18 +130,52 @@ export function verifyTotpCode(secret: string, token: string): boolean {
 }
 
 /**
- * Saves and enables 2FA for an admin user in DB
+ * Generates an array of single-use backup recovery codes (format: XXXX-XXXX)
+ */
+export function generateRecoveryCodes(count = 8): string[] {
+  const codes: string[] = [];
+  for (let i = 0; i < count; i++) {
+    const raw = randomBytes(4).toString("hex").toUpperCase();
+    codes.push(`${raw.slice(0, 4)}-${raw.slice(4, 8)}`);
+  }
+  return codes;
+}
+
+/**
+ * Saves and enables 2FA for an admin user in DB along with fresh recovery codes
  */
 export async function enableTwoFactor(
   email: string,
   secret: string
-): Promise<boolean> {
+): Promise<{ success: boolean; recoveryCodes: string[] }> {
   const normalizedEmail = email.toLowerCase().trim();
+  const recoveryCodes = generateRecoveryCodes(8);
+
   const res = await db
     .update(adminUsers)
     .set({
       totpSecret: secret,
       isTwoFactorEnabled: true,
+      recoveryCodes,
+      updatedAt: new Date(),
+    })
+    .where(eq(adminUsers.email, normalizedEmail))
+    .returning();
+
+  return { success: res.length > 0, recoveryCodes };
+}
+
+/**
+ * Disables 2FA for an admin user in DB and clears secret & recovery codes
+ */
+export async function disableTwoFactor(email: string): Promise<boolean> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const res = await db
+    .update(adminUsers)
+    .set({
+      totpSecret: null,
+      isTwoFactorEnabled: false,
+      recoveryCodes: null,
       updatedAt: new Date(),
     })
     .where(eq(adminUsers.email, normalizedEmail))
@@ -151,19 +185,91 @@ export async function enableTwoFactor(
 }
 
 /**
- * Disables 2FA for an admin user in DB
+ * Retrieves the remaining active recovery codes for an admin user
  */
-export async function disableTwoFactor(email: string): Promise<boolean> {
+export async function getUserRecoveryCodes(email: string): Promise<string[]> {
   const normalizedEmail = email.toLowerCase().trim();
-  const res = await db
+  const user = await db
+    .select({
+      recoveryCodes: adminUsers.recoveryCodes,
+      isTwoFactorEnabled: adminUsers.isTwoFactorEnabled,
+    })
+    .from(adminUsers)
+    .where(eq(adminUsers.email, normalizedEmail))
+    .limit(1);
+
+  if (!user.length || !user[0].isTwoFactorEnabled || !user[0].recoveryCodes) {
+    return [];
+  }
+  return user[0].recoveryCodes;
+}
+
+/**
+ * Generates a fresh set of recovery codes for an active 2FA admin
+ */
+export async function regenerateUserRecoveryCodes(
+  email: string
+): Promise<string[]> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const recoveryCodes = generateRecoveryCodes(8);
+
+  await db
     .update(adminUsers)
     .set({
-      totpSecret: null,
-      isTwoFactorEnabled: false,
+      recoveryCodes,
       updatedAt: new Date(),
     })
-    .where(eq(adminUsers.email, normalizedEmail))
-    .returning();
+    .where(
+      and(
+        eq(adminUsers.email, normalizedEmail),
+        eq(adminUsers.isTwoFactorEnabled, true)
+      )
+    );
 
-  return res.length > 0;
+  return recoveryCodes;
+}
+
+/**
+ * Verifies and consumes a single-use backup recovery code
+ */
+export async function verifyAndConsumeRecoveryCode(
+  email: string,
+  inputCode: string
+): Promise<boolean> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const cleanCode = inputCode.trim().toUpperCase().replace(/[^A-Z0-9-]/g, "");
+
+  const user = await db
+    .select({
+      recoveryCodes: adminUsers.recoveryCodes,
+      isTwoFactorEnabled: adminUsers.isTwoFactorEnabled,
+    })
+    .from(adminUsers)
+    .where(eq(adminUsers.email, normalizedEmail))
+    .limit(1);
+
+  if (!user.length || !user[0].isTwoFactorEnabled || !user[0].recoveryCodes) {
+    return false;
+  }
+
+  const codes = user[0].recoveryCodes;
+  const matchIndex = codes.findIndex(
+    (c) => c.toUpperCase() === cleanCode || c.replace(/-/g, "").toUpperCase() === cleanCode.replace(/-/g, "")
+  );
+
+  if (matchIndex === -1) {
+    return false;
+  }
+
+  // Atomically remove the consumed code
+  const remainingCodes = codes.filter((_, i) => i !== matchIndex);
+  await db
+    .update(adminUsers)
+    .set({
+      recoveryCodes: remainingCodes,
+      updatedAt: new Date(),
+    })
+    .where(eq(adminUsers.email, normalizedEmail));
+
+  return true;
 }

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await enableTwoFactor(session.user.email, secret);
+    const result = await enableTwoFactor(session.user.email, secret);
 
     // Issue active 2FA session token so current session remains authenticated
     const sessionToken = await create2FaSessionToken(session.user.email);
@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       success: true,
       message: "Two-Factor Authentication enabled successfully.",
+      recoveryCodes: result.recoveryCodes,
     });
 
     response.cookies.set({

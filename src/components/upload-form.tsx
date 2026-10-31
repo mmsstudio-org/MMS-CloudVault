@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { CopyButton } from "./copy-button";
 import { toast } from "sonner";
 import { MediaAsset } from "@/db/schema";
+import { optimizeImageClientSide } from "@/lib/client-image-optimizer";
 
 interface BatchQueueItem {
   id: string;
@@ -146,8 +147,11 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       );
 
       try {
+        // Pre-optimize image client-side to ensure payload is under Vercel's 4.5MB limit
+        const uploadReadyFile = await optimizeImageClientSide(item.file);
+
         const formData = new FormData();
-        formData.append("file", item.file);
+        formData.append("file", uploadReadyFile);
         formData.append("app_id", selectedApp);
         formData.append("asset_id", item.assetId.trim());
         formData.append("title", item.title.trim());
@@ -226,8 +230,11 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
     try {
       setIsUploading(true);
+      // Pre-optimize image client-side to ensure payload is under Vercel's 4.5MB limit
+      const uploadReadyFile = await optimizeImageClientSide(file);
+
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", uploadReadyFile);
       formData.append("app_id", selectedApp);
       formData.append("asset_id", assetId.trim());
       formData.append("title", title.trim());

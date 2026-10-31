@@ -4,6 +4,7 @@ import {
   verifyTotpCode,
   getUserTotpSecret,
   create2FaSessionToken,
+  verifyAndConsumeRecoveryCode,
   TWO_FACTOR_COOKIE_NAME,
 } from "@/lib/totp";
 
@@ -17,33 +18,59 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const { code } = await req.json();
+    const { code, isBackupCode } = await req.json();
     const cleanCode = typeof code === "string" ? code.trim() : "";
 
-    if (!cleanCode || cleanCode.length !== 6) {
+    if (!cleanCode) {
       return NextResponse.json(
-        { error: "Please enter a valid 6-digit verification code." },
+        { error: "Verification code is required." },
         { status: 400 }
       );
     }
 
-    const secret = await getUserTotpSecret(session.user.email);
-    if (!secret) {
-      return NextResponse.json(
-        { error: "Two-Factor Authentication is not active for this account." },
-        { status: 400 }
+    if (isBackupCode) {
+      // Single-use backup recovery code verification
+      const isValidBackup = await verifyAndConsumeRecoveryCode(
+        session.user.email,
+        cleanCode
       );
-    }
 
-    const isValid = verifyTotpCode(secret, cleanCode);
-    if (!isValid) {
-      return NextResponse.json(
-        {
-          error:
-            "Invalid 6-digit verification code. Please check your Google Authenticator app and try again.",
-        },
-        { status: 400 }
-      );
+      if (!isValidBackup) {
+        return NextResponse.json(
+          {
+            error:
+              "Invalid backup recovery code or code has already been used. Please check your backup codes.",
+          },
+          { status: 400 }
+        );
+      }
+    } else {
+      // 6-digit TOTP verification
+      if (cleanCode.length !== 6) {
+        return NextResponse.json(
+          { error: "Please enter a valid 6-digit verification code." },
+          { status: 400 }
+        );
+      }
+
+      const secret = await getUserTotpSecret(session.user.email);
+      if (!secret) {
+        return NextResponse.json(
+          { error: "Two-Factor Authentication is not active for this account." },
+          { status: 400 }
+        );
+      }
+
+      const isValid = verifyTotpCode(secret, cleanCode);
+      if (!isValid) {
+        return NextResponse.json(
+          {
+            error:
+              "Invalid 6-digit verification code. Please check your Google Authenticator app and try again.",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Generate signed 2FA session token
@@ -51,7 +78,9 @@ export async function POST(req: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      message: "Two-Factor Authentication verified successfully.",
+      message: isBackupCode
+        ? "Backup recovery code verified successfully. Code has been consumed."
+        : "Two-Factor Authentication verified successfully.",
     });
 
     response.cookies.set({

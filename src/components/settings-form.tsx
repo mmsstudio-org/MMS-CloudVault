@@ -16,6 +16,11 @@ import {
   ShieldAlert,
   Loader2,
   Save,
+  KeyRound,
+  Copy,
+  Download,
+  RefreshCw,
+  X,
 } from "lucide-react";
 import { SiteSettings } from "@/db/schema";
 import {
@@ -94,6 +99,13 @@ export function SettingsForm({
   const [totpSecret, setTotpSecret] = React.useState("");
   const [totpCode, setTotpCode] = React.useState("");
   const [isVerifying2FA, setIsVerifying2FA] = React.useState(false);
+
+  // 2FA Recovery Codes State
+  const [showRecoveryCodesModal, setShowRecoveryCodesModal] = React.useState(false);
+  const [recoveryCodes, setRecoveryCodes] = React.useState<string[]>([]);
+  const [isLoadingRecoveryCodes, setIsLoadingRecoveryCodes] = React.useState(false);
+  const [isRegeneratingCodes, setIsRegeneratingCodes] = React.useState(false);
+  const [newSetupRecoveryCodes, setNewSetupRecoveryCodes] = React.useState<string[] | null>(null);
 
   const handleAddEmail = () => {
     const clean = newEmail.toLowerCase().trim();
@@ -193,7 +205,11 @@ export function SettingsForm({
       if (data.success) {
         toast.success("Two-Factor Authentication activated successfully!");
         setIsTwoFactorActive(true);
-        setShow2FAModal(false);
+        if (data.recoveryCodes && data.recoveryCodes.length > 0) {
+          setNewSetupRecoveryCodes(data.recoveryCodes);
+        } else {
+          setShow2FAModal(false);
+        }
       } else {
         toast.error(data.error || "Invalid 6-digit code.");
       }
@@ -202,6 +218,63 @@ export function SettingsForm({
     } finally {
       setIsVerifying2FA(false);
     }
+  };
+
+  const handleOpenRecoveryCodes = async () => {
+    setShowRecoveryCodesModal(true);
+    setIsLoadingRecoveryCodes(true);
+    try {
+      const res = await fetch("/api/v1/auth/2fa/recovery-codes");
+      const data = await res.json();
+      if (res.ok && data.recoveryCodes) {
+        setRecoveryCodes(data.recoveryCodes);
+      } else {
+        toast.error(data.error || "Failed to load recovery codes.");
+      }
+    } catch {
+      toast.error("Network error loading recovery codes.");
+    } finally {
+      setIsLoadingRecoveryCodes(false);
+    }
+  };
+
+  const handleRegenerateRecoveryCodes = async () => {
+    setIsRegeneratingCodes(true);
+    try {
+      const res = await fetch("/api/v1/auth/2fa/recovery-codes", { method: "POST" });
+      const data = await res.json();
+      if (res.ok && data.recoveryCodes) {
+        setRecoveryCodes(data.recoveryCodes);
+        toast.success("Fresh recovery codes generated! Previous codes were revoked.");
+      } else {
+        toast.error(data.error || "Failed to regenerate recovery codes.");
+      }
+    } catch {
+      toast.error("Error regenerating recovery codes.");
+    } finally {
+      setIsRegeneratingCodes(false);
+    }
+  };
+
+  const copyAllCodes = async (codes: string[]) => {
+    try {
+      await navigator.clipboard.writeText(codes.join("\n"));
+      toast.success("Recovery codes copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy codes.");
+    }
+  };
+
+  const downloadCodesAsText = (codes: string[]) => {
+    const textContent = `MMS CloudVault 2FA Backup Recovery Codes\nAccount: ${userEmail}\nGenerated: ${new Date().toISOString()}\n\nTreat these codes like your password. Each code can only be used once.\n\n${codes.map((c, i) => `${i + 1}. ${c}`).join("\n")}\n`;
+    const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mms-cloudvault-recovery-codes-${Date.now()}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success("Recovery codes downloaded (.txt)!");
   };
 
   const handleDisable2FA = () => {
@@ -528,19 +601,29 @@ export function SettingsForm({
         </div>
 
         {isTwoFactorActive ? (
-          <button
-            type="button"
-            onClick={handleDisable2FA}
-            disabled={isDisabling2FA}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/60 transition cursor-pointer self-start sm:self-auto shrink-0 disabled:opacity-50"
-          >
-            {isDisabling2FA ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <ShieldAlert className="w-4 h-4" />
-            )}
-            <span>Disable 2FA Security</span>
-          </button>
+          <div className="flex items-center gap-2 self-start sm:self-auto shrink-0 flex-wrap">
+            <button
+              type="button"
+              onClick={handleOpenRecoveryCodes}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer"
+            >
+              <KeyRound className="w-4 h-4 text-emerald-500" />
+              <span>Recovery Codes</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDisable2FA}
+              disabled={isDisabling2FA}
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/60 transition cursor-pointer disabled:opacity-50"
+            >
+              {isDisabling2FA ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <ShieldAlert className="w-4 h-4" />
+              )}
+              <span>Disable 2FA</span>
+            </button>
+          </div>
         ) : (
           <button
             type="button"
@@ -572,59 +655,239 @@ export function SettingsForm({
       {/* 2FA Setup Modal Dialog */}
       {show2FAModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4">
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
-              Scan with Google Authenticator
-            </h3>
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            {newSetupRecoveryCodes ? (
+              <div className="space-y-4 animate-in fade-in">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                      Save Emergency Recovery Codes
+                    </h3>
+                    <p className="text-[11px] text-zinc-500">
+                      Emergency backup codes if you lose Authenticator access
+                    </p>
+                  </div>
+                </div>
 
-            {totpQrUrl ? (
-              <div className="p-3 bg-white rounded-xl border border-zinc-200 flex items-center justify-center">
-                <Image
-                  src={totpQrUrl}
-                  alt="2FA QR Code"
-                  width={200}
-                  height={200}
-                  className="rounded-lg"
-                  unoptimized
-                />
+                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                  ⚠️ <strong>Important:</strong> If you lose your phone or Authenticator app, these {newSetupRecoveryCodes.length} codes are the only way to recover access. Each code can be used exactly once.
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                  {newSetupRecoveryCodes.map((c, idx) => (
+                    <div
+                      key={idx}
+                      className="p-1.5 text-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200/60 dark:border-zinc-800"
+                    >
+                      {c}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => copyAllCodes(newSetupRecoveryCodes)}
+                    className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy All</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadCodesAsText(newSetupRecoveryCodes)}
+                    className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download (.txt)</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setNewSetupRecoveryCodes(null);
+                    setShow2FAModal(false);
+                    setTotpCode("");
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition cursor-pointer"
+                >
+                  I Have Saved My Recovery Codes
+                </button>
               </div>
             ) : (
-              <div className="h-48 flex items-center justify-center">
-                <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+              <>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  Scan with Google Authenticator
+                </h3>
+
+                {totpQrUrl ? (
+                  <div className="p-3 bg-white rounded-xl border border-zinc-200 flex items-center justify-center max-w-[220px] mx-auto shadow-sm">
+                    <Image
+                      src={totpQrUrl}
+                      alt="2FA QR Code"
+                      width={200}
+                      height={200}
+                      className="rounded-lg"
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <div className="h-48 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Enter 6-Digit Code
+                  </label>
+                  <input
+                    type="text"
+                    maxLength={6}
+                    value={totpCode}
+                    onChange={(e) =>
+                      setTotpCode(e.target.value.replace(/\D/g, ""))
+                    }
+                    placeholder="123456"
+                    className="w-full px-3 py-2 text-center text-sm tracking-widest font-mono rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-bold focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShow2FAModal(false)}
+                    className="w-1/2 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleVerify2FA}
+                    disabled={isVerifying2FA || totpCode.length !== 6}
+                    className="w-1/2 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
+                  >
+                    {isVerifying2FA ? "Verifying..." : "Confirm & Enable"}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 2FA Existing Recovery Codes Modal */}
+      {showRecoveryCodesModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    Emergency Backup Recovery Codes
+                  </h3>
+                  <p className="text-[11px] text-zinc-500">
+                    {recoveryCodes.length} remaining active single-use codes
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRecoveryCodesModal(false)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {isLoadingRecoveryCodes ? (
+              <div className="py-12 flex flex-col items-center justify-center gap-2 text-zinc-400">
+                <Loader2 className="w-6 h-6 animate-spin text-emerald-500" />
+                <span className="text-xs">Fetching active recovery codes...</span>
+              </div>
+            ) : recoveryCodes.length === 0 ? (
+              <div className="py-8 text-center space-y-3">
+                <AlertCircle className="w-10 h-10 text-amber-500 mx-auto" />
+                <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                  No active recovery codes found.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleRegenerateRecoveryCodes}
+                  disabled={isRegeneratingCodes}
+                  className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-50 cursor-pointer"
+                >
+                  Generate 8 Fresh Codes
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  Each code can be used once to access your account if you lose your authenticator device.
+                </p>
+
+                <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                  {recoveryCodes.map((code, idx) => (
+                    <div
+                      key={idx}
+                      className="p-1.5 text-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200/60 dark:border-zinc-800"
+                    >
+                      {code}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => copyAllCodes(recoveryCodes)}
+                    className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>Copy All</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => downloadCodesAsText(recoveryCodes)}
+                    className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download (.txt)</span>
+                  </button>
+                </div>
+
+                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={handleRegenerateRecoveryCodes}
+                    disabled={isRegeneratingCodes}
+                    className="text-[11px] text-zinc-500 hover:text-red-500 transition flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                  >
+                    {isRegeneratingCodes ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                    <span>Generate New Codes</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setShowRecoveryCodesModal(false)}
+                    className="px-4 py-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-bold cursor-pointer"
+                  >
+                    Close
+                  </button>
+                </div>
               </div>
             )}
-
-            <div>
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                Enter 6-Digit Code
-              </label>
-              <input
-                type="text"
-                maxLength={6}
-                value={totpCode}
-                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
-                placeholder="123456"
-                className="w-full px-3 py-2 text-center text-sm tracking-widest font-mono rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-bold focus:outline-none"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShow2FAModal(false)}
-                className="w-1/2 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-400"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleVerify2FA}
-                disabled={isVerifying2FA || totpCode.length !== 6}
-                className="w-1/2 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 disabled:opacity-50"
-              >
-                {isVerifying2FA ? "Verifying..." : "Confirm & Enable"}
-              </button>
-            </div>
           </div>
         </div>
       )}

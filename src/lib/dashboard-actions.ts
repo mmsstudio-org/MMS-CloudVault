@@ -249,10 +249,11 @@ export async function actionPurgeTrashNow() {
 // -----------------------------------------------------------------------------
 export interface BucketWithAssetStats extends StorageBucket {
   assetCount: number;
+  liveBytes: number;
 }
 
 /**
- * Returns all storage buckets along with live asset counts.
+ * Returns all storage buckets along with live asset counts and real-time storage sizes.
  * Requires active admin authentication session.
  */
 export async function actionGetStorageBuckets(): Promise<BucketWithAssetStats[]> {
@@ -263,27 +264,39 @@ export async function actionGetStorageBuckets(): Promise<BucketWithAssetStats[]>
     .from(storageBuckets)
     .orderBy(desc(storageBuckets.isDefault), desc(storageBuckets.createdAt));
 
-  // Compute asset counts per bucket
-  const counts = await db
+  // Compute asset counts and live storage size per bucket from active media assets
+  const stats = await db
     .select({
       bucketId: mediaAssets.bucketId,
       count: sql<number>`count(*)`,
+      liveBytes: sql<number>`coalesce(sum(${mediaAssets.optimizedSizeKb} * 1024), 0)`,
     })
     .from(mediaAssets)
     .where(eq(mediaAssets.isDeleted, false))
     .groupBy(mediaAssets.bucketId);
 
-  const countMap = new Map<string, number>();
-  for (const c of counts) {
-    if (c.bucketId) {
-      countMap.set(c.bucketId, Number(c.count));
+  const statMap = new Map<string, { count: number; liveBytes: number }>();
+  for (const s of stats) {
+    if (s.bucketId) {
+      statMap.set(s.bucketId, {
+        count: Number(s.count),
+        liveBytes: Number(s.liveBytes),
+      });
     }
   }
 
-  return buckets.map((b) => ({
-    ...b,
-    assetCount: countMap.get(b.id) || 0,
-  }));
+  return buckets.map((b) => {
+    const bucketStat = statMap.get(b.id);
+    const calculatedBytes = bucketStat?.liveBytes || 0;
+    const effectiveBytes = Math.max(Number(b.usedBytes || 0), calculatedBytes);
+
+    return {
+      ...b,
+      usedBytes: effectiveBytes,
+      liveBytes: effectiveBytes,
+      assetCount: bucketStat?.count || 0,
+    };
+  });
 }
 
 /**

@@ -298,7 +298,7 @@ export function StorageBucketsManager({
         });
 
         setBuckets((prev) => [
-          { ...created, assetCount: 0 },
+          { ...created, assetCount: 0, liveBytes: 0 },
           ...prev.map((b) => (isDefault ? { ...b, isDefault: false } : b)),
         ]);
         toast.success(`New storage bucket '${created.name}' created successfully!`);
@@ -386,13 +386,19 @@ export function StorageBucketsManager({
           const showKey = visibleCredentials[b.id]?.key || false;
           const showSecret = visibleCredentials[b.id]?.secret || false;
 
-          const usedMb = (Number(b.usedBytes) / (1024 * 1024)).toFixed(1);
+          const rawBytes = Number(b.liveBytes ?? b.usedBytes ?? 0);
+          const usedMbNum = rawBytes / (1024 * 1024);
+          const usedGbNum = rawBytes / (1024 * 1024 * 1024);
           const maxGb = b.maxCapacityGb || 5;
           const maxMb = maxGb * 1024;
           const usedPercent = Math.min(
             100,
-            Math.round((Number(usedMb) / maxMb) * 100)
+            Math.round((usedMbNum / maxMb) * 100)
           );
+          const formattedStorageUsage =
+            usedGbNum >= 1
+              ? `${usedGbNum.toFixed(2)} GB`
+              : `${usedMbNum.toFixed(1)} MB`;
 
           return (
             <div
@@ -543,20 +549,23 @@ export function StorageBucketsManager({
 
                 {/* Storage Quota Progress */}
                 <div className="pt-2 space-y-1.5">
-                  <div className="flex justify-between text-[11px] text-zinc-600 dark:text-zinc-400">
-                    <span>Storage Usage</span>
-                    <span>
-                      {usedMb} MB / {maxGb} GB ({usedPercent}%)
+                  <div className="flex justify-between items-center text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <span className="font-medium flex items-center gap-1.5">
+                      <HardDrive className="w-3.5 h-3.5 text-zinc-400" />
+                      Live Storage Usage
+                    </span>
+                    <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">
+                      {formattedStorageUsage} / {maxGb} GB ({usedPercent}%)
                     </span>
                   </div>
-                  <div className="w-full h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                  <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
-                        usedPercent > 90
-                          ? "bg-rose-500"
-                          : usedPercent > 70
-                          ? "bg-amber-500"
-                          : "bg-cyan-500"
+                        usedPercent > 85
+                          ? "bg-rose-500 shadow-xs shadow-rose-500/50"
+                          : usedPercent > 65
+                          ? "bg-amber-500 shadow-xs shadow-amber-500/50"
+                          : "bg-cyan-500 shadow-xs shadow-cyan-500/50"
                       }`}
                       style={{ width: `${Math.max(2, usedPercent)}%` }}
                     />

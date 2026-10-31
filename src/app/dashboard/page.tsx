@@ -92,10 +92,15 @@ export default async function DashboardPage() {
           </div>
           <div>
             <div className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
-              {metrics.totalStorageMb} MB
+              {Number(metrics.totalStorageMb) >= 1024
+                ? `${(Number(metrics.totalStorageMb) / 1024).toFixed(2)} GB`
+                : `${metrics.totalStorageMb} MB`}
             </div>
             <span className="text-[11px] text-zinc-400 block mt-1">
-              Raw size: {metrics.originalStorageMb} MB
+              Raw size:{" "}
+              {Number(metrics.originalStorageMb) >= 1024
+                ? `${(Number(metrics.originalStorageMb) / 1024).toFixed(2)} GB`
+                : `${metrics.originalStorageMb} MB`}
             </span>
           </div>
         </div>
