@@ -100,10 +100,6 @@ export async function optimizeAudio(
       const optimizedSizeKb = Math.round(optimizedBuffer.length / 1024) || 1;
       const savedKb = Math.max(0, originalSizeKb - optimizedSizeKb);
 
-      console.log(
-        `[Audio Optimizer] Compressed from ${originalSizeKb} KB to ${optimizedSizeKb} KB (Bitrate: ${bitrate}, Saved: ${savedKb} KB)`
-      );
-
       return {
         optimizedBuffer,
         originalSizeKb,

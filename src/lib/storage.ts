@@ -91,10 +91,6 @@ export async function uploadObjectToBucket(
     .where(eq(storageBuckets.id, bucket.id))
     .catch((err) => console.warn("[Storage] Failed to update usedBytes:", err));
 
-  console.log(
-    `[Storage] Uploaded "${storageKey}" to bucket "${bucket.name}" (${bucket.bucketName}) -> ${publicUrl}`
-  );
-
   return { publicUrl, storageKey };
 }
 
@@ -107,19 +103,12 @@ export async function deleteObjectFromBucket(
 ): Promise<boolean> {
   try {
     const s3Client = getS3ClientForBucket(bucket);
-    console.log(
-      `[Storage] Deleting object key "${storageKey}" from bucket "${bucket.name}" (${bucket.bucketName})...`
-    );
-
     const command = new DeleteObjectCommand({
       Bucket: bucket.bucketName,
       Key: storageKey,
     });
 
-    const res = await s3Client.send(command);
-    console.log(
-      `[Storage] S3 DeleteObject SUCCESS: key="${storageKey}", HTTP status=${res.$metadata?.httpStatusCode}`
-    );
+    await s3Client.send(command);
     return true;
   } catch (err) {
     console.error(

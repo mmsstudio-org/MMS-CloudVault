@@ -14,12 +14,16 @@ import {
   Loader2,
   Music,
   Volume2,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { MediaAsset } from "@/db/schema";
 import { CopyButton } from "./copy-button";
 import {
   actionSoftDeleteAsset,
   actionDeleteAssetPermanently,
+  actionUpdateAssetMetadata,
 } from "@/lib/dashboard-actions";
 import { DeleteAssetDialog } from "./delete-asset-dialog";
 import { toast } from "sonner";
@@ -41,6 +45,18 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
   const [qrModalAsset, setQrModalAsset] = React.useState<MediaAsset | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = React.useState("");
   const [assetToDelete, setAssetToDelete] = React.useState<MediaAsset | null>(null);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [pageSize, setPageSize] = React.useState<number>(24);
+
+  // Edit Metadata Modal State
+  const [editingAsset, setEditingAsset] = React.useState<MediaAsset | null>(null);
+  const [editTitle, setEditTitle] = React.useState("");
+  const [editFolder, setEditFolder] = React.useState("");
+  const [isCustomEditFolder, setIsCustomEditFolder] = React.useState(false);
+  const [customEditFolder, setCustomEditFolder] = React.useState("");
+  const [isSavingMetadata, setIsSavingMetadata] = React.useState(false);
 
   // Filter logic
   const filteredAssets = React.useMemo(() => {
@@ -65,6 +81,80 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
       return matchApp && matchFolder && matchType && matchSearch;
     });
   }, [assets, selectedApp, selectedFolder, mediaTypeFilter, search]);
+
+  // Reset pagination when any filter or page size changes
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [search, selectedApp, selectedFolder, mediaTypeFilter, pageSize]);
+
+  // Pagination Calculations
+  const totalFilteredCount = filteredAssets.length;
+  const totalPages =
+    pageSize === 0 ? 1 : Math.max(1, Math.ceil(totalFilteredCount / pageSize));
+  const safePage = Math.min(currentPage, totalPages);
+
+  const displayedAssets = React.useMemo(() => {
+    if (pageSize === 0) return filteredAssets;
+    const startIndex = (safePage - 1) * pageSize;
+    return filteredAssets.slice(startIndex, startIndex + pageSize);
+  }, [filteredAssets, safePage, pageSize]);
+
+  const getPageNumbers = () => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    if (safePage <= 4) {
+      return [1, 2, 3, 4, 5, "...", totalPages];
+    }
+    if (safePage >= totalPages - 3) {
+      return [
+        1,
+        "...",
+        totalPages - 4,
+        totalPages - 3,
+        totalPages - 2,
+        totalPages - 1,
+        totalPages,
+      ];
+    }
+    return [1, "...", safePage - 1, safePage, safePage + 1, "...", totalPages];
+  };
+
+  const handleOpenEdit = (asset: MediaAsset) => {
+    setEditingAsset(asset);
+    setEditTitle(asset.title || "");
+    setEditFolder(asset.folder || "general");
+    setIsCustomEditFolder(false);
+    setCustomEditFolder("");
+  };
+
+  const handleSaveMetadata = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAsset) return;
+
+    const finalFolder = isCustomEditFolder
+      ? customEditFolder.trim()
+      : editFolder.trim();
+
+    try {
+      setIsSavingMetadata(true);
+      const updated = await actionUpdateAssetMetadata(editingAsset.id, {
+        title: editTitle.trim(),
+        folder: finalFolder || "general",
+      });
+      setAssets((prev) =>
+        prev.map((a) => (a.id === updated.id ? updated : a))
+      );
+      setEditingAsset(null);
+      toast.success("Asset metadata updated successfully.");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to update asset."
+      );
+    } finally {
+      setIsSavingMetadata(false);
+    }
+  };
 
   const handleConfirmSoftDelete = async (id: string, assetId: string) => {
     try {
@@ -133,7 +223,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
             <option value="ALL">All Apps ({apps.length})</option>
             {apps.map((app) => (
               <option key={app} value={app}>
-                {app}
+                {app === "general" ? "🌐 General (Studio Global)" : app}
               </option>
             ))}
           </select>
@@ -206,7 +296,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
         </div>
       ) : viewMode === "grid" ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {filteredAssets.map((asset) => {
+          {displayedAssets.map((asset) => {
             const isAudio =
               asset.mimeType?.startsWith("audio/") ||
               /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(asset.storageKey);
@@ -225,7 +315,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                           <Music className="w-3 h-3 animate-pulse" /> Audio
                         </span>
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800/80 text-zinc-300">
-                          {asset.appId}
+                          {asset.appId === "general" ? "🌐 global" : asset.appId}
                         </span>
                       </div>
                       <span className="text-[10px] font-mono text-zinc-400">
@@ -263,7 +353,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     />
                     <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/70 text-white backdrop-blur-md">
-                        {asset.appId}
+                        {asset.appId === "general" ? "🌐 global" : asset.appId}
                       </span>
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-900/70 text-zinc-300 backdrop-blur-md">
                         {asset.folder}
@@ -319,6 +409,14 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
                       </a>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenEdit(asset)}
+                        title="Edit Metadata (Title & Folder)"
+                        className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:text-cyan-500 hover:border-cyan-500/40 transition cursor-pointer"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
                     </div>
 
                     <button
@@ -339,7 +437,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
         /* List View */
         <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm">
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {filteredAssets.map((asset) => {
+            {displayedAssets.map((asset) => {
               const isAudio =
                 asset.mimeType?.startsWith("audio/") ||
                 /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(asset.storageKey);
@@ -368,7 +466,7 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     <div className="min-w-0 flex-1 overflow-hidden">
                       <div className="flex items-center gap-2 mb-0.5">
                         <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0">
-                          {asset.appId}
+                          {asset.appId === "general" ? "🌐 global" : asset.appId}
                         </span>
                         <span className="text-[10px] text-zinc-400 font-mono truncate">
                           /{asset.folder}
@@ -416,6 +514,14 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     </a>
                     <button
                       type="button"
+                      onClick={() => handleOpenEdit(asset)}
+                      title="Edit Metadata (Title & Folder)"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 hover:text-cyan-500 hover:border-cyan-500/40 transition cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setAssetToDelete(asset)}
                       title="Delete Asset"
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
@@ -426,6 +532,231 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Modern High-Performance Pagination Controls Bar */}
+      {filteredAssets.length > 0 && (
+        <div className="p-4 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-600 dark:text-zinc-400">
+          <div>
+            Showing{" "}
+            <span className="font-semibold text-zinc-900 dark:text-white">
+              {totalFilteredCount === 0
+                ? 0
+                : (safePage - 1) * (pageSize || totalFilteredCount) + 1}
+            </span>{" "}
+            to{" "}
+            <span className="font-semibold text-zinc-900 dark:text-white">
+              {pageSize === 0
+                ? totalFilteredCount
+                : Math.min(safePage * pageSize, totalFilteredCount)}
+            </span>{" "}
+            of{" "}
+            <span className="font-semibold text-zinc-900 dark:text-white">
+              {totalFilteredCount}
+            </span>{" "}
+            assets
+          </div>
+
+          {/* Page numbers navigation */}
+          {pageSize > 0 && totalPages > 1 && (
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentPage((p) => Math.max(1, p - 1));
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                disabled={safePage === 1}
+                className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                title="Previous Page"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-1">
+                {getPageNumbers().map((num, idx) =>
+                  num === "..." ? (
+                    <span
+                      key={`ellipsis-${idx}`}
+                      className="px-2 py-1 text-zinc-400 select-none"
+                    >
+                      ...
+                    </span>
+                  ) : (
+                    <button
+                      key={`page-${num}`}
+                      type="button"
+                      onClick={() => {
+                        setCurrentPage(num as number);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className={`min-w-8 h-8 px-2 rounded-lg font-medium transition cursor-pointer ${
+                        safePage === num
+                          ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-xs"
+                          : "border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                      }`}
+                    >
+                      {num}
+                    </button>
+                  )
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentPage((p) => Math.min(totalPages, p + 1));
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                disabled={safePage === totalPages}
+                className="p-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition cursor-pointer"
+                title="Next Page"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Page size dropdown */}
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-zinc-500">Per page:</span>
+            <select
+              value={pageSize}
+              onChange={(e) => setPageSize(Number(e.target.value))}
+              className="px-2.5 py-1 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none cursor-pointer"
+            >
+              <option value={24}>24</option>
+              <option value={48}>48</option>
+              <option value={96}>96</option>
+              <option value={0}>All</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Metadata Modal Dialog */}
+      {editingAsset && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    Edit Asset Metadata
+                  </h3>
+                  <p className="text-[11px] text-zinc-500 font-mono">
+                    {editingAsset.assetId}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingAsset(null)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveMetadata} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  Asset Title
+                </label>
+                <input
+                  type="text"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  placeholder="Descriptive title"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    Target Folder
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCustomEditFolder(!isCustomEditFolder)}
+                    className="text-[11px] text-cyan-500 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    {isCustomEditFolder ? "Choose Existing" : "+ New Folder"}
+                  </button>
+                </div>
+
+                {isCustomEditFolder ? (
+                  <input
+                    type="text"
+                    value={customEditFolder}
+                    onChange={(e) => setCustomEditFolder(e.target.value)}
+                    placeholder="e.g. banners, products, avatars"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                    autoFocus
+                  />
+                ) : (
+                  <select
+                    value={editFolder}
+                    onChange={(e) => setEditFolder(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-cyan-500 cursor-pointer"
+                  >
+                    {folders.map((f) => (
+                      <option key={f} value={f}>
+                        /{f}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
+              <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 text-[11px] text-zinc-500 space-y-1">
+                <p>
+                  <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    App Owner:
+                  </span>{" "}
+                  {editingAsset.appId === "general"
+                    ? "🌐 Studio Global"
+                    : editingAsset.appId}
+                </p>
+                <p>
+                  <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                    MIME Type:
+                  </span>{" "}
+                  {editingAsset.mimeType}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingAsset(null)}
+                  disabled={isSavingMetadata}
+                  className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingMetadata}
+                  className="flex-1 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20 disabled:opacity-50 cursor-pointer"
+                >
+                  {isSavingMetadata ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <span>Save Changes</span>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

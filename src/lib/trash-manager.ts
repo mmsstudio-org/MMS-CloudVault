@@ -114,9 +114,6 @@ export async function deleteAssetPermanently(
 
   // 1. Delete physical file from originating Object Storage bucket
   if (asset.storageKey) {
-    console.log(
-      `[Permanent Delete] Purging object storage key: "${asset.storageKey}" from bucket: "${asset.bucketId}"`
-    );
     await deleteObject(asset.storageKey, asset.bucketId || undefined);
   }
 

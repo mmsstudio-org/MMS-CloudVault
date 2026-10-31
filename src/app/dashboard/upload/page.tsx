@@ -11,14 +11,13 @@ export default async function ManualUploadPage() {
   const allKeys = await getApiKeysList();
   const assets = await getGalleryAssets();
 
-  const apps = allKeys
-    .filter((k) => k.isActive)
-    .map((k) => ({ appName: k.appName, appId: k.appId }));
-
-  // Fallback if no keys created yet
-  if (apps.length === 0) {
-    apps.push({ appName: "Default Studio App", appId: "default-app" });
-  }
+  // Always offer General / Studio Global as the primary default choice
+  const apps = [
+    { appName: "🌐 General / Studio Global", appId: "general" },
+    ...allKeys
+      .filter((k) => k.isActive && k.appId !== "general")
+      .map((k) => ({ appName: k.appName, appId: k.appId })),
+  ];
 
   const existingFolders = Array.from(new Set(assets.map((a) => a.folder)));
 

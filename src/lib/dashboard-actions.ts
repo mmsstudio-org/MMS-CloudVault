@@ -185,6 +185,38 @@ export async function actionDeleteAssetPermanently(id: string) {
   return result;
 }
 
+export async function actionUpdateAssetMetadata(
+  id: string,
+  data: { title?: string; folder?: string }
+) {
+  const session = await auth();
+  if (!session?.user) {
+    throw new Error("Unauthorized: Administrator authentication required.");
+  }
+
+  const cleanTitle = data.title !== undefined ? data.title.trim() : undefined;
+  const cleanFolder =
+    data.folder !== undefined
+      ? data.folder.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "general"
+      : undefined;
+
+  const updates: Record<string, unknown> = {
+    updatedAt: new Date(),
+  };
+  if (cleanTitle !== undefined) updates.title = cleanTitle;
+  if (cleanFolder !== undefined) updates.folder = cleanFolder;
+
+  const [updated] = await db
+    .update(mediaAssets)
+    .set(updates)
+    .where(eq(mediaAssets.id, id))
+    .returning();
+
+  safeRevalidate("/dashboard");
+  safeRevalidate("/dashboard/gallery");
+  return updated;
+}
+
 // -----------------------------------------------------------------------------
 // 3. TRASH ACTIONS
 // -----------------------------------------------------------------------------

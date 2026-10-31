@@ -8,11 +8,27 @@ import {
   Loader2,
   Music,
   Headphones,
+  Layers,
+  Trash2,
+  X,
+  AlertCircle,
+  FileText,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { CopyButton } from "./copy-button";
 import { toast } from "sonner";
 import { MediaAsset } from "@/db/schema";
+
+interface BatchQueueItem {
+  id: string;
+  file: File;
+  previewUrl: string;
+  assetId: string;
+  title: string;
+  status: "pending" | "uploading" | "success" | "error";
+  error?: string;
+  savedKb?: number;
+}
 
 interface UploadFormProps {
   apps: { appName: string; appId: string }[];
@@ -23,7 +39,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const router = useRouter();
   const [file, setFile] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
-  const [selectedApp, setSelectedApp] = React.useState(apps[0]?.appId || "main-app");
+  const [selectedApp, setSelectedApp] = React.useState(apps[0]?.appId || "general");
   const [folder, setFolder] = React.useState("general");
   const [isCustomFolder, setIsCustomFolder] = React.useState(false);
   const [customFolder, setCustomFolder] = React.useState("");
@@ -32,6 +48,12 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const [compressAudio, setCompressAudio] = React.useState(false);
   const [audioBitrate, setAudioBitrate] = React.useState<"96k" | "128k" | "192k" | "256k">("192k");
   const [isUploading, setIsUploading] = React.useState(false);
+
+  // Multi-File Batch Queue State
+  const [batchQueue, setBatchQueue] = React.useState<BatchQueueItem[]>([]);
+  const [isBatchUploading, setIsBatchUploading] = React.useState(false);
+  const [batchProgress, setBatchProgress] = React.useState({ completed: 0, total: 0 });
+
   const [uploadedResult, setUploadedResult] = React.useState<{
     asset: MediaAsset;
     isReplaced: boolean;
@@ -40,19 +62,23 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selected = e.target.files[0];
+  const processIncomingFiles = (incoming: File[]) => {
+    if (incoming.length === 0) return;
+
+    // Single file selected and no queue active
+    if (incoming.length === 1 && batchQueue.length === 0) {
+      const selected = incoming[0];
       setFile(selected);
       setPreviewUrl(URL.createObjectURL(selected));
       setUploadedResult(null);
 
-      const isAudio = selected.type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(selected.name);
+      const isAudio =
+        selected.type.startsWith("audio/") ||
+        /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(selected.name);
       if (isAudio && folder === "general") {
         setFolder("audio");
       }
 
-      // Auto-populate asset ID if empty
       if (!assetId) {
         const cleanName = selected.name
           .replace(/\.[^/.]+$/, "")
@@ -60,30 +86,129 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
           .toLowerCase();
         setAssetId(`asset_${cleanName}`);
       }
+      return;
+    }
+
+    // Multiple files: populate or append to batch queue
+    const newItems: BatchQueueItem[] = incoming.map((f, i) => {
+      const cleanName = f.name
+        .replace(/\.[^/.]+$/, "")
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .toLowerCase();
+      const rawTitle = f.name.replace(/\.[^/.]+$/, "");
+      return {
+        id: `${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
+        file: f,
+        previewUrl: f.type.startsWith("image/") ? URL.createObjectURL(f) : "",
+        assetId: `asset_${cleanName}`,
+        title: rawTitle,
+        status: "pending",
+      };
+    });
+
+    setBatchQueue((prev) => [...prev, ...newItems]);
+    setFile(null);
+    setPreviewUrl(null);
+    setUploadedResult(null);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processIncomingFiles(Array.from(e.target.files));
     }
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const selected = e.dataTransfer.files[0];
-      setFile(selected);
-      setPreviewUrl(URL.createObjectURL(selected));
-      setUploadedResult(null);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processIncomingFiles(Array.from(e.dataTransfer.files));
+    }
+  };
 
-      const isAudio = selected.type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(selected.name);
-      if (isAudio && folder === "general") {
-        setFolder("audio");
+  const handleBatchUpload = async () => {
+    if (batchQueue.length === 0) return;
+    setIsBatchUploading(true);
+
+    const finalFolder = isCustomFolder ? customFolder.trim() : folder;
+    let successCount = 0;
+    let totalSaved = 0;
+    setBatchProgress({ completed: 0, total: batchQueue.length });
+
+    for (let i = 0; i < batchQueue.length; i++) {
+      const item = batchQueue[i];
+      if (item.status === "success") {
+        successCount++;
+        continue;
       }
 
-      if (!assetId) {
-        const cleanName = selected.name
-          .replace(/\.[^/.]+$/, "")
-          .replace(/[^a-zA-Z0-9_-]/g, "_")
-          .toLowerCase();
-        setAssetId(`asset_${cleanName}`);
+      setBatchQueue((prev) =>
+        prev.map((q, idx) => (idx === i ? { ...q, status: "uploading" } : q))
+      );
+
+      try {
+        const formData = new FormData();
+        formData.append("file", item.file);
+        formData.append("app_id", selectedApp);
+        formData.append("asset_id", item.assetId.trim());
+        formData.append("title", item.title.trim());
+        formData.append("folder", finalFolder || "general");
+
+        const isAudio =
+          item.file.type.startsWith("audio/") ||
+          /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(item.file.name);
+
+        if (isAudio && compressAudio) {
+          formData.append("compress_audio", "true");
+          formData.append("audio_bitrate", audioBitrate);
+        }
+
+        const res = await fetch("/api/dashboard/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.error || "Upload failed");
+        }
+
+        successCount++;
+        totalSaved += data.savedKb || 0;
+
+        setBatchQueue((prev) =>
+          prev.map((q, idx) =>
+            idx === i
+              ? {
+                  ...q,
+                  status: "success",
+                  savedKb: data.savedKb || 0,
+                }
+              : q
+          )
+        );
+      } catch (err: unknown) {
+        const errMsg = err instanceof Error ? err.message : "Failed";
+        setBatchQueue((prev) =>
+          prev.map((q, idx) =>
+            idx === i
+              ? {
+                  ...q,
+                  status: "error",
+                  error: errMsg,
+                }
+              : q
+          )
+        );
+      } finally {
+        setBatchProgress({ completed: i + 1, total: batchQueue.length });
       }
     }
+
+    setIsBatchUploading(false);
+    router.refresh();
+    toast.success(
+      `Batch upload complete: ${successCount} of ${batchQueue.length} assets processed! (${totalSaved} KB saved)`
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -148,6 +273,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
     setAssetId("");
     setTitle("");
     setUploadedResult(null);
+    setBatchQueue([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -166,12 +292,157 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
             <input
               ref={fileInputRef}
               type="file"
+              multiple
               accept="image/*,audio/*,.mp3,.wav,.ogg,.m4a,.aac,.flac"
               onChange={handleFileChange}
               className="hidden"
             />
 
-            {previewUrl ? (
+            {batchQueue.length > 0 ? (
+              <div
+                className="space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200 dark:border-zinc-800">
+                  <div className="flex items-center gap-2.5 text-left">
+                    <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
+                      <Layers className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-xs font-bold text-zinc-900 dark:text-white">
+                        Batch Upload Queue ({batchQueue.length} files)
+                      </h3>
+                      <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                        {batchQueue.filter((q) => q.status === "success").length} uploaded •{" "}
+                        {batchQueue.filter((q) => q.status === "pending").length} pending •{" "}
+                        {batchQueue.filter((q) => q.status === "error").length} errors
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isBatchUploading}
+                      className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
+                    >
+                      + Add Files
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBatchQueue([])}
+                      disabled={isBatchUploading}
+                      className="px-3 py-1.5 rounded-xl text-xs font-semibold text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer disabled:opacity-50"
+                    >
+                      Clear Queue
+                    </button>
+                  </div>
+                </div>
+
+                {isBatchUploading && (
+                  <div className="w-full bg-zinc-100 dark:bg-zinc-800 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="bg-cyan-500 h-2 transition-all duration-300"
+                      style={{
+                        width: `${(batchProgress.completed / Math.max(1, batchProgress.total)) * 100}%`,
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div className="max-h-60 overflow-y-auto divide-y divide-zinc-100 dark:divide-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-800 text-left">
+                  {batchQueue.map((item, idx) => (
+                    <div
+                      key={item.id}
+                      className="p-3 flex items-center justify-between gap-3 text-xs hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
+                    >
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
+                        <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 shrink-0 relative overflow-hidden flex items-center justify-center border border-zinc-200 dark:border-zinc-700">
+                          {item.previewUrl ? (
+                            <Image
+                              src={item.previewUrl}
+                              alt={item.title}
+                              fill
+                              className="object-cover"
+                              unoptimized
+                            />
+                          ) : (
+                            <Music className="w-4 h-4 text-emerald-500" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-zinc-900 dark:text-white truncate">
+                            {item.file.name}
+                          </p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] text-zinc-400 font-mono">
+                              ID:
+                            </span>
+                            <input
+                              type="text"
+                              value={item.assetId}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                setBatchQueue((prev) =>
+                                  prev.map((q, i) =>
+                                    i === idx ? { ...q, assetId: val } : q
+                                  )
+                                );
+                              }}
+                              disabled={
+                                item.status === "success" || isBatchUploading
+                              }
+                              className="text-[11px] font-mono px-2 py-0.5 rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 w-full focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        {item.status === "pending" && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500">
+                            {Math.round(item.file.size / 1024)} KB
+                          </span>
+                        )}
+                        {item.status === "uploading" && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-500 flex items-center gap-1 font-semibold">
+                            <Loader2 className="w-3 h-3 animate-spin" /> Uploading
+                          </span>
+                        )}
+                        {item.status === "success" && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center gap-1 font-semibold">
+                            <CheckCircle2 className="w-3 h-3" /> Saved (-{item.savedKb}KB)
+                          </span>
+                        )}
+                        {item.status === "error" && (
+                          <span
+                            className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 flex items-center gap-1"
+                            title={item.error}
+                          >
+                            <AlertCircle className="w-3 h-3" /> Failed
+                          </span>
+                        )}
+
+                        {!isBatchUploading && item.status !== "success" && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setBatchQueue((prev) =>
+                                prev.filter((_, i) => i !== idx)
+                              )
+                            }
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 transition cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : previewUrl ? (
               file && (file.type.startsWith("audio/") || /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name)) ? (
                 <div
                   onClick={(e) => e.stopPropagation()}
@@ -226,7 +497,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     Click to browse or drag and drop media
                   </p>
                   <p className="text-[11px] text-zinc-400 mt-0.5">
-                    Images (JPG, PNG, WEBP, GIF, SVG) or Audio (MP3, WAV, OGG, M4A, AAC)
+                    Images or Audio (Select single or multiple files for batch upload)
                   </p>
                 </div>
               </div>
@@ -304,126 +575,172 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Asset ID */}
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Asset ID (Unique Identifier) *
-                </label>
-                <input
-                  type="text"
-                  value={assetId}
-                  onChange={(e) => setAssetId(e.target.value)}
-                  placeholder="e.g. item_cover_001"
-                  required
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none font-mono"
-                />
-                <span className="text-[10px] text-zinc-400 mt-1 block">
-                  Duplicate Asset IDs replace existing images automatically.
-                </span>
-              </div>
+            {/* If Single File Mode: show Asset ID & Title fields */}
+            {batchQueue.length === 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Asset ID */}
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Asset ID (Unique Identifier) *
+                  </label>
+                  <input
+                    type="text"
+                    value={assetId}
+                    onChange={(e) => setAssetId(e.target.value)}
+                    placeholder="e.g. item_cover_001"
+                    required={batchQueue.length === 0}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none font-mono"
+                  />
+                  <span className="text-[10px] text-zinc-400 mt-1 block">
+                    Duplicate Asset IDs replace existing images automatically.
+                  </span>
+                </div>
 
-              {/* Title */}
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Asset Title (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Main Hero Visual"
-                  className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
-                />
+                {/* Title */}
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    Asset Title (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Main Hero Visual"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Audio Optimization & Compression Section */}
-            {file &&
+            {((file &&
               (file.type.startsWith("audio/") ||
-                /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name)) && (
-                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Music className="w-4 h-4 text-emerald-500" />
-                      <span className="text-xs font-bold text-zinc-900 dark:text-white">
-                        Audio Compression & Encoding (Optional)
-                      </span>
-                    </div>
-                    <label className="flex items-center gap-2 text-xs cursor-pointer text-zinc-600 dark:text-zinc-400">
-                      <input
-                        type="checkbox"
-                        checked={compressAudio}
-                        onChange={(e) => setCompressAudio(e.target.checked)}
-                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-zinc-300 dark:border-zinc-700"
-                      />
-                      <span>Enable Compression</span>
-                    </label>
+                /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(file.name))) ||
+              batchQueue.some((q) =>
+                /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(q.file.name)
+              )) && (
+              <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Music className="w-4 h-4 text-emerald-500" />
+                    <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                      Audio Compression & Encoding (Optional)
+                    </span>
                   </div>
-
-                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                    By default, audio is preserved in 100% original fidelity without modification. Enable compression to optimize size.
-                  </p>
-
-                  {compressAudio && (
-                    <div className="pt-1">
-                      <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
-                        Target Bitrate
-                      </label>
-                      <select
-                        value={audioBitrate}
-                        onChange={(e) =>
-                          setAudioBitrate(
-                            e.target.value as "96k" | "128k" | "192k" | "256k"
-                          )
-                        }
-                        className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
-                      >
-                        <option value="128k">
-                          128 kbps (Voiceover / Speech - 50% smaller)
-                        </option>
-                        <option value="192k">
-                          192 kbps (Standard High Quality - Recommended)
-                        </option>
-                        <option value="256k">
-                          256 kbps (Studio Quality Music)
-                        </option>
-                        <option value="96k">
-                          96 kbps (Ultra-compact Dialogue)
-                        </option>
-                      </select>
-                    </div>
-                  )}
+                  <label className="flex items-center gap-2 text-xs cursor-pointer text-zinc-600 dark:text-zinc-400">
+                    <input
+                      type="checkbox"
+                      checked={compressAudio}
+                      onChange={(e) => setCompressAudio(e.target.checked)}
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-zinc-300 dark:border-zinc-700"
+                    />
+                    <span>Enable Compression</span>
+                  </label>
                 </div>
-              )}
+
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                  By default, audio is preserved in 100% original fidelity without modification. Enable compression to optimize size.
+                </p>
+
+                {compressAudio && (
+                  <div className="pt-1">
+                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                      Target Bitrate
+                    </label>
+                    <select
+                      value={audioBitrate}
+                      onChange={(e) =>
+                        setAudioBitrate(
+                          e.target.value as "96k" | "128k" | "192k" | "256k"
+                        )
+                      }
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                    >
+                      <option value="128k">
+                        128 kbps (Voiceover / Speech - 50% smaller)
+                      </option>
+                      <option value="192k">
+                        192 kbps (Standard High Quality - Recommended)
+                      </option>
+                      <option value="256k">
+                        256 kbps (Studio Quality Music)
+                      </option>
+                      <option value="96k">
+                        96 kbps (Ultra-compact Dialogue)
+                      </option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="pt-2 flex items-center justify-end gap-3">
-              {file && (
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
-                >
-                  Reset
-                </button>
+              {batchQueue.length > 0 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setBatchQueue([])}
+                    disabled={isBatchUploading}
+                    className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer disabled:opacity-50"
+                  >
+                    Clear Queue
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleBatchUpload}
+                    disabled={
+                      isBatchUploading ||
+                      batchQueue.every((q) => q.status === "success")
+                    }
+                    className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold transition disabled:opacity-50 cursor-pointer flex items-center gap-2 shadow-md shadow-cyan-500/20"
+                  >
+                    {isBatchUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>
+                          Uploading ({batchProgress.completed}/{batchProgress.total})...
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-4 h-4" />
+                        <span>
+                          Upload All {batchQueue.filter((q) => q.status !== "success").length} Assets
+                        </span>
+                      </>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <>
+                  {file && (
+                    <button
+                      type="button"
+                      onClick={handleReset}
+                      className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+                    >
+                      Reset
+                    </button>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={!file || isUploading}
+                    className="px-6 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Processing & Optimizing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <UploadCloud className="w-4 h-4" />
+                        <span>Upload & Optimize Asset</span>
+                      </>
+                    )}
+                  </button>
+                </>
               )}
-              <button
-                type="submit"
-                disabled={!file || isUploading}
-                className="px-6 py-2.5 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-bold hover:opacity-90 transition disabled:opacity-50 cursor-pointer flex items-center gap-2"
-              >
-                {isUploading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Processing & Optimizing...</span>
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud className="w-4 h-4" />
-                    <span>Upload & Optimize Asset</span>
-                  </>
-                )}
-              </button>
             </div>
           </div>
         </form>
@@ -431,7 +748,45 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
       {/* Result / Info Sidebar Column */}
       <div className="space-y-6">
-        {uploadedResult ? (
+        {batchQueue.length > 0 ? (
+          <div className="p-6 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-zinc-900 dark:text-white space-y-4 shadow-sm animate-in fade-in">
+            <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 font-bold text-sm">
+              <Layers className="w-5 h-5" />
+              <span>Batch Queue Overview</span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="p-3 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-cyan-500/10">
+                <span className="text-[11px] text-zinc-500">Total Files</span>
+                <p className="text-base font-bold text-zinc-900 dark:text-white mt-0.5">
+                  {batchQueue.length}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-cyan-500/10">
+                <span className="text-[11px] text-zinc-500">Completed</span>
+                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">
+                  {batchQueue.filter((q) => q.status === "success").length}
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-cyan-500/10">
+                <span className="text-[11px] text-zinc-500">Total Saved</span>
+                <p className="text-base font-bold text-zinc-900 dark:text-white mt-0.5">
+                  {batchQueue.reduce((acc, q) => acc + (q.savedKb || 0), 0)} KB
+                </p>
+              </div>
+              <div className="p-3 rounded-xl bg-white/70 dark:bg-zinc-900/70 border border-cyan-500/10">
+                <span className="text-[11px] text-zinc-500">Target App</span>
+                <p className="text-xs font-semibold text-zinc-900 dark:text-white mt-0.5 truncate">
+                  {selectedApp === "general" ? "🌐 Global" : selectedApp}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-[11px] text-zinc-500 leading-relaxed">
+              Files are processed with Sharp webp optimization and stored directly in your target bucket under /{isCustomFolder ? customFolder.trim() || "general" : folder}.
+            </p>
+          </div>
+        ) : uploadedResult ? (
           <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-zinc-900 dark:text-white space-y-4 shadow-sm animate-in fade-in">
             <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
               <CheckCircle2 className="w-5 h-5" />

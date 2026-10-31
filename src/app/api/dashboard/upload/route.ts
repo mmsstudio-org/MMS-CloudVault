@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
       title,
       folder,
       buffer,
-      appName: appId,
+      appName: appId === "general" ? "Studio Global" : appId,
       fileName: file.name,
       mimeType: file.type,
       targetBucketId,
