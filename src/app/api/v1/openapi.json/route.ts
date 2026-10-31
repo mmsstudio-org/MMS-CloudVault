@@ -83,6 +83,18 @@ export async function GET() {
                         "Category or sub-folder inside the app namespace",
                       example: "banners",
                     },
+                    uploader_name: {
+                      type: "string",
+                      description:
+                        "Optional: Name or identifier of the end user or client submitting this media",
+                      example: "John Doe / AppClient-42",
+                    },
+                    info: {
+                      type: "string",
+                      description:
+                        "Optional: Short metadata context, remark, or descriptive info",
+                      example: "Profile avatar compressed for mobile client",
+                    },
                     file: {
                       type: "string",
                       format: "binary",
