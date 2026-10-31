@@ -11,6 +11,8 @@ import {
   Loader2,
   CheckCircle2,
   Music,
+  X,
+  Info,
 } from "lucide-react";
 import { MediaAsset } from "@/db/schema";
 import {
@@ -31,12 +33,20 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
   const [restoringId, setRestoringId] = React.useState<string | null>(null);
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
 
-  const handleRestore = async (id: string, assetId: string) => {
+  // Modal Dialog States
+  const [assetToRestore, setAssetToRestore] = React.useState<MediaAsset | null>(null);
+  const [assetToDeletePermanently, setAssetToDeletePermanently] = React.useState<MediaAsset | null>(null);
+  const [showPurgeAllModal, setShowPurgeAllModal] = React.useState(false);
+
+  const confirmRestore = async () => {
+    if (!assetToRestore) return;
+    const { id, assetId } = assetToRestore;
     try {
       setRestoringId(id);
       await actionRestoreAsset(id);
       setTrash((prev) => prev.filter((item) => item.id !== id));
       toast.success(`Asset '${assetId}' restored to active gallery.`);
+      setAssetToRestore(null);
     } catch {
       toast.error("Failed to restore asset.");
     } finally {
@@ -44,19 +54,15 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
     }
   };
 
-  const handlePermanentDelete = async (id: string, assetId: string) => {
-    if (
-      !confirm(
-        `CRITICAL: Permanently destroy asset '${assetId}'? The physical file will be immediately erased from Object Storage and database.`
-      )
-    ) {
-      return;
-    }
+  const confirmPermanentDelete = async () => {
+    if (!assetToDeletePermanently) return;
+    const { id, assetId } = assetToDeletePermanently;
     try {
       setDeletingId(id);
       await actionDeleteAssetPermanently(id);
       setTrash((prev) => prev.filter((item) => item.id !== id));
       toast.success(`Asset '${assetId}' permanently erased from storage.`);
+      setAssetToDeletePermanently(null);
     } catch {
       toast.error("Failed to delete asset permanently.");
     } finally {
@@ -64,20 +70,13 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
     }
   };
 
-  const handlePurgeAll = async () => {
-    if (
-      !confirm(
-        "CRITICAL: Are you sure you want to permanently purge all trash? All physical files in Object Storage and database records will be irreversibly destroyed."
-      )
-    ) {
-      return;
-    }
-
+  const confirmPurgeAll = async () => {
     try {
       setIsPurging(true);
       const res = await actionPurgeTrashNow();
       setTrash([]);
       toast.success(`Trash purged! Permanently deleted ${res.purgedCount} assets.`);
+      setShowPurgeAllModal(false);
     } catch {
       toast.error("Failed to purge trash.");
     } finally {
@@ -106,7 +105,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
         {trash.length > 0 && (
           <button
             type="button"
-            onClick={handlePurgeAll}
+            onClick={() => setShowPurgeAllModal(true)}
             disabled={isPurging}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm cursor-pointer disabled:opacity-50 shrink-0 self-start md:self-auto"
           >
@@ -173,7 +172,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
                       <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 shrink-0">
                         {item.appId}
                       </span>
-                      <span className="text-[10px] text-amber-500 flex items-center gap-1 shrink-0">
+                      <span className="text-[10px] text-amber-500 flex items-center gap-1 shrink-0 font-medium">
                         <Clock className="w-3 h-3" />
                         {daysRemaining} days left
                       </span>
@@ -190,7 +189,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     type="button"
-                    onClick={() => handleRestore(item.id, item.assetId)}
+                    onClick={() => setAssetToRestore(item)}
                     disabled={isRestoring || deletingId === item.id}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
                   >
@@ -204,7 +203,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
 
                   <button
                     type="button"
-                    onClick={() => handlePermanentDelete(item.id, item.assetId)}
+                    onClick={() => setAssetToDeletePermanently(item)}
                     disabled={isRestoring || deletingId === item.id}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-red-200 dark:border-red-900/60 bg-red-50/50 dark:bg-red-950/40 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 transition cursor-pointer disabled:opacity-50"
                     title="Permanently erase from Object Storage"
@@ -237,6 +236,309 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
 Authorization: Bearer <CRON_SECRET>`}
         </pre>
       </div>
+
+      {/* =========================================================================
+          1. CONFIRM RESTORE ASSET ALERT DIALOG (Prevents Accidental Restorations)
+          ========================================================================= */}
+      {assetToRestore && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div
+            className="fixed inset-0"
+            onClick={() => !restoringId && setAssetToRestore(null)}
+          />
+
+          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <RotateCcw className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                    Restore Media Asset
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                    Recover asset from trash back to active gallery
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setAssetToRestore(null)}
+                disabled={Boolean(restoringId)}
+                className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Asset Preview Card */}
+            <div className="p-3.5 rounded-xl border border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-950 flex items-center gap-3.5 min-w-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-700 flex items-center justify-center">
+                {assetToRestore.mimeType?.startsWith("audio/") ||
+                /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(assetToRestore.storageKey) ? (
+                  <div className="w-full h-full bg-emerald-950/40 text-emerald-400 flex items-center justify-center">
+                    <Music className="w-6 h-6" />
+                  </div>
+                ) : (
+                  <Image
+                    src={assetToRestore.publicUrl}
+                    alt={assetToRestore.title || assetToRestore.assetId}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1 overflow-hidden space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium">
+                    {assetToRestore.appId}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-mono">
+                    {assetToRestore.folder}
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" title={assetToRestore.title || assetToRestore.assetId}>
+                  {assetToRestore.title || assetToRestore.assetId}
+                </p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                  ID: {assetToRestore.assetId} • {assetToRestore.optimizedSizeKb} KB
+                </p>
+              </div>
+            </div>
+
+            {/* Explanation Banner */}
+            <div className="p-3.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+              <p className="font-semibold flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                Restoration Impact
+              </p>
+              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                This asset will be immediately removed from Trash and made active in the Media Gallery. Public CDN links and application API requests will resume serving this asset normally.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setAssetToRestore(null)}
+                disabled={Boolean(restoringId)}
+                className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmRestore}
+                disabled={Boolean(restoringId)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                {restoringId ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <RotateCcw className="w-4 h-4" />
+                )}
+                <span>Confirm Restore</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          2. CONFIRM PERMANENT DELETE ALERT DIALOG
+          ========================================================================= */}
+      {assetToDeletePermanently && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div
+            className="fixed inset-0"
+            onClick={() => !deletingId && setAssetToDeletePermanently(null)}
+          />
+
+          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center shrink-0">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                    Delete Permanently
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                    Irreversible destruction of asset and physical files
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setAssetToDeletePermanently(null)}
+                disabled={Boolean(deletingId)}
+                className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Asset Preview Card */}
+            <div className="p-3.5 rounded-xl border border-zinc-100 dark:border-zinc-800/80 bg-zinc-50 dark:bg-zinc-950 flex items-center gap-3.5 min-w-0">
+              <div className="w-14 h-14 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800 shrink-0 relative border border-zinc-200 dark:border-zinc-700 flex items-center justify-center">
+                {assetToDeletePermanently.mimeType?.startsWith("audio/") ||
+                /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(assetToDeletePermanently.storageKey) ? (
+                  <div className="w-full h-full bg-red-950/40 text-red-400 flex items-center justify-center">
+                    <Music className="w-6 h-6" />
+                  </div>
+                ) : (
+                  <Image
+                    src={assetToDeletePermanently.publicUrl}
+                    alt={assetToDeletePermanently.title || assetToDeletePermanently.assetId}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                )}
+              </div>
+
+              <div className="min-w-0 flex-1 overflow-hidden space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium">
+                    {assetToDeletePermanently.appId}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-mono">
+                    {assetToDeletePermanently.folder}
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-zinc-900 dark:text-white truncate" title={assetToDeletePermanently.title || assetToDeletePermanently.assetId}>
+                  {assetToDeletePermanently.title || assetToDeletePermanently.assetId}
+                </p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                  ID: {assetToDeletePermanently.assetId} • {assetToDeletePermanently.optimizedSizeKb} KB
+                </p>
+              </div>
+            </div>
+
+            {/* Warning Alert */}
+            <div className="p-3.5 rounded-xl bg-red-50/60 dark:bg-red-950/20 border border-red-500/20 text-xs text-red-800 dark:text-red-300 space-y-1">
+              <p className="font-semibold flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />
+                Permanent Destruction Warning
+              </p>
+              <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                The physical file will be immediately erased from cloud object storage (S3/R2) and database records. This action cannot be undone.
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setAssetToDeletePermanently(null)}
+                disabled={Boolean(deletingId)}
+                className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmPermanentDelete}
+                disabled={Boolean(deletingId)}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                {deletingId ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                <span>Erase Permanently</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          3. CONFIRM PURGE ALL TRASH ALERT DIALOG
+          ========================================================================= */}
+      {showPurgeAllModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
+          <div
+            className="fixed inset-0"
+            onClick={() => !isPurging && setShowPurgeAllModal(false)}
+          />
+
+          <div className="relative w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center shrink-0">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                    Purge Entire Trash
+                  </h3>
+                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                    Bulk permanent deletion of all {trash.length} items
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowPurgeAllModal(false)}
+                disabled={isPurging}
+                className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-red-50/60 dark:bg-red-950/20 border border-red-500/20 text-xs space-y-2">
+              <p className="font-bold text-red-700 dark:text-red-400 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                Irreversible Bulk Action
+              </p>
+              <p className="text-zinc-600 dark:text-zinc-400 text-[11px] leading-relaxed">
+                Are you sure you want to permanently erase all <strong className="text-zinc-900 dark:text-white">{trash.length} assets</strong> in the trash bin? All corresponding physical objects across all cloud storage buckets and database records will be destroyed immediately.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setShowPurgeAllModal(false)}
+                disabled={isPurging}
+                className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition disabled:opacity-50 cursor-pointer"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmPurgeAll}
+                disabled={isPurging}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                {isPurging ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
+                <span>Purge All Trash Now</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
