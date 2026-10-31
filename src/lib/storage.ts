@@ -2,6 +2,7 @@ import {
   PutObjectCommand,
   DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { db } from "@/db";
 import { storageBuckets, StorageBucket } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
@@ -153,4 +154,32 @@ export async function deleteObject(
     : await getDefaultActiveBucket();
 
   return deleteObjectFromBucket(bucket, storageKey);
+}
+
+/**
+ * Generates an authorized, time-limited S3 Pre-signed URL for direct client PUT upload.
+ * Zero Next.js server buffering, bypassing Vercel's 4.5MB payload limit.
+ */
+export async function createPresignedUploadUrl(
+  bucket: StorageBucket,
+  storageKey: string,
+  contentType: string,
+  expiresInSeconds: number = 300
+): Promise<{ uploadUrl: string; publicUrl: string }> {
+  const s3Client = getS3ClientForBucket(bucket);
+  const command = new PutObjectCommand({
+    Bucket: bucket.bucketName,
+    Key: storageKey,
+    ContentType: contentType,
+  });
+
+  const uploadUrl = await getSignedUrl(s3Client, command, {
+    expiresIn: expiresInSeconds,
+  });
+
+  const publicUrl = bucket.publicBaseUrl
+    ? `${bucket.publicBaseUrl.replace(/\/$/, "")}/${storageKey}`
+    : `${bucket.endpoint.replace(/\/$/, "")}/${bucket.bucketName}/${storageKey}`;
+
+  return { uploadUrl, publicUrl };
 }
