@@ -63,6 +63,11 @@ export async function POST(req: NextRequest) {
     const assetId = (formData.get("asset_id") as string | null)?.trim();
     const title = (formData.get("title") as string | null)?.trim() || undefined;
     const folder = (formData.get("folder") as string | null)?.trim() || "general";
+    const uploaderName =
+      (formData.get("uploader_name") as string | null)?.trim() ||
+      (formData.get("uploaderName") as string | null)?.trim() ||
+      undefined;
+    const info = (formData.get("info") as string | null)?.trim() || undefined;
 
     // Optional Audio Compression Parameters
     const compressAudioParam =
@@ -131,6 +136,8 @@ export async function POST(req: NextRequest) {
       assetId,
       title,
       folder,
+      uploaderName,
+      info,
       buffer,
       fileName: file.name,
       mimeType: file.type,
@@ -156,6 +163,8 @@ export async function POST(req: NextRequest) {
           asset_id: result.asset.assetId,
           title: result.asset.title,
           folder: result.asset.folder,
+          uploader_name: result.asset.uploaderName,
+          info: result.asset.info,
           public_url: result.asset.publicUrl,
           blur_hash: result.asset.blurHash,
           is_replaced: result.isReplaced,

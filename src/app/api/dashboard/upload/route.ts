@@ -18,6 +18,9 @@ export async function POST(req: NextRequest) {
     const assetId = (formData.get("asset_id") as string | null)?.trim();
     const title = (formData.get("title") as string | null)?.trim() || undefined;
     const folder = (formData.get("folder") as string | null)?.trim() || "general";
+    const customUploader = (formData.get("uploader_name") as string | null)?.trim();
+    const uploaderName = customUploader || session.user.name || session.user.email || "Admin";
+    const info = (formData.get("info") as string | null)?.trim() || undefined;
     const targetBucketId =
       (formData.get("target_bucket_id") as string | null)?.trim() || undefined;
 
@@ -51,6 +54,8 @@ export async function POST(req: NextRequest) {
       assetId,
       title,
       folder,
+      uploaderName,
+      info,
       buffer,
       appName: appId === "general" ? "Studio Global" : appId,
       fileName: file.name,

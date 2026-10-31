@@ -16,6 +16,8 @@ export interface ProcessAssetParams {
   assetId: string;
   title?: string;
   folder?: string;
+  uploaderName?: string;
+  info?: string;
   buffer: Buffer;
   options?: ImageOptimizationOptions;
   audioOptions?: AudioOptimizationOptions;
@@ -39,6 +41,8 @@ export async function processAndSaveAsset(
     assetId,
     title,
     folder = "general",
+    uploaderName,
+    info,
     buffer,
     options,
     audioOptions,
@@ -173,6 +177,8 @@ export async function processAndSaveAsset(
         bucketId: targetBucket.id,
         title: title || existing.title,
         folder: sanitizedFolder,
+        uploaderName: uploaderName !== undefined ? uploaderName : existing.uploaderName,
+        info: info !== undefined ? info : existing.info,
         storageKey,
         publicUrl,
         blurHash,
@@ -198,6 +204,8 @@ export async function processAndSaveAsset(
         bucketId: targetBucket.id,
         title: title || `${isAudio ? "Audio" : "Asset"} for ${assetId}`,
         folder: sanitizedFolder,
+        uploaderName: uploaderName || null,
+        info: info || null,
         storageKey,
         publicUrl,
         blurHash,

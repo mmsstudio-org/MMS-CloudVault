@@ -187,7 +187,7 @@ export async function actionDeleteAssetPermanently(id: string) {
 
 export async function actionUpdateAssetMetadata(
   id: string,
-  data: { title?: string; folder?: string }
+  data: { title?: string; folder?: string; uploaderName?: string; info?: string }
 ) {
   const session = await auth();
   if (!session?.user) {
@@ -199,12 +199,18 @@ export async function actionUpdateAssetMetadata(
     data.folder !== undefined
       ? data.folder.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "general"
       : undefined;
+  const cleanUploader =
+    data.uploaderName !== undefined ? data.uploaderName.trim() : undefined;
+  const cleanInfo =
+    data.info !== undefined ? data.info.trim() : undefined;
 
   const updates: Record<string, unknown> = {
     updatedAt: new Date(),
   };
   if (cleanTitle !== undefined) updates.title = cleanTitle;
   if (cleanFolder !== undefined) updates.folder = cleanFolder;
+  if (cleanUploader !== undefined) updates.uploaderName = cleanUploader || null;
+  if (cleanInfo !== undefined) updates.info = cleanInfo || null;
 
   const [updated] = await db
     .update(mediaAssets)
