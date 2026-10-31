@@ -349,12 +349,12 @@ export function StorageBucketsManager({
     <div className="space-y-6">
       {/* Header with Title and Add Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
             <HardDrive className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2">
+            <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2 flex flex-wrap-reverse">
               Multi-Cloud Storage Buckets & Vaults
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
                 v2.0 Dynamic Engine
@@ -405,7 +405,7 @@ export function StorageBucketsManager({
             >
               {/* Top Row: Name, Provider, Default Badge */}
               <div className="space-y-4">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
@@ -605,12 +605,12 @@ export function StorageBucketsManager({
 
       {/* Add / Edit Storage Bucket Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto p-6 space-y-6 animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-hidden">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header (Fixed) */}
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 p-5 sm:p-6 shrink-0 bg-white dark:bg-zinc-900 z-10">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
                   <Cloud className="w-5 h-5" />
                 </div>
                 <div>
@@ -629,287 +629,290 @@ export function StorageBucketsManager({
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="space-y-4">
-              {/* Row 1: Name & Slug */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleSave} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              {/* Modal Body (Scrollable) */}
+              <div className="flex-1 overflow-y-auto overscroll-contain p-5 sm:p-6 space-y-4">
+                {/* Row 1: Name & Slug */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      Display Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                        if (!editingBucket) {
+                          setSlug(
+                            e.target.value
+                              .toLowerCase()
+                              .replace(/[^a-z0-9_-]/g, "-")
+                          );
+                        }
+                      }}
+                      placeholder="e.g. Cloudflare R2 Audio Vault"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      Slug Identifier *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      placeholder="e.g. r2-audio-vault"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 2: Admin Notes / Understanding Note */}
                 <div>
                   <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Display Name *
+                    Bucket Note / Description (For Your Reference)
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => {
-                      setName(e.target.value);
-                      if (!editingBucket) {
-                        setSlug(
-                          e.target.value
-                            .toLowerCase()
-                            .replace(/[^a-z0-9_-]/g, "-")
-                        );
-                      }
-                    }}
-                    placeholder="e.g. Cloudflare R2 Audio Vault"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                  <textarea
+                    rows={3}
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    placeholder="e.g. Dedicated high-capacity bucket for Remotion audio clips & SFX with zero egress bandwidth fees."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500 resize-y leading-relaxed"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Slug Identifier *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={slug}
-                    onChange={(e) => setSlug(e.target.value)}
-                    placeholder="e.g. r2-audio-vault"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                  />
+                {/* Row 3: Provider & Bucket Name */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      Storage Provider
+                    </label>
+                    <select
+                      value={provider}
+                      onChange={(e) => setProvider(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    >
+                      <option value="s3_compatible">
+                        Neon S3 / Generic S3 Compatible
+                      </option>
+                      <option value="cloudflare_r2">
+                        Cloudflare R2 ($0 Egress)
+                      </option>
+                      <option value="aws">Amazon AWS S3</option>
+                      <option value="minio">MinIO Self-Hosted</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      S3 Bucket Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={bucketName}
+                      onChange={(e) => setBucketName(e.target.value)}
+                      placeholder="e.g. mms-cloud-vault"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* Row 2: Admin Notes / Understanding Note */}
-              <div>
-                <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                  Bucket Note / Description (For Your Reference)
-                </label>
-                <textarea
-                  rows={3}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. Dedicated high-capacity bucket for Remotion audio clips & SFX with zero egress bandwidth fees."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500 resize-y leading-relaxed"
-                />
-              </div>
+                {/* Row 4: S3 Endpoint & Region */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="sm:col-span-2">
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      S3 Endpoint URL *
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      value={endpoint}
+                      onChange={(e) => setEndpoint(e.target.value)}
+                      placeholder="https://<account>.r2.cloudflarestorage.com"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
 
-              {/* Row 3: Provider & Bucket Name */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Storage Provider
-                  </label>
-                  <select
-                    value={provider}
-                    onChange={(e) => setProvider(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      Region
+                    </label>
+                    <input
+                      type="text"
+                      value={region}
+                      onChange={(e) => setRegion(e.target.value)}
+                      placeholder="auto or ap-southeast-1"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Row 5: Access Key & Secret Key with Eye Toggle */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      Access Key ID *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showFormAccessKey ? "text" : "password"}
+                        required
+                        value={accessKeyId}
+                        onChange={(e) => setAccessKeyId(e.target.value)}
+                        placeholder="Access Key"
+                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowFormAccessKey(!showFormAccessKey)}
+                        className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      >
+                        {showFormAccessKey ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      Secret Access Key *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={showFormSecretKey ? "text" : "password"}
+                        required
+                        value={secretAccessKey}
+                        onChange={(e) => setSecretAccessKey(e.target.value)}
+                        placeholder="Secret Access Key"
+                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowFormSecretKey(!showFormSecretKey)}
+                        className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                      >
+                        {showFormSecretKey ? (
+                          <EyeOff className="w-4 h-4" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Row 6: Public CDN Base URL & Capacity */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      Public Delivery Base URL (Optional CDN)
+                    </label>
+                    <input
+                      type="url"
+                      value={publicBaseUrl}
+                      onChange={(e) => setPublicBaseUrl(e.target.value)}
+                      placeholder="https://cdn.sabbirmms.com"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                      Max Capacity Ceiling (GB)
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      value={maxCapacityGb}
+                      onChange={(e) => setMaxCapacityGb(Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Default Active Checkbox */}
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800">
+                  <input
+                    type="checkbox"
+                    id="is_default_checkbox"
+                    checked={isDefault}
+                    onChange={(e) => setIsDefault(e.target.checked)}
+                    className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-zinc-300 dark:border-zinc-700"
+                  />
+                  <label
+                    htmlFor="is_default_checkbox"
+                    className="text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer"
                   >
-                    <option value="s3_compatible">
-                      Neon S3 / Generic S3 Compatible
-                    </option>
-                    <option value="cloudflare_r2">
-                      Cloudflare R2 ($0 Egress)
-                    </option>
-                    <option value="aws">Amazon AWS S3</option>
-                    <option value="minio">MinIO Self-Hosted</option>
-                  </select>
+                    <span className="font-semibold text-zinc-900 dark:text-white">
+                      Set as Active Default Storage Bucket
+                    </span>{" "}
+                    (New API uploads without specific routing will use this
+                    bucket)
+                  </label>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    S3 Bucket Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={bucketName}
-                    onChange={(e) => setBucketName(e.target.value)}
-                    placeholder="e.g. mms-cloud-vault"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                  />
-                </div>
-              </div>
-
-              {/* Row 4: S3 Endpoint & Region */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    S3 Endpoint URL *
-                  </label>
-                  <input
-                    type="url"
-                    required
-                    value={endpoint}
-                    onChange={(e) => setEndpoint(e.target.value)}
-                    placeholder="https://<account>.r2.cloudflarestorage.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Region
-                  </label>
-                  <input
-                    type="text"
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
-                    placeholder="auto or ap-southeast-1"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                  />
-                </div>
-              </div>
-
-              {/* Row 5: Access Key & Secret Key with Eye Toggle */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Access Key ID *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showFormAccessKey ? "text" : "password"}
-                      required
-                      value={accessKeyId}
-                      onChange={(e) => setAccessKeyId(e.target.value)}
-                      placeholder="Access Key"
-                      className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowFormAccessKey(!showFormAccessKey)}
-                      className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-                    >
-                      {showFormAccessKey ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
+                {/* Live Test Connection Button inside Modal */}
+                <div className="p-3.5 rounded-xl bg-zinc-100/70 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                      Pre-Flight Connection Check
+                    </p>
+                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                      Verify credentials against the live S3 API before saving.
+                    </p>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={handleTestModalConnection}
+                    disabled={isTestingModalConnection}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-xs"
+                  >
+                    {isTestingModalConnection ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Radio className="w-3.5 h-3.5 text-cyan-400" />
+                    )}
+                    Test S3 Connection
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Secret Access Key *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showFormSecretKey ? "text" : "password"}
-                      required
-                      value={secretAccessKey}
-                      onChange={(e) => setSecretAccessKey(e.target.value)}
-                      placeholder="Secret Access Key"
-                      className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowFormSecretKey(!showFormSecretKey)}
-                      className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
-                    >
-                      {showFormSecretKey ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
+                {/* Test Result Message Box */}
+                {modalTestResult && (
+                  <div
+                    className={`p-3 rounded-xl text-xs flex items-center gap-2.5 ${
+                      modalTestResult.ok
+                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20"
+                    }`}
+                  >
+                    {modalTestResult.ok ? (
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                    ) : (
+                      <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+                    )}
+                    <span>{modalTestResult.message}</span>
                   </div>
-                </div>
+                )}
               </div>
 
-              {/* Row 6: Public CDN Base URL & Capacity */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Public Delivery Base URL (Optional CDN)
-                  </label>
-                  <input
-                    type="url"
-                    value={publicBaseUrl}
-                    onChange={(e) => setPublicBaseUrl(e.target.value)}
-                    placeholder="https://cdn.sabbirmms.com"
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
-                    Max Capacity Ceiling (GB)
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={maxCapacityGb}
-                    onChange={(e) => setMaxCapacityGb(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
-                  />
-                </div>
-              </div>
-
-              {/* Default Active Checkbox */}
-              <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800">
-                <input
-                  type="checkbox"
-                  id="is_default_checkbox"
-                  checked={isDefault}
-                  onChange={(e) => setIsDefault(e.target.checked)}
-                  className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-zinc-300 dark:border-zinc-700"
-                />
-                <label
-                  htmlFor="is_default_checkbox"
-                  className="text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer"
-                >
-                  <span className="font-semibold text-zinc-900 dark:text-white">
-                    Set as Active Default Storage Bucket
-                  </span>{" "}
-                  (New API uploads without specific routing will use this
-                  bucket)
-                </label>
-              </div>
-
-              {/* Live Test Connection Button inside Modal */}
-              <div className="p-3.5 rounded-xl bg-zinc-100/70 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-bold text-zinc-900 dark:text-white">
-                    Pre-Flight Connection Check
-                  </p>
-                  <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                    Verify credentials against the live S3 API before saving.
-                  </p>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleTestModalConnection}
-                  disabled={isTestingModalConnection}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-xs"
-                >
-                  {isTestingModalConnection ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Radio className="w-3.5 h-3.5 text-cyan-400" />
-                  )}
-                  Test S3 Connection
-                </button>
-              </div>
-
-              {/* Test Result Message Box */}
-              {modalTestResult && (
-                <div
-                  className={`p-3 rounded-xl text-xs flex items-center gap-2.5 ${
-                    modalTestResult.ok
-                      ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
-                      : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20"
-                  }`}
-                >
-                  {modalTestResult.ok ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                  ) : (
-                    <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
-                  )}
-                  <span>{modalTestResult.message}</span>
-                </div>
-              )}
-
-              {/* Modal Actions */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+              {/* Modal Actions Footer (Fixed) */}
+              <div className="flex items-center justify-end gap-3 p-4 sm:p-5 border-t border-zinc-100 dark:border-zinc-800 shrink-0 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-xs z-10">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
