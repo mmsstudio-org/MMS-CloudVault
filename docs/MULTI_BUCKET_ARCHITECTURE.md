@@ -62,6 +62,34 @@ sequenceDiagram
 
 ---
 
+### 2.1 Direct Pre-signed S3 Upload Lifecycle (Bypassing 4.5MB Server Limits)
+
+When client devices upload large assets (e.g. 10MB to 50MB audio files), streaming binary data through the serverless Next.js endpoint hits Vercel's `4.5MB` body size ceiling. The direct pre-signed upload pattern completely bypasses this:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Client / Mobile App
+    participant PresignedRoute as /api/v1/upload/presigned
+    participant CompleteRoute as /api/v1/upload/complete
+    participant S3 as Target Cloud Bucket (Neon S3 / R2)
+    participant DB as PostgreSQL Database
+
+    Client->>PresignedRoute: POST { asset_id, file_name, mime_type, folder } + x-api-key
+    PresignedRoute->>PresignedRoute: Authenticate key & resolve target bucket
+    PresignedRoute->>PresignedRoute: Generate S3 PUT Pre-signed URL (Expires in 300s)
+    PresignedRoute-->>Client: 200 OK { upload_url, storage_key, public_url, bucket_id }
+
+    Client->>S3: HTTP PUT [upload_url] (Direct binary stream)
+    S3-->>Client: HTTP 200 OK (Uploaded directly to bucket)
+
+    Client->>CompleteRoute: POST /upload/complete { asset_id, storage_key, public_url, bucket_id }
+    CompleteRoute->>DB: Upsert media_assets metadata & emit Telegram notification
+    CompleteRoute-->>Client: 200 OK { success: true, data: asset }
+```
+
+---
+
 ## 3. Database Schema Design (PostgreSQL / Drizzle ORM)
 
 ### 3.1 New Table: `storage_buckets`

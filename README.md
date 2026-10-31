@@ -73,6 +73,25 @@
    - Cryptographically verifies incoming requests against Google's public JWKS certificates (`RS256`).
    - Prevents unauthorized API usage, spoofing, and rogue client access outside your verified Android apps.
 
+10. **Direct S3 / Neon Pre-signed Direct URL Upload (Zero 4.5MB Serverless Ceiling):**
+   - Direct-to-bucket upload engine bypassing Vercel serverless request body size limits (`4.5MB`).
+   - Generates 5-minute cryptographically signed S3 PUT URLs via `@aws-sdk/s3-request-presigner`.
+   - Supports large audio tracks, voiceover stems, podcasts, and high-fidelity media up to 50MB+.
+   - Two-step handshake: `/api/v1/upload/presigned` -> direct binary client `PUT` -> `/api/v1/upload/complete`.
+
+11. **Gallery Bulk Selection & 2FA-Protected Bulk Operations:**
+   - Multi-card selection bar with "Select All" and "Clear Selection" controls.
+   - Bulk move-to-trash with safety modal and mandatory Google Authenticator 2FA / Recovery Code reverification.
+
+12. **Safe API Key Governance & Zero-Orphan File Protection:**
+   - Real-time slug auto-synchronization when typing application names.
+   - In-place application name editing without altering or invalidating active secret keys.
+   - Strict zero-file deletion protection: prevents deleting an API key if media assets exist under its application namespace.
+
+13. **Creator Attribution & Context Tracking (`uploader_name` & `info`):**
+   - Full attribution tracking across uploads, batch queues, database, and API endpoints.
+   - Visual creator badges on gallery cards and inspect drawers for instant operational visibility.
+
 ---
 
 ## 📁 Project Architecture & File Map
@@ -256,6 +275,8 @@ Content-Type: multipart/form-data
 - `asset_id`: `blog_hero_2026` or `audio_ep01` (Required)
 - `title`: `Hero Banner / Podcast Episode 1` (Optional)
 - `folder`: `banners` or `audio` (Optional, defaults to `general`)
+- `uploader_name`: `Sabbir Ahmed` (Optional creator or service name)
+- `info`: `Campaign hero visual` (Optional metadata or context note)
 
 **Sample Response (200 OK):**
 ```json
@@ -268,6 +289,8 @@ Content-Type: multipart/form-data
     "asset_id": "blog_hero_2026",
     "title": "Hero Banner - Tech Update",
     "folder": "banners",
+    "uploader_name": "Sabbir Ahmed",
+    "info": "Campaign hero visual",
     "public_url": "https://storage.sabbirmms.com/apps/mms-portal/banners/blog_hero_2026-1793389679.webp",
     "blur_hash": "LEHLk~WB2yk8pyo0adR*.7kCMdnj",
     "is_replaced": false,
@@ -281,7 +304,96 @@ Content-Type: multipart/form-data
 }
 ```
 
-### 2. Retrieve Media Asset
+### 2. Request Direct Pre-signed Upload URL (Bypass 4.5MB Server Limit)
+`POST /api/v1/upload/presigned`
+
+Generates a secure, 5-minute pre-signed S3 `PUT` URL directly targeting Neon S3 or Cloudflare R2 bucket for large audio files or assets (up to 50MB+).
+
+**Headers:**
+```http
+x-api-key: mms_sec_demo_golpo_ghor_2026
+Content-Type: application/json
+```
+
+**JSON Body:**
+```json
+{
+  "asset_id": "podcast_episode_42",
+  "file_name": "master_audio_track.mp3",
+  "mime_type": "audio/mpeg",
+  "folder": "audio",
+  "title": "Episode 42 Master Track",
+  "uploader_name": "Sabbir / Creator Studio",
+  "info": "Lossless master voiceover and SFX mix"
+}
+```
+
+**Sample Response (200 OK):**
+```json
+{
+  "success": true,
+  "data": {
+    "upload_url": "https://br-still-snow-aoeg0x94.storage.c-2.ap-southeast-1.aws.neon.tech/bucket/key?X-Amz-Signature=...",
+    "public_url": "https://media.sabbirmms.com/golpo-ghor/audio/podcast_episode_42.mp3",
+    "storage_key": "golpo-ghor/audio/podcast_episode_42.mp3",
+    "bucket_id": "a93e3d12-4211-4f1a-b31c-8f192b10901e",
+    "expires_in_seconds": 300,
+    "instructions": {
+      "method": "PUT",
+      "required_header": "Content-Type: audio/mpeg",
+      "next_step": "POST to /api/v1/upload/complete after PUT succeeds"
+    }
+  }
+}
+```
+
+### 3. Complete Direct Pre-signed Upload (Confirm & Save in DB)
+`POST /api/v1/upload/complete`
+
+Called by the client immediately after successfully completing the direct HTTP `PUT` to the pre-signed S3 URL. Persists metadata in Neon DB, checks for previous asset deduplication, and emits real-time Telegram notification.
+
+**Headers:**
+```http
+x-api-key: mms_sec_demo_golpo_ghor_2026
+Content-Type: application/json
+```
+
+**JSON Body:**
+```json
+{
+  "asset_id": "podcast_episode_42",
+  "storage_key": "golpo-ghor/audio/podcast_episode_42.mp3",
+  "public_url": "https://media.sabbirmms.com/golpo-ghor/audio/podcast_episode_42.mp3",
+  "bucket_id": "a93e3d12-4211-4f1a-b31c-8f192b10901e",
+  "folder": "audio",
+  "title": "Episode 42 Master Track",
+  "uploader_name": "Sabbir / Creator Studio",
+  "info": "Lossless master voiceover and SFX mix",
+  "mime_type": "audio/mpeg",
+  "file_size_kb": 18450
+}
+```
+
+**Sample Response (200 OK):**
+```json
+{
+  "success": true,
+  "message": "Direct media asset upload registered and confirmed in database.",
+  "data": {
+    "id": "e21b8f5a-c9d3-4819-a9a3-5c219f8e4321",
+    "app_id": "golpo-ghor",
+    "asset_id": "podcast_episode_42",
+    "title": "Episode 42 Master Track",
+    "folder": "audio",
+    "uploader_name": "Sabbir / Creator Studio",
+    "info": "Lossless master voiceover and SFX mix",
+    "public_url": "https://media.sabbirmms.com/golpo-ghor/audio/podcast_episode_42.mp3",
+    "is_replaced": false
+  }
+}
+```
+
+### 4. Retrieve Media Asset
 `GET /api/v1/assets/{asset_id}`
 
 **Headers:**
@@ -289,7 +401,7 @@ Content-Type: multipart/form-data
 x-api-key: mms_sec_demo_2026
 ```
 
-### 3. Soft Delete Media Asset (Move to Trash)
+### 5. Soft Delete Media Asset (Move to Trash)
 `DELETE /api/v1/assets/{asset_id}`
 
 **Headers:**
@@ -297,7 +409,7 @@ x-api-key: mms_sec_demo_2026
 x-api-key: mms_sec_demo_2026
 ```
 
-### 4. Scheduled Trash Cleanup (Cron)
+### 6. Scheduled Trash Cleanup (Cron)
 `POST /api/v1/cron/cleanup-trash`
 
 **Headers:**

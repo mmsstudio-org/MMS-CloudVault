@@ -54,7 +54,7 @@ CloudVault provides a unified, zero-read-overhead REST API alongside a state-of-
 | **UI & Styling** | **React 19, Tailwind CSS v4, Lucide** | Modern Linear/Vercel-inspired dark/light theme, GPU-accelerated 60fps spring transitions. |
 | **Database & ORM** | **Serverless PostgreSQL, Drizzle ORM** | ACID-compliant transactional persistence, schema migrations, composite indexes (`app_id` + `asset_id`). |
 | **Media Engine** | **Sharp 0.35, BlurHash** | Multi-threaded native libvips image compression, auto WebP scaling, progressive mobile BlurHash strings. |
-| **Object Storage** | **AWS S3 SDK v3, Cloudflare R2** | Multi-cloud storage engine, dynamic per-app bucket routing, $0 egress architecture. |
+| **Object Storage** | **AWS S3 SDK v3, Cloudflare R2, S3 Pre-signer** | Multi-cloud storage engine, dynamic per-app bucket routing, $0 egress architecture, direct pre-signed PUT URLs. |
 | **Caching Layer** | **In-Memory LRU Cache (`lru-cache` v11)** | Microsecond API key validation (0.03ms), automatic TTL expiration, instant cache eviction. |
 | **Authentication** | **NextAuth v5 (Auth.js), Google OAuth** | Strict email whitelist gatekeeping, session JWTs, zero unauthorized account creation. |
 | **Secondary Auth** | **TOTP 2FA (`otplib`, `qrcode`, `jose`)** | Hardware/mobile Google Authenticator challenge, cryptographically signed HS256 cookies. |
@@ -152,6 +152,25 @@ flowchart TD
   - Upon sign-in, sessions with `isTwoFactorEnabled: true` are blocked by `DashboardLayout` and redirected to `/login/verify-2fa`.
   - Passing the 6-digit challenge issues a tamper-proof HTTP-Only session cookie (`mms_2fa_session`) cryptographically signed with HS256 (`jose`).
   - When 2FA is disabled, users enter the dashboard seamlessly with zero interruption.
+
+### 4.6 Direct S3 / Neon Pre-signed URL Pipeline (Zero-Serverless-Ceiling Direct Ingestion)
+- **Problem Solved**: Standard HTTP POST uploads buffer binary streams through Next.js serverless functions, hitting Vercel's strict `4.5 MB` payload ceiling. While client-side WebP compression handles images, high-fidelity audio tracks (10MB–50MB+) fail without direct cloud storage ingestion.
+- **Architectural Flow**:
+  1. **Pre-signed Request (`POST /api/v1/upload/presigned`)**: Authenticates caller via API key / App Check, verifies MIME type, resolves target bucket (e.g. Neon S3 or Cloudflare R2), and calls `@aws-sdk/s3-request-presigner`'s `getSignedUrl(s3Client, putCommand, { expiresIn: 300 })`.
+  2. **Direct Binary PUT**: Client uploads file bytes directly to object storage endpoint (`HTTP PUT`). Zero bandwidth, memory, or CPU consumed on the Next.js server.
+  3. **Completion & Registration (`POST /api/v1/upload/complete`)**: Client passes asset metadata to server. Database checks for asset deduplication, replaces old storage keys if present, registers the new record, and fires Telegram notifications.
+
+### 4.7 Multi-Factor Bulk Operations & Safe Key Governance
+- **Gallery Multi-Card Selection**: Users can select individual assets or click "Select All" with a persistent floating action bar.
+- **2FA Reverification Guard**: Deleting multiple assets in bulk requires confirming a 6-digit Google Authenticator TOTP token or single-use recovery code via `verifyUserTwoFactorChallenge()`. Unauthorized or unverified bulk delete requests are strictly blocked.
+- **Safe Application Key Governance**:
+  - Live slug synchronization automatically generates valid URL-safe identifiers while typing app names.
+  - Safe rename action enables updating application titles without modifying or regenerating production secret keys.
+  - Strict zero-orphan file deletion policy: an API key can never be deleted if media assets associated with its `app_id` exist in the database.
+
+### 4.8 Creator Attribution & Metadata Context
+- Optional `uploader_name` (e.g. creator name, automation agent, or service identifier) and `info` (notes, scene description, or campaign remarks) are indexed and stored.
+- Fully rendered across web dashboard gallery badges, card overlays, metadata inspector drawers, and REST API payloads.
 
 ---
 
