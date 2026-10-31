@@ -40,7 +40,7 @@
 }
 
 .dark .swagger-ui .scheme-container,
-html.dark-mode .swagger-ui .scheme-container {
+.dark .swagger-ui .scheme-container {
   border-bottom-color: rgba(39, 39, 42, 0.8) !important;
   background: transparent !important;
   box-shadow: none !important;
@@ -89,9 +89,9 @@ html.dark-mode .swagger-ui .scheme-container {
 .dark .swagger-ui .scheme-container .schemes > .schemes-server-container > label,
 .dark .swagger-ui .schemes-server-container > label,
 .dark .swagger-ui .servers > label,
-html.dark-mode .swagger-ui .scheme-container .schemes > .schemes-server-container > label,
-html.dark-mode .swagger-ui .schemes-server-container > label,
-html.dark-mode .swagger-ui .servers > label {
+.dark .swagger-ui .scheme-container .schemes > .schemes-server-container > label,
+.dark .swagger-ui .schemes-server-container > label,
+.dark .swagger-ui .servers > label {
   color: #a1a1aa !important;
 }
 
@@ -109,8 +109,8 @@ html.dark-mode .swagger-ui .servers > label {
 
 .dark .swagger-ui .servers .servers-title,
 .dark .swagger-ui .servers-title,
-html.dark-mode .swagger-ui .servers .servers-title,
-html.dark-mode .swagger-ui .servers-title {
+.dark .swagger-ui .servers .servers-title,
+.dark .swagger-ui .servers-title {
   color: #a1a1aa !important;
 }
 
@@ -136,9 +136,9 @@ html.dark-mode .swagger-ui .servers-title {
 .dark .swagger-ui .scheme-container .schemes > .schemes-server-container > label select,
 .dark .swagger-ui .schemes-server-container select,
 .dark .swagger-ui .servers select,
-html.dark-mode .swagger-ui .scheme-container .schemes > .schemes-server-container > label select,
-html.dark-mode .swagger-ui .schemes-server-container select,
-html.dark-mode .swagger-ui .servers select {
+.dark .swagger-ui .scheme-container .schemes > .schemes-server-container > label select,
+.dark .swagger-ui .schemes-server-container select,
+.dark .swagger-ui .servers select {
   background-color: #18181b !important;
   border-color: #3f3f46 !important;
   color: #fafafa !important;
@@ -394,10 +394,10 @@ html.dark-mode .swagger-ui .servers select {
 .dark .swagger-ui .renderedMarkdown p,
 .dark .swagger-ui .markdown p,
 .dark .swagger-ui .description,
-html.dark-mode .swagger-ui .opblock-description-wrapper p,
-html.dark-mode .swagger-ui .renderedMarkdown p,
-html.dark-mode .swagger-ui .markdown p,
-html.dark-mode .swagger-ui .description {
+.dark .swagger-ui .opblock-description-wrapper p,
+.dark .swagger-ui .renderedMarkdown p,
+.dark .swagger-ui .markdown p,
+.dark .swagger-ui .description {
   color: #d4d4d8 !important;
 }
 
@@ -408,7 +408,7 @@ html.dark-mode .swagger-ui .description {
 }
 
 .dark .swagger-ui .parameters-col_description,
-html.dark-mode .swagger-ui .parameters-col_description {
+.dark .swagger-ui .parameters-col_description {
   color: #d4d4d8 !important;
 }
 
@@ -420,7 +420,7 @@ html.dark-mode .swagger-ui .parameters-col_description {
 }
 
 .dark .swagger-ui .tabli button,
-html.dark-mode .swagger-ui .tabli button {
+.dark .swagger-ui .tabli button {
   color: #a1a1aa !important;
 }
 
@@ -429,7 +429,7 @@ html.dark-mode .swagger-ui .tabli button {
 }
 
 .dark .swagger-ui .tabli.active button,
-html.dark-mode .swagger-ui .tabli.active button {
+.dark .swagger-ui .tabli.active button {
   color: #34d399 !important;
 }
 
@@ -698,7 +698,7 @@ html.dark-mode .swagger-ui .tabli.active button {
 }
 
 .dark .swagger-ui .model-box,
-html.dark-mode .swagger-ui .model-box {
+.dark .swagger-ui .model-box {
   background: #18181b !important;
 }
 
@@ -709,7 +709,7 @@ html.dark-mode .swagger-ui .model-box {
 }
 
 .dark .swagger-ui .model-title,
-html.dark-mode .swagger-ui .model-title {
+.dark .swagger-ui .model-title {
   color: #fafafa !important;
 }
 
@@ -721,7 +721,7 @@ html.dark-mode .swagger-ui .model-title {
 }
 
 .dark .swagger-ui .prop-name,
-html.dark-mode .swagger-ui .prop-name {
+.dark .swagger-ui .prop-name {
   color: #fafafa !important;
 }
 
@@ -732,7 +732,7 @@ html.dark-mode .swagger-ui .prop-name {
 }
 
 .dark .swagger-ui .prop-type,
-html.dark-mode .swagger-ui .prop-type {
+.dark .swagger-ui .prop-type {
   color: #38bdf8 !important;
 }
 
@@ -742,7 +742,7 @@ html.dark-mode .swagger-ui .prop-type {
 }
 
 .dark .swagger-ui .prop-format,
-html.dark-mode .swagger-ui .prop-format {
+.dark .swagger-ui .prop-format {
   color: #a1a1aa !important;
 }
 
@@ -751,7 +751,7 @@ html.dark-mode .swagger-ui .prop-format {
 }
 
 .dark .swagger-ui .property-row,
-html.dark-mode .swagger-ui .property-row {
+.dark .swagger-ui .property-row {
   color: #d4d4d8 !important;
 }
 
@@ -780,7 +780,7 @@ html.dark-mode .swagger-ui .property-row {
 }
 
 .dark .swagger-ui .dialog-ux .modal-ux,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux {
+.dark .swagger-ui .dialog-ux .modal-ux {
   background: #111114 !important;
   border-color: #27272a !important;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8) !important;
@@ -797,7 +797,7 @@ html.dark-mode .swagger-ui .dialog-ux .modal-ux {
 }
 
 .dark .swagger-ui .dialog-ux .modal-ux-header,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-header {
+.dark .swagger-ui .dialog-ux .modal-ux-header {
   border-bottom-color: #27272a !important;
 }
 
@@ -810,7 +810,7 @@ html.dark-mode .swagger-ui .dialog-ux .modal-ux-header {
 }
 
 .dark .swagger-ui .dialog-ux .modal-ux-header h3,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-header h3 {
+.dark .swagger-ui .dialog-ux .modal-ux-header h3 {
   color: #fafafa !important;
 }
 
@@ -831,7 +831,7 @@ html.dark-mode .swagger-ui .dialog-ux .modal-ux-header h3 {
 }
 
 .dark .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover {
+.dark .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover {
   background: #27272a !important;
 }
 
@@ -847,12 +847,12 @@ html.dark-mode .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover {
 }
 
 .dark .swagger-ui .dialog-ux .modal-ux-header .close-modal svg,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-header .close-modal svg {
+.dark .swagger-ui .dialog-ux .modal-ux-header .close-modal svg {
   fill: #a1a1aa !important;
 }
 
 .dark .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover svg,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover svg {
+.dark .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover svg {
   fill: #fafafa !important;
 }
 
@@ -863,7 +863,7 @@ html.dark-mode .swagger-ui .dialog-ux .modal-ux-header .close-modal:hover svg {
 }
 
 .dark .swagger-ui .dialog-ux .modal-ux-content,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content {
+.dark .swagger-ui .dialog-ux .modal-ux-content {
   color: #d4d4d8 !important;
 }
 
@@ -881,8 +881,8 @@ html.dark-mode .swagger-ui .dialog-ux .modal-ux-content {
 
 .dark .swagger-ui .dialog-ux .modal-ux-content h4,
 .dark .swagger-ui .auth-container h4,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content h4,
-html.dark-mode .swagger-ui .auth-container h4 {
+.dark .swagger-ui .dialog-ux .modal-ux-content h4,
+.dark .swagger-ui .auth-container h4 {
   color: #ffffff !important;
 }
 
@@ -911,9 +911,9 @@ html.dark-mode .swagger-ui .auth-container h4 {
 .dark .swagger-ui .dialog-ux .modal-ux-content p,
 .dark .swagger-ui .auth-container p,
 .dark .swagger-ui .dialog-ux .modal-ux-content .renderedMarkdown p,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content p,
-html.dark-mode .swagger-ui .auth-container p,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content .renderedMarkdown p {
+.dark .swagger-ui .dialog-ux .modal-ux-content p,
+.dark .swagger-ui .auth-container p,
+.dark .swagger-ui .dialog-ux .modal-ux-content .renderedMarkdown p {
   color: #a1a1aa !important;
 }
 
@@ -933,8 +933,8 @@ html.dark-mode .swagger-ui .dialog-ux .modal-ux-content .renderedMarkdown p {
 
 .dark .swagger-ui .dialog-ux .modal-ux-content code,
 .dark .swagger-ui .auth-container code,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content code,
-html.dark-mode .swagger-ui .auth-container code {
+.dark .swagger-ui .dialog-ux .modal-ux-content code,
+.dark .swagger-ui .auth-container code {
   background: #18181b !important;
   color: #38bdf8 !important;
   border-color: #27272a !important;
@@ -952,8 +952,8 @@ html.dark-mode .swagger-ui .auth-container code {
 
 .dark .swagger-ui .dialog-ux .modal-ux-content label,
 .dark .swagger-ui .auth-container label,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content label,
-html.dark-mode .swagger-ui .auth-container label {
+.dark .swagger-ui .dialog-ux .modal-ux-content label,
+.dark .swagger-ui .auth-container label {
   color: #fafafa !important;
 }
 
@@ -983,10 +983,10 @@ html.dark-mode .swagger-ui .auth-container label {
 .dark .swagger-ui .dialog-ux .modal-ux-content input[type="password"],
 .dark .swagger-ui .auth-container input[type="text"],
 .dark .swagger-ui .auth-container input[type="password"],
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content input[type="text"],
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content input[type="password"],
-html.dark-mode .swagger-ui .auth-container input[type="text"],
-html.dark-mode .swagger-ui .auth-container input[type="password"] {
+.dark .swagger-ui .dialog-ux .modal-ux-content input[type="text"],
+.dark .swagger-ui .dialog-ux .modal-ux-content input[type="password"],
+.dark .swagger-ui .auth-container input[type="text"],
+.dark .swagger-ui .auth-container input[type="password"] {
   background: #18181b !important;
   border-color: #3f3f46 !important;
   color: #ffffff !important;
@@ -1012,8 +1012,8 @@ html.dark-mode .swagger-ui .auth-container input[type="password"] {
 
 .dark .swagger-ui .dialog-ux .modal-ux-content .auth-btn-wrapper,
 .dark .swagger-ui .auth-container .auth-btn-wrapper,
-html.dark-mode .swagger-ui .dialog-ux .modal-ux-content .auth-btn-wrapper,
-html.dark-mode .swagger-ui .auth-container .auth-btn-wrapper {
+.dark .swagger-ui .dialog-ux .modal-ux-content .auth-btn-wrapper,
+.dark .swagger-ui .auth-container .auth-btn-wrapper {
   border-top-color: #27272a !important;
 }
 
@@ -1052,14 +1052,14 @@ html.dark-mode .swagger-ui .auth-container .auth-btn-wrapper {
 }
 
 .dark .swagger-ui .btn.modal-btn.btn-done,
-html.dark-mode .swagger-ui .btn.modal-btn.btn-done {
+.dark .swagger-ui .btn.modal-btn.btn-done {
   background: #27272a !important;
   color: #fafafa !important;
   border-color: #3f3f46 !important;
 }
 
 .dark .swagger-ui .btn.modal-btn.btn-done:hover,
-html.dark-mode .swagger-ui .btn.modal-btn.btn-done:hover {
+.dark .swagger-ui .btn.modal-btn.btn-done:hover {
   background: #3f3f46 !important;
 }
 
@@ -1074,8 +1074,8 @@ html.dark-mode .swagger-ui .btn.modal-btn.btn-done:hover {
 
 .dark .swagger-ui .btn.modal-btn.auth.authorize,
 .dark .swagger-ui .btn.modal-btn.auth.unauthorize,
-html.dark-mode .swagger-ui .btn.modal-btn.auth.authorize,
-html.dark-mode .swagger-ui .btn.modal-btn.auth.unauthorize {
+.dark .swagger-ui .btn.modal-btn.auth.authorize,
+.dark .swagger-ui .btn.modal-btn.auth.unauthorize {
   background: rgba(239, 68, 68, 0.2) !important;
   color: #f87171 !important;
   border-color: rgba(239, 68, 68, 0.4) !important;
