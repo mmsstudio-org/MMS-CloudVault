@@ -134,6 +134,8 @@ export const mediaAssets = pgTable(
 
     title: text("title"),
     folder: text("folder").default("general").notNull(),
+    uploaderName: text("uploader_name"),
+    info: text("info"),
     storageKey: text("storage_key").notNull(),
     publicUrl: text("public_url").notNull(),
     blurHash: text("blur_hash"),
