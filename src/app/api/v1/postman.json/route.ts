@@ -85,6 +85,18 @@ export async function GET(request: NextRequest) {
                     type: "text",
                   },
                   {
+                    key: "uploader_name",
+                    value: "Sabbir Ahmed",
+                    description: "Optional creator or service name who uploaded the asset.",
+                    type: "text",
+                  },
+                  {
+                    key: "info",
+                    value: "Production campaign hero",
+                    description: "Optional notes or tracking context.",
+                    type: "text",
+                  },
+                  {
                     key: "file",
                     description: "Select binary image (JPEG/PNG/WebP) or audio file (MP3/WAV/M4A).",
                     type: "file",
@@ -99,6 +111,82 @@ export async function GET(request: NextRequest) {
               },
               description:
                 "Uploads an image or audio asset. Images undergo on-the-fly Sharp optimization to WebP with aspect-ratio scaling and BlurHash extraction. Audio files (MP3/WAV/etc.) are stored directly with full streaming capability.",
+            },
+            response: [],
+          },
+          {
+            name: "Request Direct Pre-signed Upload URL (Bypass 4.5MB Server Limit)",
+            request: {
+              method: "POST",
+              header: [
+                {
+                  key: "Content-Type",
+                  value: "application/json",
+                  type: "text",
+                },
+              ],
+              body: {
+                mode: "raw",
+                raw: JSON.stringify(
+                  {
+                    asset_id: "podcast_ep_01",
+                    file_name: "audio_track.mp3",
+                    mime_type: "audio/mpeg",
+                    folder: "podcasts",
+                    title: "Episode 1 Master Audio",
+                    uploader_name: "Sabbir / Creator Studio",
+                    info: "Direct client upload via S3 pre-signed URL",
+                  },
+                  null,
+                  2
+                ),
+              },
+              url: {
+                raw: "{{baseUrl}}/api/v1/upload/presigned",
+                host: ["{{baseUrl}}"],
+                path: ["api", "v1", "upload", "presigned"],
+              },
+              description:
+                "Generates a secure, 5-minute pre-signed PUT URL directly targeting Neon S3 or Cloudflare R2 bucket. Used for large files (10MB-50MB+) to bypass Vercel serverless body size limits.",
+            },
+            response: [],
+          },
+          {
+            name: "Complete Direct Pre-signed Upload (Confirm & Save in DB)",
+            request: {
+              method: "POST",
+              header: [
+                {
+                  key: "Content-Type",
+                  value: "application/json",
+                  type: "text",
+                },
+              ],
+              body: {
+                mode: "raw",
+                raw: JSON.stringify(
+                  {
+                    asset_id: "podcast_ep_01",
+                    storage_key: "golpo-ghor/podcasts/podcast_ep_01.mp3",
+                    public_url: "https://media.sabbirmms.com/golpo-ghor/podcasts/podcast_ep_01.mp3",
+                    folder: "podcasts",
+                    title: "Episode 1 Master Audio",
+                    uploader_name: "Sabbir / Creator Studio",
+                    info: "Direct client upload via S3 pre-signed URL",
+                    mime_type: "audio/mpeg",
+                    file_size_kb: 18450,
+                  },
+                  null,
+                  2
+                ),
+              },
+              url: {
+                raw: "{{baseUrl}}/api/v1/upload/complete",
+                host: ["{{baseUrl}}"],
+                path: ["api", "v1", "upload", "complete"],
+              },
+              description:
+                "Notifies server that client-side binary PUT to pre-signed S3 URL succeeded. Verifies key, registers metadata in Neon DB, and emits Telegram notification.",
             },
             response: [],
           },
