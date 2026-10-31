@@ -185,6 +185,49 @@ export async function actionDeleteAssetPermanently(id: string) {
   return result;
 }
 
+/**
+ * Bulk soft-deletes multiple media assets to trash.
+ * Requires 2FA verification when user has 2FA enabled.
+ */
+export async function actionBulkSoftDeleteAssets(
+  assetIds: string[],
+  twoFactorCode?: string
+) {
+  const session = await auth();
+  if (!session?.user?.email) {
+    throw new Error("Unauthorized: Administrator session required.");
+  }
+
+  // 1. Check if user has 2FA enabled, and verify code
+  const { isUserTwoFactorEnabled, verifyUserTwoFactorChallenge } = await import("./totp");
+  const is2FaEnabled = await isUserTwoFactorEnabled(session.user.email);
+  if (is2FaEnabled) {
+    if (!twoFactorCode || !twoFactorCode.trim()) {
+      throw new Error("Two-Factor Authentication (2FA) code required for bulk delete operation.");
+    }
+    const isCodeValid = await verifyUserTwoFactorChallenge(session.user.email, twoFactorCode);
+    if (!isCodeValid) {
+      throw new Error("Invalid 2FA code or backup recovery code.");
+    }
+  }
+
+  if (!assetIds || assetIds.length === 0) {
+    return { success: true, count: 0 };
+  }
+
+  // 2. Perform bulk soft deletion
+  let deletedCount = 0;
+  for (const id of assetIds) {
+    const ok = await softDeleteAsset(id);
+    if (ok) deletedCount++;
+  }
+
+  safeRevalidate("/dashboard");
+  safeRevalidate("/dashboard/gallery");
+  safeRevalidate("/dashboard/trash");
+  return { success: true, count: deletedCount };
+}
+
 export async function actionUpdateAssetMetadata(
   id: string,
   data: { title?: string; folder?: string; uploaderName?: string; info?: string }
@@ -696,6 +739,70 @@ export async function actionRotateApiKey(id: string) {
   invalidateApiKeyCache(newSecret);
   safeRevalidate("/dashboard/api-keys");
   return updated[0];
+}
+
+export async function actionUpdateApiKeyDetails(
+  id: string,
+  data: { appName?: string }
+) {
+  await requireAdminAuth();
+  const cleanName = data.appName?.trim();
+  if (!cleanName) {
+    throw new Error("Application name cannot be empty.");
+  }
+
+  const [updated] = await db
+    .update(apiKeys)
+    .set({
+      appName: cleanName,
+      updatedAt: new Date(),
+    })
+    .where(eq(apiKeys.id, id))
+    .returning();
+
+  if (updated) {
+    invalidateApiKeyCache(updated.secretKey);
+  }
+  safeRevalidate("/dashboard/api-keys");
+  return updated;
+}
+
+export async function actionDeleteApiKey(id: string) {
+  await requireAdminAuth();
+
+  const [key] = await db
+    .select()
+    .from(apiKeys)
+    .where(eq(apiKeys.id, id))
+    .limit(1);
+
+  if (!key) {
+    throw new Error("API Key not found.");
+  }
+
+  if (key.appId === "general") {
+    throw new Error("Cannot delete default global system application 'general'.");
+  }
+
+  // Safety Gate: Count active or soft-deleted media assets assigned to this appId
+  const [assetCount] = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(mediaAssets)
+    .where(eq(mediaAssets.appId, key.appId));
+
+  const totalFiles = Number(assetCount?.count || 0);
+  if (totalFiles > 0) {
+    throw new Error(
+      `Cannot delete API Key '${key.appName}' (${key.appId}). It still has ${totalFiles} file(s) stored under its namespace. Please delete or purge all files from this application first.`
+    );
+  }
+
+  // Safe to delete since 0 files are attached
+  await db.delete(apiKeys).where(eq(apiKeys.id, id));
+  invalidateApiKeyCache(key.secretKey);
+  safeRevalidate("/dashboard/api-keys");
+  safeRevalidate("/dashboard/upload");
+  return { success: true, deletedAppId: key.appId };
 }
 
 // -----------------------------------------------------------------------------

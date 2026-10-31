@@ -20,6 +20,9 @@ import {
   Settings2,
   Image as ImageIcon,
   Music,
+  Pencil,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { ApiKey } from "@/db/schema";
 import {
@@ -29,6 +32,8 @@ import {
   actionRotateApiKey,
   actionUpdateApiKeyBuckets,
   actionUpdateApiKeySecurity,
+  actionUpdateApiKeyDetails,
+  actionDeleteApiKey,
 } from "@/lib/dashboard-actions";
 import { toast } from "sonner";
 
@@ -88,6 +93,15 @@ export function ApiKeysManager({
 
   // Rotate Key Confirmation Modal State
   const [keyToRotate, setKeyToRotate] = React.useState<ApiKey | null>(null);
+
+  // Edit App Name Modal State
+  const [editingNameKey, setEditingNameKey] = React.useState<ApiKey | null>(null);
+  const [editAppName, setEditAppName] = React.useState("");
+  const [isUpdatingName, setIsUpdatingName] = React.useState(false);
+
+  // Delete App Key Modal State
+  const [keyToDelete, setKeyToDelete] = React.useState<ApiKey | null>(null);
+  const [isDeletingKey, setIsDeletingKey] = React.useState(false);
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [visibleKeys, setVisibleKeys] = React.useState<Record<string, boolean>>(
@@ -280,6 +294,45 @@ export function ApiKeysManager({
     }
   };
 
+  const handleSaveAppName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingNameKey) return;
+    const cleanName = editAppName.trim();
+    if (!cleanName) {
+      toast.error("Application name cannot be empty.");
+      return;
+    }
+
+    try {
+      setIsUpdatingName(true);
+      const updated = await actionUpdateApiKeyDetails(editingNameKey.id, {
+        appName: cleanName,
+      });
+      setKeys((prev) => prev.map((k) => (k.id === updated.id ? updated : k)));
+      toast.success("Application name updated successfully.");
+      setEditingNameKey(null);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to update application name.");
+    } finally {
+      setIsUpdatingName(false);
+    }
+  };
+
+  const handleConfirmDeleteKey = async () => {
+    if (!keyToDelete) return;
+    try {
+      setIsDeletingKey(true);
+      await actionDeleteApiKey(keyToDelete.id);
+      setKeys((prev) => prev.filter((k) => k.id !== keyToDelete.id));
+      toast.success(`Application '${keyToDelete.appName}' deleted successfully.`);
+      setKeyToDelete(null);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete API key.");
+    } finally {
+      setIsDeletingKey(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Header & Create Button */}
@@ -341,6 +394,17 @@ export function ApiKeysManager({
                     <span className="text-sm font-bold text-foreground">
                       {key.appName}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingNameKey(key);
+                        setEditAppName(key.appName);
+                      }}
+                      title="Edit Application Name"
+                      className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                    >
+                      <Pencil className="w-3 h-3" />
+                    </button>
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase ${
                         key.isActive
@@ -500,6 +564,18 @@ export function ApiKeysManager({
                     <Power className="w-3.5 h-3.5" />
                     <span>{key.isActive ? "Revoke" : "Activate"}</span>
                   </button>
+
+                  {key.appId !== "general" && (
+                    <button
+                      type="button"
+                      onClick={() => setKeyToDelete(key)}
+                      disabled={isLoading}
+                      title="Delete Application Key (Safe: requires 0 files)"
+                      className="inline-flex items-center justify-center p-2 rounded-lg border border-border text-xs text-muted-foreground hover:text-red-500 hover:bg-status-danger-bg transition cursor-pointer disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -1086,6 +1162,133 @@ Content-Type: multipart/form-data`}
                   <>
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Rotate Secret Now</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit App Name Modal */}
+      {editingNameKey && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-cyan-500" />
+                Edit Application Name
+              </h3>
+              <button
+                type="button"
+                onClick={() => setEditingNameKey(null)}
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveAppName} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Application Title / Name *
+                </label>
+                <input
+                  type="text"
+                  value={editAppName}
+                  onChange={(e) => setEditAppName(e.target.value)}
+                  required
+                  placeholder="e.g. My Updated App Name"
+                  className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                />
+              </div>
+
+              <div className="p-3 rounded-xl bg-muted/60 border border-border text-[11px] text-muted-foreground space-y-1">
+                <p>
+                  <span className="font-semibold text-foreground">App ID:</span>{" "}
+                  <code className="font-mono text-[10px] bg-card px-1.5 py-0.5 rounded border border-border">
+                    {editingNameKey.appId}
+                  </code>
+                </p>
+                <p className="text-[10px]">
+                  Note: The App ID (storage namespace directory) remains locked for asset path integrity.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingNameKey(null)}
+                  disabled={isUpdatingName}
+                  className="flex-1 py-2 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isUpdatingName}
+                  className="flex-1 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-600 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-cyan-500/20 disabled:opacity-50 cursor-pointer"
+                >
+                  {isUpdatingName && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  Save Name
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Application Key Modal */}
+      {keyToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-card border border-red-500/30 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-foreground">
+                  Delete Application Key?
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  {keyToDelete.appName} ({keyToDelete.appId})
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 leading-relaxed space-y-1.5">
+              <p className="font-semibold">
+                Strict Safety Gate: Requires 0 Stored Assets
+              </p>
+              <p className="text-[11px] opacity-90">
+                An application key can only be deleted if it has NO media files stored under its namespace. If any active or trashed files exist, deletion will be blocked until all files are completely deleted from Gallery/Trash.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setKeyToDelete(null)}
+                disabled={isDeletingKey}
+                className="flex-1 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDeleteKey}
+                disabled={isDeletingKey}
+                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 active:scale-[0.99] text-white text-xs font-bold shadow-md shadow-red-500/20 transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                {isDeletingKey ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Verifying & Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Application</span>
                   </>
                 )}
               </button>

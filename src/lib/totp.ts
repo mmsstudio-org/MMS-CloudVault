@@ -273,3 +273,38 @@ export async function verifyAndConsumeRecoveryCode(
 
   return true;
 }
+
+/**
+ * Validates a user's 2FA challenge via either 6-digit TOTP or backup recovery code
+ */
+export async function verifyUserTwoFactorChallenge(
+  email: string,
+  code: string
+): Promise<boolean> {
+  const normalizedEmail = email.toLowerCase().trim();
+  const cleanCode = code.trim();
+
+  const [user] = await db
+    .select({
+      totpSecret: adminUsers.totpSecret,
+      isTwoFactorEnabled: adminUsers.isTwoFactorEnabled,
+    })
+    .from(adminUsers)
+    .where(eq(adminUsers.email, normalizedEmail))
+    .limit(1);
+
+  if (!user) return false;
+  if (!user.isTwoFactorEnabled || !user.totpSecret) {
+    // 2FA is not enabled on this user account
+    return true;
+  }
+
+  // Check standard 6-digit TOTP code
+  if (/^\d{6}$/.test(cleanCode)) {
+    const isValidTotp = verifyTotpCode(user.totpSecret, cleanCode);
+    if (isValidTotp) return true;
+  }
+
+  // Check backup recovery code
+  return await verifyAndConsumeRecoveryCode(normalizedEmail, cleanCode);
+}
