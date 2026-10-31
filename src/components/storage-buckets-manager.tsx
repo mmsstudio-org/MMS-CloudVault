@@ -320,27 +320,27 @@ export function StorageBucketsManager({
       case "s3_compatible":
         return {
           label: "Neon / S3 Compatible",
-          bg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+          bg: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
         };
       case "cloudflare_r2":
         return {
           label: "Cloudflare R2 ($0 Egress)",
-          bg: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20",
+          bg: "bg-orange-500/10 text-orange-500 border-orange-500/20",
         };
       case "aws":
         return {
           label: "Amazon AWS S3",
-          bg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+          bg: "bg-amber-500/10 text-amber-500 border-amber-500/20",
         };
       case "minio":
         return {
           label: "MinIO Self-Hosted",
-          bg: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
+          bg: "bg-rose-500/10 text-rose-500 border-rose-500/20",
         };
       default:
         return {
           label: "S3 Object Storage",
-          bg: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
+          bg: "bg-blue-500/10 text-blue-500 border-blue-500/20",
         };
     }
   };
@@ -348,19 +348,19 @@ export function StorageBucketsManager({
   return (
     <div className="space-y-6">
       {/* Header with Title and Add Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-6 rounded-2xl bg-card border border-border shadow-sm">
         <div className="flex flex-wrap items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center">
             <HardDrive className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-zinc-900 dark:text-white flex items-center gap-2 flex flex-wrap-reverse">
+            <h2 className="text-base font-bold text-foreground flex items-center gap-2 flex flex-wrap-reverse">
               Multi-Cloud Storage Buckets & Vaults
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
                 v2.0 Dynamic Engine
               </span>
             </h2>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Connect multiple S3/R2 object storage providers. Dynamically route
               images and audio, switch active buckets with zero downtime, and
               test connectivity live.
@@ -371,7 +371,7 @@ export function StorageBucketsManager({
         <button
           type="button"
           onClick={openCreateModal}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-semibold shadow-sm transition-all"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary hover:opacity-90 text-primary-foreground text-xs font-semibold shadow-sm transition-all"
         >
           <Plus className="w-4 h-4" />
           Add Storage Bucket
@@ -403,10 +403,10 @@ export function StorageBucketsManager({
           return (
             <div
               key={b.id}
-              className={`p-6 rounded-2xl bg-white dark:bg-zinc-900 border transition-all shadow-sm flex flex-col justify-between ${
+              className={`p-6 rounded-2xl bg-card border transition-all shadow-sm flex flex-col justify-between ${
                 b.isDefault
-                  ? "border-cyan-500/50 dark:border-cyan-500/40 ring-1 ring-cyan-500/20"
-                  : "border-zinc-200 dark:border-zinc-800"
+                  ? "border-cyan-500/50 border-cyan-500/40 ring-1 ring-cyan-500/20"
+                  : "border-border"
               }`}
             >
               {/* Top Row: Name, Provider, Default Badge */}
@@ -414,11 +414,11 @@ export function StorageBucketsManager({
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                      <h3 className="text-sm font-bold text-foreground">
                         {b.name}
                       </h3>
                       {b.isDefault && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
                           <CheckCircle2 className="w-3 h-3" />
                           Active Default
                         </span>
@@ -436,7 +436,7 @@ export function StorageBucketsManager({
                     type="button"
                     onClick={() => handleTestCardConnection(b)}
                     disabled={isTestingThis}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors shadow-2xs disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-muted hover:bg-muted text-[11px] font-medium text-foreground transition-colors shadow-2xs disabled:opacity-50"
                   >
                     {isTestingThis ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin text-cyan-500" />
@@ -449,7 +449,7 @@ export function StorageBucketsManager({
 
                 {/* Notes Field (Admin Understanding Note) */}
                 {b.notes && (
-                  <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 text-[11px] text-zinc-600 dark:text-zinc-400 flex items-start gap-2">
+                  <div className="p-2.5 rounded-xl bg-muted border border-border text-[11px] text-muted-foreground flex items-start gap-2">
                     <Info className="w-3.5 h-3.5 text-zinc-400 shrink-0 mt-0.5" />
                     <span>{b.notes}</span>
                   </div>
@@ -457,53 +457,53 @@ export function StorageBucketsManager({
 
                 {/* Storage Configuration Metadata */}
                 <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+                  <div className="flex items-center justify-between text-muted-foreground">
                     <span>Bucket Name:</span>
-                    <span className="font-mono font-medium text-zinc-800 dark:text-zinc-200">
+                    <span className="font-mono font-medium text-foreground">
                       {b.bucketName}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+                  <div className="flex items-center justify-between text-muted-foreground">
                     <span>Endpoint:</span>
                     <span
-                      className="font-mono text-[11px] text-zinc-700 dark:text-zinc-300 truncate max-w-[220px]"
+                      className="font-mono text-[11px] text-foreground truncate max-w-[220px]"
                       title={b.endpoint}
                     >
                       {b.endpoint}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+                  <div className="flex items-center justify-between text-muted-foreground">
                     <span>Region:</span>
-                    <span className="font-mono text-zinc-700 dark:text-zinc-300">
+                    <span className="font-mono text-foreground">
                       {b.region || "auto"}
                     </span>
                   </div>
 
                   {b.publicBaseUrl && (
-                    <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+                    <div className="flex items-center justify-between text-muted-foreground">
                       <span>Public CDN Domain:</span>
-                      <span className="font-mono text-[11px] text-cyan-600 dark:text-cyan-400 truncate max-w-[200px]">
+                      <span className="font-mono text-[11px] text-cyan-500 truncate max-w-[200px]">
                         {b.publicBaseUrl}
                       </span>
                     </div>
                   )}
 
-                  <div className="flex items-center justify-between text-zinc-600 dark:text-zinc-400">
+                  <div className="flex items-center justify-between text-muted-foreground">
                     <span>Physical Assets Stored:</span>
-                    <span className="font-semibold text-zinc-900 dark:text-white">
+                    <span className="font-semibold text-foreground">
                       {b.assetCount} item(s)
                     </span>
                   </div>
                 </div>
 
                 {/* Secure Credentials View with Eye Toggle */}
-                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 space-y-2">
+                <div className="pt-2 border-t border-border/80 space-y-2">
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-zinc-600 dark:text-zinc-400">Access Key ID:</span>
+                    <span className="text-muted-foreground">Access Key ID:</span>
                     <div className="flex items-center gap-1.5 font-mono">
-                      <span className="text-zinc-800 dark:text-zinc-200">
+                      <span className="text-foreground">
                         {showKey
                           ? b.accessKeyId
                           : `${b.accessKeyId.slice(0, 8)}••••••••`}
@@ -511,7 +511,7 @@ export function StorageBucketsManager({
                       <button
                         type="button"
                         onClick={() => toggleCardKey(b.id)}
-                        className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                        className="p-1 rounded hover:bg-muted text-zinc-400 hover:text-foreground"
                         title={showKey ? "Hide key" : "Show key"}
                       >
                         {showKey ? (
@@ -524,9 +524,9 @@ export function StorageBucketsManager({
                   </div>
 
                   <div className="flex items-center justify-between text-[11px]">
-                    <span className="text-zinc-600 dark:text-zinc-400">Secret Access Key:</span>
+                    <span className="text-muted-foreground">Secret Access Key:</span>
                     <div className="flex items-center gap-1.5 font-mono">
-                      <span className="text-zinc-800 dark:text-zinc-200">
+                      <span className="text-foreground">
                         {showSecret
                           ? b.secretAccessKey
                           : "••••••••••••••••••••••••"}
@@ -534,7 +534,7 @@ export function StorageBucketsManager({
                       <button
                         type="button"
                         onClick={() => toggleCardSecret(b.id)}
-                        className="p-1 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                        className="p-1 rounded hover:bg-muted text-zinc-400 hover:text-foreground"
                         title={showSecret ? "Hide secret" : "Show secret"}
                       >
                         {showSecret ? (
@@ -549,16 +549,16 @@ export function StorageBucketsManager({
 
                 {/* Storage Quota Progress */}
                 <div className="pt-2 space-y-1.5">
-                  <div className="flex justify-between items-center text-[11px] text-zinc-600 dark:text-zinc-400">
+                  <div className="flex justify-between items-center text-[11px] text-muted-foreground">
                     <span className="font-medium flex items-center gap-1.5">
                       <HardDrive className="w-3.5 h-3.5 text-zinc-400" />
                       Live Storage Usage
                     </span>
-                    <span className="font-mono font-semibold text-zinc-800 dark:text-zinc-200">
+                    <span className="font-mono font-semibold text-foreground">
                       {formattedStorageUsage} / {maxGb} GB ({usedPercent}%)
                     </span>
                   </div>
-                  <div className="w-full h-2 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5">
+                  <div className="w-full h-2 bg-muted rounded-full overflow-hidden p-0.5">
                     <div
                       className={`h-full rounded-full transition-all duration-500 ${
                         usedPercent > 85
@@ -574,13 +574,13 @@ export function StorageBucketsManager({
               </div>
 
               {/* Bottom Actions Row */}
-              <div className="pt-4 mt-4 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+              <div className="pt-4 mt-4 border-t border-border flex items-center justify-between gap-2">
                 <div>
                   {!b.isDefault && (
                     <button
                       type="button"
                       onClick={() => handleSetDefault(b)}
-                      className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 hover:underline"
+                      className="text-[11px] font-semibold text-cyan-500 hover:underline"
                     >
                       Set as Default
                     </button>
@@ -591,7 +591,7 @@ export function StorageBucketsManager({
                   <button
                     type="button"
                     onClick={() => openEditModal(b)}
-                    className="p-2 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                    className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                     title="Edit configuration"
                   >
                     <Edit2 className="w-3.5 h-3.5" />
@@ -615,20 +615,20 @@ export function StorageBucketsManager({
       {/* Add / Edit Storage Bucket Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-hidden">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-card rounded-2xl border border-border shadow-2xl w-full max-w-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header (Fixed) */}
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 p-5 sm:p-6 shrink-0 bg-white dark:bg-zinc-900 z-10">
+            <div className="flex items-center justify-between border-b border-border p-5 sm:p-6 shrink-0 bg-card z-10">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/10 text-cyan-500 flex items-center justify-center shrink-0">
                   <Cloud className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  <h3 className="text-base font-bold text-foreground">
                     {editingBucket
                       ? "Edit Storage Bucket"
                       : "Register New Storage Bucket"}
                   </h3>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <p className="text-xs text-muted-foreground">
                     Configure S3 / R2 API credentials, endpoint, region, and
                     delivery CDN.
                   </p>
@@ -638,7 +638,7 @@ export function StorageBucketsManager({
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="p-2 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                className="p-2 rounded-lg text-zinc-400 hover:text-foreground hover:bg-muted transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -650,7 +650,7 @@ export function StorageBucketsManager({
                 {/* Row 1: Name & Slug */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       Display Name *
                     </label>
                     <input
@@ -668,12 +668,12 @@ export function StorageBucketsManager({
                         }
                       }}
                       placeholder="e.g. Cloudflare R2 Audio Vault"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       Slug Identifier *
                     </label>
                     <input
@@ -682,14 +682,14 @@ export function StorageBucketsManager({
                       value={slug}
                       onChange={(e) => setSlug(e.target.value)}
                       placeholder="e.g. r2-audio-vault"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                     />
                   </div>
                 </div>
 
                 {/* Row 2: Admin Notes / Understanding Note */}
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Bucket Note / Description (For Your Reference)
                   </label>
                   <textarea
@@ -697,20 +697,20 @@ export function StorageBucketsManager({
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="e.g. Dedicated high-capacity bucket for Remotion audio clips & SFX with zero egress bandwidth fees."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500 resize-y leading-relaxed"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-cyan-500 resize-y leading-relaxed"
                   />
                 </div>
 
                 {/* Row 3: Provider & Bucket Name */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       Storage Provider
                     </label>
                     <select
                       value={provider}
                       onChange={(e) => setProvider(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                     >
                       <option value="s3_compatible">
                         Neon S3 / Generic S3 Compatible
@@ -724,7 +724,7 @@ export function StorageBucketsManager({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       S3 Bucket Name *
                     </label>
                     <input
@@ -733,7 +733,7 @@ export function StorageBucketsManager({
                       value={bucketName}
                       onChange={(e) => setBucketName(e.target.value)}
                       placeholder="e.g. mms-cloud-vault"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                     />
                   </div>
                 </div>
@@ -741,7 +741,7 @@ export function StorageBucketsManager({
                 {/* Row 4: S3 Endpoint & Region */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       S3 Endpoint URL *
                     </label>
                     <input
@@ -750,12 +750,12 @@ export function StorageBucketsManager({
                       value={endpoint}
                       onChange={(e) => setEndpoint(e.target.value)}
                       placeholder="https://<account>.r2.cloudflarestorage.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       Region
                     </label>
                     <input
@@ -763,7 +763,7 @@ export function StorageBucketsManager({
                       value={region}
                       onChange={(e) => setRegion(e.target.value)}
                       placeholder="auto or ap-southeast-1"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                     />
                   </div>
                 </div>
@@ -771,7 +771,7 @@ export function StorageBucketsManager({
                 {/* Row 5: Access Key & Secret Key with Eye Toggle */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       Access Key ID *
                     </label>
                     <div className="relative">
@@ -781,12 +781,12 @@ export function StorageBucketsManager({
                         value={accessKeyId}
                         onChange={(e) => setAccessKeyId(e.target.value)}
                         placeholder="Access Key"
-                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-border bg-muted text-xs text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                       />
                       <button
                         type="button"
                         onClick={() => setShowFormAccessKey(!showFormAccessKey)}
-                        className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                        className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-foreground"
                       >
                         {showFormAccessKey ? (
                           <EyeOff className="w-4 h-4" />
@@ -798,7 +798,7 @@ export function StorageBucketsManager({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       Secret Access Key *
                     </label>
                     <div className="relative">
@@ -808,12 +808,12 @@ export function StorageBucketsManager({
                         value={secretAccessKey}
                         onChange={(e) => setSecretAccessKey(e.target.value)}
                         placeholder="Secret Access Key"
-                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-border bg-muted text-xs text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                       />
                       <button
                         type="button"
                         onClick={() => setShowFormSecretKey(!showFormSecretKey)}
-                        className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
+                        className="absolute right-2.5 top-2.5 text-zinc-400 hover:text-foreground"
                       >
                         {showFormSecretKey ? (
                           <EyeOff className="w-4 h-4" />
@@ -828,7 +828,7 @@ export function StorageBucketsManager({
                 {/* Row 6: Public CDN Base URL & Capacity */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       Public Delivery Base URL (Optional CDN)
                     </label>
                     <input
@@ -836,12 +836,12 @@ export function StorageBucketsManager({
                       value={publicBaseUrl}
                       onChange={(e) => setPublicBaseUrl(e.target.value)}
                       placeholder="https://cdn.sabbirmms.com"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground font-mono focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                    <label className="block text-xs font-semibold text-foreground mb-1">
                       Max Capacity Ceiling (GB)
                     </label>
                     <input
@@ -849,25 +849,25 @@ export function StorageBucketsManager({
                       min={1}
                       value={maxCapacityGb}
                       onChange={(e) => setMaxCapacityGb(Number(e.target.value))}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-xs text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-muted text-xs text-foreground focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                     />
                   </div>
                 </div>
 
                 {/* Default Active Checkbox */}
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-muted border border-border">
                   <input
                     type="checkbox"
                     id="is_default_checkbox"
                     checked={isDefault}
                     onChange={(e) => setIsDefault(e.target.checked)}
-                    className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-zinc-300 dark:border-zinc-700"
+                    className="w-4 h-4 rounded text-cyan-600 focus:ring-cyan-500 border-border"
                   />
                   <label
                     htmlFor="is_default_checkbox"
-                    className="text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer"
+                    className="text-xs text-foreground cursor-pointer"
                   >
-                    <span className="font-semibold text-zinc-900 dark:text-white">
+                    <span className="font-semibold text-foreground">
                       Set as Active Default Storage Bucket
                     </span>{" "}
                     (New API uploads without specific routing will use this
@@ -876,12 +876,12 @@ export function StorageBucketsManager({
                 </div>
 
                 {/* Live Test Connection Button inside Modal */}
-                <div className="p-3.5 rounded-xl bg-zinc-100/70 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
+                <div className="p-3.5 rounded-xl bg-muted border border-border flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                    <p className="text-xs font-bold text-foreground">
                       Pre-Flight Connection Check
                     </p>
-                    <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                    <p className="text-[11px] text-muted-foreground">
                       Verify credentials against the live S3 API before saving.
                     </p>
                   </div>
@@ -890,7 +890,7 @@ export function StorageBucketsManager({
                     type="button"
                     onClick={handleTestModalConnection}
                     disabled={isTestingModalConnection}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-xs"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 disabled:opacity-50 transition-all shadow-xs"
                   >
                     {isTestingModalConnection ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -906,8 +906,8 @@ export function StorageBucketsManager({
                   <div
                     className={`p-3 rounded-xl text-xs flex items-center gap-2.5 ${
                       modalTestResult.ok
-                        ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20"
-                        : "bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20"
+                        ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-500 border border-rose-500/20"
                     }`}
                   >
                     {modalTestResult.ok ? (
@@ -921,11 +921,11 @@ export function StorageBucketsManager({
               </div>
 
               {/* Modal Actions Footer (Fixed) */}
-              <div className="flex items-center justify-end gap-3 p-4 sm:p-5 border-t border-zinc-100 dark:border-zinc-800 shrink-0 bg-zinc-50/80 dark:bg-zinc-900/80 backdrop-blur-xs z-10">
+              <div className="flex items-center justify-end gap-3 p-4 sm:p-5 border-t border-border shrink-0 bg-card/80 backdrop-blur-xs z-10">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                  className="px-4 py-2.5 rounded-xl border border-border text-xs font-medium text-foreground hover:bg-muted transition-colors"
                 >
                   Cancel
                 </button>
@@ -952,7 +952,7 @@ export function StorageBucketsManager({
             onClick={() => !isDeletingBucket && setBucketToDelete(null)}
           />
 
-          <div className="relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
+          <div className="relative bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5 z-10 animate-in zoom-in-95 duration-150">
             {/* Header */}
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -966,12 +966,12 @@ export function StorageBucketsManager({
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                  <h3 className="text-base font-bold text-foreground">
                     {bucketToDelete.isDefault || bucketToDelete.assetCount > 0
                       ? "Bucket Protected"
                       : "Delete Storage Bucket"}
                   </h3>
-                  <p className="text-xs text-zinc-600 dark:text-zinc-400">
+                  <p className="text-xs text-muted-foreground">
                     Review bucket status before proceeding
                   </p>
                 </div>
@@ -981,28 +981,28 @@ export function StorageBucketsManager({
                 type="button"
                 onClick={() => setBucketToDelete(null)}
                 disabled={isDeletingBucket}
-                className="w-8 h-8 rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-400 hover:text-zinc-900 dark:hover:text-white flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
+                className="w-8 h-8 rounded-lg border border-border text-zinc-400 hover:text-foreground flex items-center justify-center transition disabled:opacity-50 cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Bucket Info Card */}
-            <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-2">
+            <div className="p-3.5 rounded-xl bg-muted border border-border space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                <span className="text-xs font-bold text-foreground">
                   {bucketToDelete.name}
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-muted text-foreground">
                   {bucketToDelete.bucketName}
                 </span>
               </div>
-              <p className="text-[11px] font-mono text-zinc-600 dark:text-zinc-400 truncate">
+              <p className="text-[11px] font-mono text-muted-foreground truncate">
                 {bucketToDelete.endpoint}
               </p>
-              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-zinc-200/60 dark:border-zinc-700/50">
-                <span className="text-zinc-600 dark:text-zinc-400">Stored Assets:</span>
-                <span className="font-semibold text-zinc-900 dark:text-white">
+              <div className="flex items-center justify-between text-[11px] pt-1 border-t border-border">
+                <span className="text-muted-foreground">Stored Assets:</span>
+                <span className="font-semibold text-foreground">
                   {bucketToDelete.assetCount} item(s)
                 </span>
               </div>
@@ -1010,9 +1010,9 @@ export function StorageBucketsManager({
 
             {/* Condition 1: Active Default Bucket */}
             {bucketToDelete.isDefault && (
-              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300 space-y-1">
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-500 space-y-1">
                 <p className="font-bold">Cannot delete active default bucket.</p>
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <p className="text-[11px] text-muted-foreground">
                   This bucket is currently designated as the primary default. Please promote another bucket to default before removing this one.
                 </p>
               </div>
@@ -1020,9 +1020,9 @@ export function StorageBucketsManager({
 
             {/* Condition 2: Bucket Has Stored Assets */}
             {!bucketToDelete.isDefault && bucketToDelete.assetCount > 0 && (
-              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300 space-y-1">
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-500 space-y-1">
                 <p className="font-bold">Accidental Data Loss Protection</p>
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <p className="text-[11px] text-muted-foreground">
                   This bucket holds {bucketToDelete.assetCount} media asset(s). To protect your files from being orphaned or lost, you must purge or migrate these assets before the bucket can be deleted.
                 </p>
               </div>
@@ -1030,9 +1030,9 @@ export function StorageBucketsManager({
 
             {/* Condition 3: Safe to Delete */}
             {!bucketToDelete.isDefault && bucketToDelete.assetCount === 0 && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-700 dark:text-rose-300 space-y-1">
+              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-500 space-y-1">
                 <p className="font-bold">Are you sure you want to unregister this bucket?</p>
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <p className="text-[11px] text-muted-foreground">
                   This bucket is empty. Connection credentials and settings will be permanently removed from your dashboard.
                 </p>
               </div>
@@ -1044,7 +1044,7 @@ export function StorageBucketsManager({
                 type="button"
                 onClick={() => setBucketToDelete(null)}
                 disabled={isDeletingBucket}
-                className="px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+                className="px-4 py-2 rounded-xl border border-border hover:bg-muted text-xs font-medium text-foreground transition cursor-pointer"
               >
                 {bucketToDelete.isDefault || bucketToDelete.assetCount > 0
                   ? "Understood"

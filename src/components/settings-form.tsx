@@ -310,16 +310,16 @@ export function SettingsForm({
   return (
     <form onSubmit={handleSaveAll} className="space-y-8">
       {/* 1. Sharp Image Optimization & Capping Rules */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
             <Sliders className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
+            <h2 className="text-sm font-bold text-foreground">
               Sharp Image Capping & Optimization Engine
             </h2>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Global resolution limits, compression quality, and file size ceilings applied to all incoming uploads.
             </p>
           </div>
@@ -328,7 +328,7 @@ export function SettingsForm({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Max Dimension */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-semibold text-foreground mb-1">
               Max Dimension (Pixels)
             </label>
             <input
@@ -339,7 +339,7 @@ export function SettingsForm({
               value={maxDimensionPx}
               onChange={(e) => setMaxDimensionPx(Number(e.target.value))}
               required
-              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-zinc-900 dark:text-white focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted font-mono text-foreground focus:outline-none"
             />
             <span className="text-[10px] text-zinc-400 mt-1 block">
               Auto aspect-ratio preserved scaling. Large photos are proportionally fitted.
@@ -348,7 +348,7 @@ export function SettingsForm({
 
           {/* Max File KB */}
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-semibold text-foreground mb-1">
               Max File Size (Kilobytes)
             </label>
             <input
@@ -359,7 +359,7 @@ export function SettingsForm({
               value={maxFileKb}
               onChange={(e) => setMaxFileKb(Number(e.target.value))}
               required
-              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-zinc-900 dark:text-white focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted font-mono text-foreground focus:outline-none"
             />
             <span className="text-[10px] text-zinc-400 mt-1 block">
               Iterative compression trims files to stay under this ceiling.
@@ -369,7 +369,7 @@ export function SettingsForm({
           {/* Compression Quality */}
           <div>
             <div className="flex items-center justify-between mb-1">
-              <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+              <label className="text-xs font-semibold text-foreground">
                 WebP Compression Quality
               </label>
               <span className="text-xs font-mono font-bold text-emerald-500">
@@ -392,17 +392,17 @@ export function SettingsForm({
       </div>
 
       {/* 2. Telegram Webhook Alert System */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-sky-500/10 text-sky-500 flex items-center justify-center">
               <BellRing className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
+              <h2 className="text-sm font-bold text-foreground">
                 Telegram Webhook Alerts
               </h2>
-              <p className="text-xs text-zinc-600 dark:text-zinc-400">
+              <p className="text-xs text-muted-foreground">
                 Real-time push notifications when mobile apps upload or replace assets.
               </p>
             </div>
@@ -415,7 +415,7 @@ export function SettingsForm({
               onChange={(e) => setTelegramNotificationsEnabled(e.target.checked)}
               className="w-4 h-4 accent-emerald-500 rounded"
             />
-            <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            <span className="text-xs font-semibold text-foreground">
               Enable Alerts
             </span>
           </label>
@@ -423,7 +423,7 @@ export function SettingsForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-semibold text-foreground mb-1">
               Telegram Bot Token
             </label>
             <input
@@ -431,12 +431,12 @@ export function SettingsForm({
               value={telegramBotToken}
               onChange={(e) => setTelegramBotToken(e.target.value)}
               placeholder="e.g. 123456789:ABCdefGhIJKlmNoPQRstuVWxYZ"
-              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-zinc-900 dark:text-white focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted font-mono text-foreground focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-semibold text-foreground mb-1">
               Telegram Chat ID / Channel ID
             </label>
             <div className="flex gap-2">
@@ -445,13 +445,13 @@ export function SettingsForm({
                 value={telegramChatId}
                 onChange={(e) => setTelegramChatId(e.target.value)}
                 placeholder="e.g. -1001234567890 or @your_channel"
-                className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-zinc-900 dark:text-white focus:outline-none"
+                className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted font-mono text-foreground focus:outline-none"
               />
               <button
                 type="button"
                 onClick={handleTestTelegram}
                 disabled={isTestingTelegram}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer shrink-0 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border text-xs font-medium text-foreground hover:bg-muted transition cursor-pointer shrink-0 disabled:opacity-50"
               >
                 {isTestingTelegram ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -466,16 +466,16 @@ export function SettingsForm({
       </div>
 
       {/* 3. Google Site Verification & SEO */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
             <Shield className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
+            <h2 className="text-sm font-bold text-foreground">
               Google Site Verification & Search Console
             </h2>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Configure search crawler verification keys and brand validation tokens.
             </p>
           </div>
@@ -483,7 +483,7 @@ export function SettingsForm({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-semibold text-foreground mb-1">
               Google Site Verification Token
             </label>
             <input
@@ -491,12 +491,12 @@ export function SettingsForm({
               value={googleSiteVerification}
               onChange={(e) => setGoogleSiteVerification(e.target.value)}
               placeholder="e.g. google-site-verification=abc123xyz"
-              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-zinc-900 dark:text-white focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted font-mono text-foreground focus:outline-none"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-semibold text-foreground mb-1">
               Google Search Console Meta Tag
             </label>
             <input
@@ -504,23 +504,23 @@ export function SettingsForm({
               value={googleSearchConsoleTag}
               onChange={(e) => setGoogleSearchConsoleTag(e.target.value)}
               placeholder='<meta name="google-site-verification" content="..." />'
-              className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-mono text-zinc-900 dark:text-white focus:outline-none"
+              className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted font-mono text-foreground focus:outline-none"
             />
           </div>
         </div>
       </div>
 
       {/* 4. Strict Administrator Whitelist */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-6">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm space-y-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center">
             <Lock className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
+            <h2 className="text-sm font-bold text-foreground">
               Authorized Administrator Whitelist
             </h2>
-            <p className="text-xs text-zinc-600 dark:text-zinc-400">
+            <p className="text-xs text-muted-foreground">
               Strict gatekeeping: Google accounts not listed below are rejected immediately at sign-in time with zero user creation.
             </p>
           </div>
@@ -533,12 +533,12 @@ export function SettingsForm({
             value={newEmail}
             onChange={(e) => setNewEmail(e.target.value)}
             placeholder="new.admin@gmail.com"
-            className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-white focus:outline-none"
+            className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none"
           />
           <button
             type="button"
             onClick={handleAddEmail}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-semibold hover:opacity-90 transition cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Add Whitelist</span>
@@ -552,7 +552,7 @@ export function SettingsForm({
             return (
               <div
                 key={email}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 text-xs font-medium text-zinc-800 dark:text-zinc-200"
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-border bg-muted text-xs font-medium text-foreground"
               >
                 <span>{email}</span>
                 {isRoot ? (
@@ -576,24 +576,24 @@ export function SettingsForm({
       </div>
 
       {/* 5. TOTP Two-Factor Authentication Setup Card */}
-      <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-6 rounded-2xl bg-card border border-border shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex flex-wrap-reverse items-center gap-2 mb-1">
-            <span className="text-sm font-bold text-zinc-900 dark:text-white">
+            <span className="text-sm font-bold text-foreground">
               Google Authenticator 2FA (TOTP)
             </span>
             {isTwoFactorActive ? (
-              <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
+              <span className="text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 inline-flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                 Active & Enforced on Login
               </span>
             ) : (
-              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700">
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
                 Disabled / Not Active
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 max-w-xl">
+          <p className="text-xs text-muted-foreground max-w-xl">
             {isTwoFactorActive
               ? "Two-Factor Authentication is currently active. Every time you log in, you will be prompted for a 6-digit Google Authenticator code."
               : "Protect your administrator account with hardware or mobile-based TOTP verification codes. When enabled, login will require Authenticator approval."}
@@ -605,7 +605,7 @@ export function SettingsForm({
             <button
               type="button"
               onClick={handleOpenRecoveryCodes}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-border bg-muted text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer"
             >
               <KeyRound className="w-4 h-4 text-emerald-500" />
               <span>Recovery Codes</span>
@@ -614,7 +614,7 @@ export function SettingsForm({
               type="button"
               onClick={handleDisable2FA}
               disabled={isDisabling2FA}
-              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-red-200 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 text-xs font-semibold text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/60 transition cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-red-500/30 bg-red-500/10 text-xs font-semibold text-red-500 hover:bg-red-500/20 transition cursor-pointer disabled:opacity-50"
             >
               {isDisabling2FA ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -628,7 +628,7 @@ export function SettingsForm({
           <button
             type="button"
             onClick={handleStart2FA}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition cursor-pointer self-start sm:self-auto shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-border bg-muted text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer self-start sm:self-auto shrink-0"
           >
             <QrCode className="w-4 h-4 text-emerald-500" />
             <span>Setup 2FA Authenticator</span>
@@ -655,7 +655,7 @@ export function SettingsForm({
       {/* 2FA Setup Modal Dialog */}
       {show2FAModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             {newSetupRecoveryCodes ? (
               <div className="space-y-4 animate-in fade-in">
                 <div className="flex items-center gap-2.5">
@@ -663,7 +663,7 @@ export function SettingsForm({
                     <CheckCircle2 className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                    <h3 className="text-sm font-bold text-foreground">
                       Save Emergency Recovery Codes
                     </h3>
                     <p className="text-[11px] text-zinc-500">
@@ -672,15 +672,15 @@ export function SettingsForm({
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-500 leading-relaxed">
                   ⚠️ <strong>Important:</strong> If you lose your phone or Authenticator app, these {newSetupRecoveryCodes.length} codes are the only way to recover access. Each code can be used exactly once.
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded-xl border border-border font-mono text-xs font-bold text-foreground">
                   {newSetupRecoveryCodes.map((c, idx) => (
                     <div
                       key={idx}
-                      className="p-1.5 text-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200/60 dark:border-zinc-800"
+                      className="p-1.5 text-center bg-card rounded-lg border border-border"
                     >
                       {c}
                     </div>
@@ -691,7 +691,7 @@ export function SettingsForm({
                   <button
                     type="button"
                     onClick={() => copyAllCodes(newSetupRecoveryCodes)}
-                    className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Copy All</span>
@@ -699,7 +699,7 @@ export function SettingsForm({
                   <button
                     type="button"
                     onClick={() => downloadCodesAsText(newSetupRecoveryCodes)}
-                    className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download (.txt)</span>
@@ -720,7 +720,7 @@ export function SettingsForm({
               </div>
             ) : (
               <>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                <h3 className="text-sm font-bold text-foreground">
                   Scan with Google Authenticator
                 </h3>
 
@@ -742,7 +742,7 @@ export function SettingsForm({
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Enter 6-Digit Code
                   </label>
                   <input
@@ -753,7 +753,7 @@ export function SettingsForm({
                       setTotpCode(e.target.value.replace(/\D/g, ""))
                     }
                     placeholder="123456"
-                    className="w-full px-3 py-2 text-center text-sm tracking-widest font-mono rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-950 font-bold focus:outline-none"
+                    className="w-full px-3 py-2 text-center text-sm tracking-widest font-mono rounded-xl border border-border bg-muted font-bold focus:outline-none"
                   />
                 </div>
 
@@ -761,7 +761,7 @@ export function SettingsForm({
                   <button
                     type="button"
                     onClick={() => setShow2FAModal(false)}
-                    className="w-1/2 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-400"
+                    className="w-1/2 py-2 rounded-xl border border-border text-xs font-medium text-muted-foreground"
                   >
                     Cancel
                   </button>
@@ -783,14 +783,14 @@ export function SettingsForm({
       {/* 2FA Existing Recovery Codes Modal */}
       {showRecoveryCodesModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                  <h3 className="text-sm font-bold text-foreground">
                     Emergency Backup Recovery Codes
                   </h3>
                   <p className="text-[11px] text-zinc-500">
@@ -801,7 +801,7 @@ export function SettingsForm({
               <button
                 type="button"
                 onClick={() => setShowRecoveryCodesModal(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white cursor-pointer"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-foreground cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -815,7 +815,7 @@ export function SettingsForm({
             ) : recoveryCodes.length === 0 ? (
               <div className="py-8 text-center space-y-3">
                 <AlertCircle className="w-10 h-10 text-amber-500 mx-auto" />
-                <p className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                <p className="text-xs font-semibold text-foreground">
                   No active recovery codes found.
                 </p>
                 <button
@@ -829,15 +829,15 @@ export function SettingsForm({
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                <p className="text-xs text-muted-foreground leading-relaxed">
                   Each code can be used once to access your account if you lose your authenticator device.
                 </p>
 
-                <div className="grid grid-cols-2 gap-2 p-3 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-200 dark:border-zinc-800 font-mono text-xs font-bold text-zinc-800 dark:text-zinc-200">
+                <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded-xl border border-border font-mono text-xs font-bold text-foreground">
                   {recoveryCodes.map((code, idx) => (
                     <div
                       key={idx}
-                      className="p-1.5 text-center bg-white dark:bg-zinc-900 rounded-lg border border-zinc-200/60 dark:border-zinc-800"
+                      className="p-1.5 text-center bg-card rounded-lg border border-border"
                     >
                       {code}
                     </div>
@@ -848,7 +848,7 @@ export function SettingsForm({
                   <button
                     type="button"
                     onClick={() => copyAllCodes(recoveryCodes)}
-                    className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                     <span>Copy All</span>
@@ -856,14 +856,14 @@ export function SettingsForm({
                   <button
                     type="button"
                     onClick={() => downloadCodesAsText(recoveryCodes)}
-                    className="flex-1 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-2 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Download (.txt)</span>
                   </button>
                 </div>
 
-                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+                <div className="pt-2 border-t border-border flex items-center justify-between gap-2">
                   <button
                     type="button"
                     onClick={handleRegenerateRecoveryCodes}
@@ -881,7 +881,7 @@ export function SettingsForm({
                   <button
                     type="button"
                     onClick={() => setShowRecoveryCodesModal(false)}
-                    className="px-4 py-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-bold cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold cursor-pointer"
                   >
                     Close
                   </button>
@@ -895,22 +895,22 @@ export function SettingsForm({
       {/* Disable 2FA Security Confirmation Modal with CONFIRM Text Requirement */}
       {showDisable2FAModal && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-zinc-900 border border-red-200 dark:border-red-900/60 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-card border border-red-500/30 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-red-500/10 text-red-500 border border-red-500/20 flex items-center justify-center shrink-0">
                 <ShieldAlert className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                <h3 className="text-base font-bold text-foreground">
                   Disable Two-Factor Authentication?
                 </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-muted-foreground">
                   Security Downgrade Warning
                 </p>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/30 border border-red-200/60 dark:border-red-900/40 text-xs text-red-800 dark:text-red-300 leading-relaxed space-y-1.5">
+            <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-500 leading-relaxed space-y-1.5">
               <p className="font-semibold">
                 Warning: Disabling 2FA removes secondary hardware verification.
               </p>
@@ -920,15 +920,15 @@ export function SettingsForm({
             </div>
 
             <div className="space-y-2">
-              <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-                To proceed, type <span className="font-mono text-red-600 dark:text-red-400 font-bold">CONFIRM</span> below:
+              <label className="block text-xs font-semibold text-foreground">
+                To proceed, type <span className="font-mono text-red-500 font-bold">CONFIRM</span> below:
               </label>
               <input
                 type="text"
                 value={disableConfirmInput}
                 onChange={(e) => setDisableConfirmInput(e.target.value)}
                 placeholder="Type CONFIRM to proceed"
-                className="w-full text-center tracking-widest font-mono text-sm py-2.5 px-3 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-white font-bold focus:ring-2 focus:ring-red-500 focus:outline-hidden"
+                className="w-full text-center tracking-widest font-mono text-sm py-2.5 px-3 rounded-xl border border-border bg-muted text-foreground font-bold focus:ring-2 focus:ring-red-500 focus:outline-hidden"
                 autoFocus
               />
             </div>
@@ -941,7 +941,7 @@ export function SettingsForm({
                   setDisableConfirmInput("");
                 }}
                 disabled={isDisabling2FA}
-                className="flex-1 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>

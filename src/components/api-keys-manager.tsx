@@ -281,12 +281,12 @@ export function ApiKeysManager({
   return (
     <div className="space-y-6">
       {/* Top Header & Create Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-card border border-border shadow-sm">
         <div>
-          <h2 className="text-sm font-bold text-zinc-900 dark:text-white">
+          <h2 className="text-sm font-bold text-foreground">
             Application API Keys & Storage Routing
           </h2>
-          <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Dynamic, isolated authentication keys for mobile apps and external
             publishers with optional media-type bucket routing.
           </p>
@@ -295,7 +295,7 @@ export function ApiKeysManager({
         <button
           type="button"
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 text-xs font-semibold hover:opacity-90 transition cursor-pointer self-start sm:self-auto shrink-0 shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:opacity-90 transition cursor-pointer self-start sm:self-auto shrink-0 shadow-sm"
         >
           <Plus className="w-4 h-4" />
           <span>New App Key</span>
@@ -303,10 +303,10 @@ export function ApiKeysManager({
       </div>
 
       {/* Keys List */}
-      <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden shadow-sm divide-y divide-zinc-100 dark:divide-zinc-800">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm divide-y divide-border">
         {keys.length === 0 ? (
           <div className="p-12 text-center text-zinc-400">
-            <KeyRound className="w-8 h-8 mx-auto text-zinc-300 dark:text-zinc-700 mb-2" />
+            <KeyRound className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
             <p className="text-xs font-semibold">No API keys registered.</p>
           </div>
         ) : (
@@ -327,34 +327,34 @@ export function ApiKeysManager({
             return (
               <div
                 key={key.id}
-                className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-zinc-50/50 dark:hover:bg-zinc-950/50 transition"
+                className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-muted/50 transition"
               >
                 <div className="space-y-2 min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-bold text-zinc-900 dark:text-white">
+                    <span className="text-sm font-bold text-foreground">
                       {key.appName}
                     </span>
                     <span
                       className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase ${
                         key.isActive
-                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                          : "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20"
+                          ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                          : "bg-red-500/10 text-red-500 border border-red-500/20"
                       }`}
                     >
                       {key.isActive ? "Active" : "Revoked"}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>App ID (Slug):</span>
                     <div>
-                      <code className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-[11px] text-zinc-800 dark:text-zinc-200">
+                      <code className="px-2 py-0.5 rounded-md bg-muted font-mono text-[11px] text-foreground">
                         {key.appId}
                       </code>
                       <button
                         type="button"
                         onClick={() => copyToClipboard(key.appId, "App ID")}
-                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                        className="text-zinc-400 hover:text-foreground"
                       >
                         <Copy className="w-3 h-3" />
                       </button>
@@ -363,11 +363,11 @@ export function ApiKeysManager({
 
                   {/* Secret Key Display */}
                   <div className="flex flex-wrap items-center gap-2 pt-0.5">
-                    <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                    <span className="text-xs text-muted-foreground">
                       Secret:
                     </span>
                     <div>
-                      <code className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-xs text-zinc-800 dark:text-zinc-200">
+                      <code className="px-2.5 py-1 rounded-md bg-muted font-mono text-xs text-foreground">
                         {isVisible
                           ? key.secretKey
                           : `${key.secretKey.substring(0, 10)}${"•".repeat(20)}`}
@@ -375,7 +375,7 @@ export function ApiKeysManager({
                       <button
                         type="button"
                         onClick={() => toggleVisibility(key.id)}
-                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1"
+                        className="text-zinc-400 hover:text-foreground p-1"
                         title={isVisible ? "Hide Key" : "Show Key"}
                       >
                         {isVisible ? (
@@ -389,7 +389,7 @@ export function ApiKeysManager({
                         onClick={() =>
                           copyToClipboard(key.secretKey, "Secret Key")
                         }
-                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1"
+                        className="text-zinc-400 hover:text-foreground p-1"
                         title="Copy Secret Key"
                       >
                         <Copy className="w-3.5 h-3.5" />
@@ -403,20 +403,20 @@ export function ApiKeysManager({
                       Storage Routing:
                     </span>
                     <div className="flex items-center gap-2 pt-1 flex-wrap text-[11px]">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20 font-medium">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 font-medium">
                         <HardDrive className="w-3 h-3" />
                         Default: {defaultBucket?.name || "System Default"}
                       </span>
 
                       {imageBucket && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-medium">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-medium">
                           <ImageIcon className="w-3 h-3" />
                           Images ➔ {imageBucket.name}
                         </span>
                       )}
 
                       {audioBucket && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/20 font-medium">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-500 border border-orange-500/20 font-medium">
                           <Music className="w-3 h-3" />
                           Audio ➔ {audioBucket.name}
                         </span>
@@ -425,7 +425,7 @@ export function ApiKeysManager({
                       <button
                         type="button"
                         onClick={() => openRoutingModal(key)}
-                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline ml-1"
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-500 hover:text-foreground underline ml-1"
                       >
                         <Settings2 className="w-3 h-3" />
                         Configure Routing
@@ -439,7 +439,7 @@ export function ApiKeysManager({
                       Mobile Security:
                     </span>
                     {key.enforceAppCheck ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-semibold">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-semibold">
                         <ShieldCheck className="w-3 h-3 text-emerald-500" />
                         Play Integrity & App Check Enforced
                         {key.firebaseProjectId && (
@@ -449,7 +449,7 @@ export function ApiKeysManager({
                         )}
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 font-normal">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-normal">
                         <Shield className="w-3 h-3 text-zinc-400" />
                         Standard (App Check Optional)
                       </span>
@@ -458,7 +458,7 @@ export function ApiKeysManager({
                     <button
                       type="button"
                       onClick={() => openSecurityModal(key)}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:underline ml-1"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-500 hover:underline ml-1"
                     >
                       <ShieldAlert className="w-3 h-3" />
                       Security & App Check
@@ -473,7 +473,7 @@ export function ApiKeysManager({
                     onClick={() => handleRotate(key)}
                     disabled={isLoading}
                     title="Rotate Key (Generates new secret)"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-800 text-xs font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>Rotate</span>
@@ -486,8 +486,8 @@ export function ApiKeysManager({
                     title={key.isActive ? "Deactivate Key" : "Activate Key"}
                     className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer disabled:opacity-50 ${
                       key.isActive
-                        ? "bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20"
-                        : "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
+                        ? "bg-red-500/10 text-red-500 hover:bg-red-500/20"
+                        : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
                     }`}
                   >
                     <Power className="w-3.5 h-3.5" />
@@ -501,7 +501,7 @@ export function ApiKeysManager({
       </div>
 
       {/* Integration Guide Box */}
-      <div className="p-5 rounded-2xl bg-zinc-900 text-white dark:bg-zinc-950 border border-zinc-800 shadow-sm space-y-3">
+      <div className="p-5 rounded-2xl bg-surface-elevated text-foreground border border-border-strong shadow-sm space-y-3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
           <KeyRound className="w-4 h-4" />
           Mobile App Header Integration
@@ -510,7 +510,7 @@ export function ApiKeysManager({
           Pass your secret key in the HTTP request header when uploading from
           Android/iOS apps or backend pipelines:
         </p>
-        <pre className="p-3 rounded-xl bg-zinc-950 dark:bg-zinc-900 border border-zinc-800 font-mono text-xs text-emerald-400 overflow-x-auto">
+        <pre className="p-3 rounded-xl bg-zinc-950 bg-card border border-zinc-800 font-mono text-xs text-emerald-400 overflow-x-auto">
           {`POST /api/v1/upload HTTP/1.1
 Host: storage.sabbirmms.com
 x-api-key: mms_sec_YOUR_APP_KEY_HERE
@@ -521,16 +521,16 @@ Content-Type: multipart/form-data`}
       {/* Create Key Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-card border border-border rounded-2xl max-w-lg w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 shrink-0 bg-white dark:bg-zinc-900">
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0 bg-card">
+              <h3 className="text-sm font-bold text-foreground">
                 Register New Application Key
               </h3>
               <button
                 type="button"
                 onClick={() => setShowCreateModal(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-foreground hover:bg-muted transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -543,7 +543,7 @@ Content-Type: multipart/form-data`}
               {/* Scrollable Form Body */}
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Application Title / Name *
                   </label>
                   <input
@@ -561,12 +561,12 @@ Content-Type: multipart/form-data`}
                     }}
                     placeholder="e.g. Golpo Ghor iOS App"
                     required
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:white focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-hidden focus:ring-2 focus:ring-cyan-500"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     App ID (Unique Slug) *
                   </label>
                   <input
@@ -575,7 +575,7 @@ Content-Type: multipart/form-data`}
                     onChange={(e) => setAppId(e.target.value)}
                     placeholder="e.g. golpo-ghor-ios"
                     required
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-cyan-500 font-mono"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-hidden focus:ring-2 focus:ring-cyan-500 font-mono"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
                     Used as the namespace directory for asset storage.
@@ -583,21 +583,21 @@ Content-Type: multipart/form-data`}
                 </div>
 
                 {/* Bucket Routing Options */}
-                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
-                  <p className="text-xs font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                <div className="p-4 rounded-xl bg-muted border border-border space-y-3">
+                  <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <HardDrive className="w-3.5 h-3.5 text-cyan-500" />
                     Multi-Bucket Routing (Optional)
                   </p>
 
                   {/* Default Bucket */}
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                       Default Storage Bucket
                     </label>
                     <select
                       value={createDefaultBucketId}
                       onChange={(e) => setCreateDefaultBucketId(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card text-foreground"
                     >
                       {buckets.map((b) => (
                         <option key={b.id} value={b.id}>
@@ -609,13 +609,13 @@ Content-Type: multipart/form-data`}
 
                   {/* Dedicated Image Bucket */}
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                       Dedicated Image Bucket (Optional)
                     </label>
                     <select
                       value={createImageBucketId}
                       onChange={(e) => setCreateImageBucketId(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card text-foreground"
                     >
                       <option value="">-- Inherit Default Bucket --</option>
                       {buckets.map((b) => (
@@ -628,13 +628,13 @@ Content-Type: multipart/form-data`}
 
                   {/* Dedicated Audio Bucket */}
                   <div>
-                    <label className="block text-[11px] font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">
                       Dedicated Audio Bucket (Optional)
                     </label>
                     <select
                       value={createAudioBucketId}
                       onChange={(e) => setCreateAudioBucketId(e.target.value)}
-                      className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white"
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card text-foreground"
                     >
                       <option value="">-- Inherit Default Bucket --</option>
                       {buckets.map((b) => (
@@ -647,12 +647,12 @@ Content-Type: multipart/form-data`}
                 </div>
 
                 {/* Mobile App Security (Firebase App Check & Play Integrity) */}
-                <div className="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/60 dark:border-zinc-800 space-y-3">
+                <div className="p-4 rounded-xl bg-muted border border-border space-y-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-emerald-500" />
                       <div>
-                        <p className="text-xs font-bold text-zinc-900 dark:text-white">
+                        <p className="text-xs font-bold text-foreground">
                           Firebase App Check & Play Integrity
                         </p>
                         <p className="text-[10px] text-zinc-500">
@@ -670,14 +670,14 @@ Content-Type: multipart/form-data`}
                         }
                         className="sr-only peer"
                       />
-                      <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                      <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer bg-muted peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                     </label>
                   </div>
 
                   {createEnforceAppCheck && (
-                    <div className="space-y-3 pt-2 border-t border-zinc-200 dark:border-zinc-700/60">
+                    <div className="space-y-3 pt-2 border-t border-border">
                       <div>
-                        <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                        <label className="block text-[11px] font-semibold text-foreground mb-1">
                           Firebase Project ID (Optional)
                         </label>
                         <input
@@ -687,7 +687,7 @@ Content-Type: multipart/form-data`}
                             setCreateFirebaseProjectId(e.target.value)
                           }
                           placeholder="e.g. mms-studio-media-vault"
-                          className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card text-foreground font-mono"
                         />
                         <span className="text-[10px] text-zinc-400 mt-0.5 block">
                           Verifies that tokens originate exclusively from this
@@ -696,7 +696,7 @@ Content-Type: multipart/form-data`}
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                        <label className="block text-[11px] font-semibold text-foreground mb-1">
                           Allowed Mobile App IDs (Optional)
                         </label>
                         <input
@@ -706,7 +706,7 @@ Content-Type: multipart/form-data`}
                             setCreateAllowedAppIds(e.target.value)
                           }
                           placeholder="e.g. 1:1234567890:android:abcdef, 1:1234567890:android:34a0ec8763261a9b"
-                          className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card text-foreground font-mono"
                         />
                         <span className="text-[10px] text-zinc-400 mt-0.5 block">
                           Comma-separated Firebase App IDs to whitelist. Leave
@@ -715,7 +715,7 @@ Content-Type: multipart/form-data`}
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                        <label className="block text-[11px] font-semibold text-foreground mb-1">
                           Device Debug Secrets / Test Tokens (Optional)
                         </label>
                         <input
@@ -725,7 +725,7 @@ Content-Type: multipart/form-data`}
                             setCreateAllowedDebugTokens(e.target.value)
                           }
                           placeholder="e.g. mac-debug-secret-1, laptop-debug-secret-2"
-                          className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
+                          className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card text-foreground font-mono"
                         />
                         <span className="text-[10px] text-zinc-400 mt-0.5 block">
                           Comma-separated debug secrets for your Mac, Laptop,
@@ -738,11 +738,11 @@ Content-Type: multipart/form-data`}
               </div>
 
               {/* Fixed Footer */}
-              <div className="border-t border-zinc-100 dark:border-zinc-800 px-6 py-3.5 shrink-0 bg-zinc-50/70 dark:bg-zinc-900/70 flex items-center justify-end gap-2">
+              <div className="border-t border-border px-6 py-3.5 shrink-0 bg-card/70 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
                 >
                   Cancel
                 </button>
@@ -765,15 +765,15 @@ Content-Type: multipart/form-data`}
       {/* Edit Security & App Check Policy Modal */}
       {editingSecurityKey && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 shrink-0 bg-white dark:bg-zinc-900">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0 bg-card">
               <div>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-1.5">
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
                   App Check & Play Integrity Policy
                 </h3>
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <p className="text-[11px] text-muted-foreground">
                   Configure hardware-backed mobile attestation for &apos;
                   {editingSecurityKey.appName}&apos;.
                 </p>
@@ -781,7 +781,7 @@ Content-Type: multipart/form-data`}
               <button
                 type="button"
                 onClick={() => setEditingSecurityKey(null)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-foreground hover:bg-muted transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -794,9 +794,9 @@ Content-Type: multipart/form-data`}
               {/* Scrollable Form Body */}
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
                 {/* Enforce Switch */}
-                <div className="p-3.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+                <div className="p-3.5 rounded-xl bg-muted border border-border flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold text-zinc-900 dark:text-white block">
+                    <span className="text-xs font-bold text-foreground block">
                       Enforce Firebase App Check
                     </span>
                     <span className="text-[11px] text-zinc-500 block">
@@ -811,13 +811,13 @@ Content-Type: multipart/form-data`}
                       onChange={(e) => setEditEnforceAppCheck(e.target.checked)}
                       className="sr-only peer"
                     />
-                    <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                    <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer bg-muted peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
                   </label>
                 </div>
 
                 {/* Project ID */}
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Firebase Project ID (Optional)
                   </label>
                   <input
@@ -825,7 +825,7 @@ Content-Type: multipart/form-data`}
                     value={editFirebaseProjectId}
                     onChange={(e) => setEditFirebaseProjectId(e.target.value)}
                     placeholder="e.g. mms-studio-media-vault"
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-border bg-muted text-foreground font-mono"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
                     Ensures the App Check JWT audience matches your Firebase
@@ -835,7 +835,7 @@ Content-Type: multipart/form-data`}
 
                 {/* Allowed App IDs */}
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Whitelisted Mobile App IDs (Optional)
                   </label>
                   <textarea
@@ -843,7 +843,7 @@ Content-Type: multipart/form-data`}
                     value={editAllowedAppIds}
                     onChange={(e) => setEditAllowedAppIds(e.target.value)}
                     placeholder="e.g. 1:1234567890:android:34a0ec8763261a9b, 1:1234567890:android:fedcba9876543210"
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-border bg-muted text-foreground font-mono resize-none"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
                     Comma-separated Firebase Android App IDs. Only requests from
@@ -853,7 +853,7 @@ Content-Type: multipart/form-data`}
 
                 {/* Allowed Debug Tokens */}
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Device Debug Secrets / Test Tokens (Optional)
                   </label>
                   <textarea
@@ -861,7 +861,7 @@ Content-Type: multipart/form-data`}
                     value={editAllowedDebugTokens}
                     onChange={(e) => setEditAllowedDebugTokens(e.target.value)}
                     placeholder="e.g. mac-debug-123, laptop-debug-456, 12345678-abcd-ef01-2345-6789abcdef01"
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-border bg-muted text-foreground font-mono resize-none"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
                     Add debug tokens for your Mac, Laptop, or test devices.
@@ -872,11 +872,11 @@ Content-Type: multipart/form-data`}
               </div>
 
               {/* Fixed Footer */}
-              <div className="border-t border-zinc-100 dark:border-zinc-800 px-6 py-3.5 shrink-0 bg-zinc-50/70 dark:bg-zinc-900/70 flex items-center justify-end gap-2">
+              <div className="border-t border-border px-6 py-3.5 shrink-0 bg-card/70 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setEditingSecurityKey(null)}
-                  className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
                 >
                   Cancel
                 </button>
@@ -899,21 +899,21 @@ Content-Type: multipart/form-data`}
       {/* Edit Storage Routing Modal */}
       {editingRoutingKey && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-hidden">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-card border border-border rounded-2xl max-w-md w-full shadow-2xl max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 px-6 py-4 shrink-0 bg-white dark:bg-zinc-900">
+            <div className="flex items-center justify-between border-b border-border px-6 py-4 shrink-0 bg-card">
               <div>
-                <h3 className="text-sm font-bold text-zinc-900 dark:text-white">
+                <h3 className="text-sm font-bold text-foreground">
                   Storage Routing for {editingRoutingKey.appName}
                 </h3>
-                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                <p className="text-[11px] text-muted-foreground">
                   Assign dedicated cloud buckets for images and audio.
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingRoutingKey(null)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-foreground hover:bg-muted transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -926,13 +926,13 @@ Content-Type: multipart/form-data`}
               {/* Scrollable Form Body */}
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Default Storage Bucket
                   </label>
                   <select
                     value={editDefaultBucketId}
                     onChange={(e) => setEditDefaultBucketId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground"
                   >
                     {buckets.map((b) => (
                       <option key={b.id} value={b.id}>
@@ -943,13 +943,13 @@ Content-Type: multipart/form-data`}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Dedicated Image Bucket (Optional)
                   </label>
                   <select
                     value={editImageBucketId}
                     onChange={(e) => setEditImageBucketId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground"
                   >
                     <option value="">-- Inherit Default Bucket --</option>
                     {buckets.map((b) => (
@@ -961,13 +961,13 @@ Content-Type: multipart/form-data`}
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+                  <label className="block text-xs font-semibold text-foreground mb-1">
                     Dedicated Audio Bucket (Optional)
                   </label>
                   <select
                     value={editAudioBucketId}
                     onChange={(e) => setEditAudioBucketId(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white"
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground"
                   >
                     <option value="">-- Inherit Default Bucket --</option>
                     {buckets.map((b) => (
@@ -980,11 +980,11 @@ Content-Type: multipart/form-data`}
               </div>
 
               {/* Fixed Footer */}
-              <div className="border-t border-zinc-100 dark:border-zinc-800 px-6 py-3.5 shrink-0 bg-zinc-50/70 dark:bg-zinc-900/70 flex items-center justify-end gap-2">
+              <div className="border-t border-border px-6 py-3.5 shrink-0 bg-card/70 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setEditingRoutingKey(null)}
-                  className="px-4 py-2 text-xs font-medium text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
+                  className="px-4 py-2 text-xs font-medium text-muted-foreground hover:text-foreground"
                 >
                   Cancel
                 </button>
@@ -1007,22 +1007,22 @@ Content-Type: multipart/form-data`}
       {/* Rotate Secret Key Confirmation Modal */}
       {keyToRotate && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-zinc-900 border border-amber-200 dark:border-amber-900/60 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
+          <div className="bg-card border border-amber-500/30 rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20 flex items-center justify-center shrink-0">
                 <RotateCcw className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-zinc-900 dark:text-white">
+                <h3 className="text-base font-bold text-foreground">
                   Rotate API Secret Key?
                 </h3>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                <p className="text-xs text-muted-foreground">
                   {keyToRotate.appName} ({keyToRotate.appId})
                 </p>
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-900/40 text-xs text-amber-800 dark:text-amber-300 leading-relaxed space-y-1.5">
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-500 leading-relaxed space-y-1.5">
               <p className="font-semibold">
                 Warning: Rotating this key will immediately revoke the existing secret.
               </p>
@@ -1036,7 +1036,7 @@ Content-Type: multipart/form-data`}
                 type="button"
                 onClick={() => setKeyToRotate(null)}
                 disabled={actionLoadingId === keyToRotate.id}
-                className="flex-1 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer disabled:opacity-50"
+                className="flex-1 py-2.5 rounded-xl border border-border text-xs font-semibold text-foreground hover:bg-muted transition cursor-pointer disabled:opacity-50"
               >
                 Cancel
               </button>
