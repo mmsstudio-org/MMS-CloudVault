@@ -89,7 +89,7 @@ export function TrashManagerView({ initialTrash, serverNow = 0 }: TrashManagerVi
       {/* Purge Controls & Policy Banner */}
       <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap-reverse items-center gap-2 mb-1">
             <span className="text-sm font-bold text-zinc-900 dark:text-white">
               Trash & Lifecycle Management
             </span>

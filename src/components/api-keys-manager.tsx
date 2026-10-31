@@ -48,11 +48,14 @@ export function ApiKeysManager({
   const [showCreateModal, setShowCreateModal] = React.useState(false);
   const [appName, setAppName] = React.useState("");
   const [appId, setAppId] = React.useState("");
-  const [createDefaultBucketId, setCreateDefaultBucketId] = React.useState<string>(
-    buckets.find((b) => b.isDefault)?.id || buckets[0]?.id || ""
-  );
-  const [createImageBucketId, setCreateImageBucketId] = React.useState<string>("");
-  const [createAudioBucketId, setCreateAudioBucketId] = React.useState<string>("");
+  const [createDefaultBucketId, setCreateDefaultBucketId] =
+    React.useState<string>(
+      buckets.find((b) => b.isDefault)?.id || buckets[0]?.id || "",
+    );
+  const [createImageBucketId, setCreateImageBucketId] =
+    React.useState<string>("");
+  const [createAudioBucketId, setCreateAudioBucketId] =
+    React.useState<string>("");
 
   // Edit Routing Modal State
   const [editingRoutingKey, setEditingRoutingKey] =
@@ -64,10 +67,13 @@ export function ApiKeysManager({
   const [isUpdatingRouting, setIsUpdatingRouting] = React.useState(false);
 
   // App Check Create Modal State
-  const [createEnforceAppCheck, setCreateEnforceAppCheck] = React.useState(false);
-  const [createFirebaseProjectId, setCreateFirebaseProjectId] = React.useState("");
+  const [createEnforceAppCheck, setCreateEnforceAppCheck] =
+    React.useState(false);
+  const [createFirebaseProjectId, setCreateFirebaseProjectId] =
+    React.useState("");
   const [createAllowedAppIds, setCreateAllowedAppIds] = React.useState("");
-  const [createAllowedDebugTokens, setCreateAllowedDebugTokens] = React.useState("");
+  const [createAllowedDebugTokens, setCreateAllowedDebugTokens] =
+    React.useState("");
 
   // Edit Security & App Check Modal State
   const [editingSecurityKey, setEditingSecurityKey] =
@@ -75,15 +81,16 @@ export function ApiKeysManager({
   const [editEnforceAppCheck, setEditEnforceAppCheck] = React.useState(false);
   const [editFirebaseProjectId, setEditFirebaseProjectId] = React.useState("");
   const [editAllowedAppIds, setEditAllowedAppIds] = React.useState("");
-  const [editAllowedDebugTokens, setEditAllowedDebugTokens] = React.useState("");
+  const [editAllowedDebugTokens, setEditAllowedDebugTokens] =
+    React.useState("");
   const [isUpdatingSecurity, setIsUpdatingSecurity] = React.useState(false);
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [visibleKeys, setVisibleKeys] = React.useState<Record<string, boolean>>(
-    {}
+    {},
   );
   const [actionLoadingId, setActionLoadingId] = React.useState<string | null>(
-    null
+    null,
   );
 
   const bucketMap = React.useMemo(() => {
@@ -123,7 +130,7 @@ export function ApiKeysManager({
         createEnforceAppCheck,
         createFirebaseProjectId || null,
         createAllowedAppIds || null,
-        createAllowedDebugTokens || null
+        createAllowedDebugTokens || null,
       );
       setKeys((prev) => [newKey, ...prev]);
       toast.success(`API Key created for '${appName}'.`);
@@ -138,7 +145,7 @@ export function ApiKeysManager({
       setShowCreateModal(false);
     } catch (err: unknown) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to create API key."
+        err instanceof Error ? err.message : "Failed to create API key.",
       );
     } finally {
       setIsSubmitting(false);
@@ -168,18 +175,18 @@ export function ApiKeysManager({
 
       setKeys((prev) =>
         prev.map((k) =>
-          k.id === editingSecurityKey.id ? { ...k, ...updated } : k
-        )
+          k.id === editingSecurityKey.id ? { ...k, ...updated } : k,
+        ),
       );
       toast.success(
-        `Security policies updated for '${editingSecurityKey.appName}'.`
+        `Security policies updated for '${editingSecurityKey.appName}'.`,
       );
       setEditingSecurityKey(null);
     } catch (err: unknown) {
       toast.error(
         err instanceof Error
           ? err.message
-          : "Failed to update security policies."
+          : "Failed to update security policies.",
       );
     } finally {
       setIsUpdatingSecurity(false);
@@ -192,7 +199,7 @@ export function ApiKeysManager({
       k.defaultBucketId ||
         buckets.find((b) => b.isDefault)?.id ||
         buckets[0]?.id ||
-        ""
+        "",
     );
     setEditImageBucketId(k.imageBucketId || "");
     setEditAudioBucketId(k.audioBucketId || "");
@@ -211,17 +218,17 @@ export function ApiKeysManager({
       });
 
       setKeys((prev) =>
-        prev.map((k) => (k.id === editingRoutingKey.id ? updated : k))
+        prev.map((k) => (k.id === editingRoutingKey.id ? updated : k)),
       );
       toast.success(
-        `Storage routing updated for '${editingRoutingKey.appName}'!`
+        `Storage routing updated for '${editingRoutingKey.appName}'!`,
       );
       setEditingRoutingKey(null);
     } catch (err: unknown) {
       toast.error(
         err instanceof Error
           ? err.message
-          : "Failed to update storage routing."
+          : "Failed to update storage routing.",
       );
     } finally {
       setIsUpdatingRouting(false);
@@ -236,7 +243,7 @@ export function ApiKeysManager({
       toast.success(
         `API Key for '${key.appName}' ${
           updated.isActive ? "activated" : "deactivated"
-        }.`
+        }.`,
       );
     } catch {
       toast.error("Failed to update API key status.");
@@ -248,7 +255,7 @@ export function ApiKeysManager({
   const handleRotate = async (key: ApiKey) => {
     if (
       !confirm(
-        `Are you sure you want to rotate the secret key for '${key.appName}'? Connected mobile apps must be updated with the new key immediately.`
+        `Are you sure you want to rotate the secret key for '${key.appName}'? Connected mobile apps must be updated with the new key immediately.`,
       )
     ) {
       return;
@@ -259,7 +266,7 @@ export function ApiKeysManager({
       const updated = await actionRotateApiKey(key.id);
       setKeys((prev) => prev.map((k) => (k.id === key.id ? updated : k)));
       toast.success(
-        `Secret key rotated for '${key.appName}'. Cache invalidated.`
+        `Secret key rotated for '${key.appName}'. Cache invalidated.`,
       );
     } catch {
       toast.error("Failed to rotate API key.");
@@ -337,48 +344,54 @@ export function ApiKeysManager({
 
                   <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
                     <span>App ID (Slug):</span>
-                    <code className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-[11px] text-zinc-800 dark:text-zinc-200">
-                      {key.appId}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={() => copyToClipboard(key.appId, "App ID")}
-                      className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
-                    >
-                      <Copy className="w-3 h-3" />
-                    </button>
+                    <div>
+                      <code className="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-[11px] text-zinc-800 dark:text-zinc-200">
+                        {key.appId}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(key.appId, "App ID")}
+                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Secret Key Display */}
-                  <div className="flex items-center gap-2 pt-0.5">
-                    <span className="text-xs text-zinc-600 dark:text-zinc-400">Secret:</span>
-                    <code className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-xs text-zinc-800 dark:text-zinc-200">
-                      {isVisible
-                        ? key.secretKey
-                        : `${key.secretKey.substring(0, 10)}${"•".repeat(24)}`}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={() => toggleVisibility(key.id)}
-                      className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1"
-                      title={isVisible ? "Hide Key" : "Show Key"}
-                    >
-                      {isVisible ? (
-                        <EyeOff className="w-3.5 h-3.5" />
-                      ) : (
-                        <Eye className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        copyToClipboard(key.secretKey, "Secret Key")
-                      }
-                      className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1"
-                      title="Copy Secret Key"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
-                    </button>
+                  <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                    <span className="text-xs text-zinc-600 dark:text-zinc-400">
+                      Secret:
+                    </span>
+                    <div>
+                      <code className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-800 font-mono text-xs text-zinc-800 dark:text-zinc-200">
+                        {isVisible
+                          ? key.secretKey
+                          : `${key.secretKey.substring(0, 10)}${"•".repeat(20)}`}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => toggleVisibility(key.id)}
+                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1"
+                        title={isVisible ? "Hide Key" : "Show Key"}
+                      >
+                        {isVisible ? (
+                          <EyeOff className="w-3.5 h-3.5" />
+                        ) : (
+                          <Eye className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          copyToClipboard(key.secretKey, "Secret Key")
+                        }
+                        className="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 p-1"
+                        title="Copy Secret Key"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* Storage Routing Badges */}
@@ -386,33 +399,35 @@ export function ApiKeysManager({
                     <span className="text-zinc-400 font-medium">
                       Storage Routing:
                     </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20 font-medium">
-                      <HardDrive className="w-3 h-3" />
-                      Default: {defaultBucket?.name || "System Default"}
-                    </span>
-
-                    {imageBucket && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-medium">
-                        <ImageIcon className="w-3 h-3" />
-                        Images ➔ {imageBucket.name}
+                    <div className="flex items-center gap-2 pt-1 flex-wrap text-[11px]">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20 font-medium">
+                        <HardDrive className="w-3 h-3" />
+                        Default: {defaultBucket?.name || "System Default"}
                       </span>
-                    )}
 
-                    {audioBucket && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/20 font-medium">
-                        <Music className="w-3 h-3" />
-                        Audio ➔ {audioBucket.name}
-                      </span>
-                    )}
+                      {imageBucket && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 font-medium">
+                          <ImageIcon className="w-3 h-3" />
+                          Images ➔ {imageBucket.name}
+                        </span>
+                      )}
 
-                    <button
-                      type="button"
-                      onClick={() => openRoutingModal(key)}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline ml-1"
-                    >
-                      <Settings2 className="w-3 h-3" />
-                      Configure Routing
-                    </button>
+                      {audioBucket && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-500/10 text-orange-700 dark:text-orange-300 border border-orange-500/20 font-medium">
+                          <Music className="w-3 h-3" />
+                          Audio ➔ {audioBucket.name}
+                        </span>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => openRoutingModal(key)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline ml-1"
+                      >
+                        <Settings2 className="w-3 h-3" />
+                        Configure Routing
+                      </button>
+                    </div>
                   </div>
 
                   {/* Mobile Security (Firebase App Check & Play Integrity) */}
@@ -493,7 +508,7 @@ export function ApiKeysManager({
           Android/iOS apps or backend pipelines:
         </p>
         <pre className="p-3 rounded-xl bg-zinc-950 dark:bg-zinc-900 border border-zinc-800 font-mono text-xs text-emerald-400 overflow-x-auto">
-{`POST /api/v1/upload HTTP/1.1
+          {`POST /api/v1/upload HTTP/1.1
 Host: storage.sabbirmms.com
 x-api-key: mms_sec_YOUR_APP_KEY_HERE
 Content-Type: multipart/form-data`}
@@ -518,7 +533,10 @@ Content-Type: multipart/form-data`}
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <form
+              onSubmit={handleCreate}
+              className="flex-1 flex flex-col min-h-0 overflow-hidden"
+            >
               {/* Scrollable Form Body */}
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
                 <div>
@@ -534,7 +552,7 @@ Content-Type: multipart/form-data`}
                         setAppId(
                           e.target.value
                             .toLowerCase()
-                            .replace(/[^a-z0-9_-]/g, "-")
+                            .replace(/[^a-z0-9_-]/g, "-"),
                         );
                       }
                     }}
@@ -635,7 +653,8 @@ Content-Type: multipart/form-data`}
                           Firebase App Check & Play Integrity
                         </p>
                         <p className="text-[10px] text-zinc-500">
-                          Require Google-signed cryptographic token from Android devices
+                          Require Google-signed cryptographic token from Android
+                          devices
                         </p>
                       </div>
                     </div>
@@ -643,7 +662,9 @@ Content-Type: multipart/form-data`}
                       <input
                         type="checkbox"
                         checked={createEnforceAppCheck}
-                        onChange={(e) => setCreateEnforceAppCheck(e.target.checked)}
+                        onChange={(e) =>
+                          setCreateEnforceAppCheck(e.target.checked)
+                        }
                         className="sr-only peer"
                       />
                       <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
@@ -659,12 +680,15 @@ Content-Type: multipart/form-data`}
                         <input
                           type="text"
                           value={createFirebaseProjectId}
-                          onChange={(e) => setCreateFirebaseProjectId(e.target.value)}
+                          onChange={(e) =>
+                            setCreateFirebaseProjectId(e.target.value)
+                          }
                           placeholder="e.g. mms-studio-media-vault"
                           className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
                         />
                         <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                          Verifies that tokens originate exclusively from this Firebase project.
+                          Verifies that tokens originate exclusively from this
+                          Firebase project.
                         </span>
                       </div>
 
@@ -675,12 +699,15 @@ Content-Type: multipart/form-data`}
                         <input
                           type="text"
                           value={createAllowedAppIds}
-                          onChange={(e) => setCreateAllowedAppIds(e.target.value)}
+                          onChange={(e) =>
+                            setCreateAllowedAppIds(e.target.value)
+                          }
                           placeholder="e.g. 1:1234567890:android:abcdef, 1:1234567890:android:34a0ec8763261a9b"
                           className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
                         />
                         <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                          Comma-separated Firebase App IDs to whitelist. Leave empty to allow any valid app in the project.
+                          Comma-separated Firebase App IDs to whitelist. Leave
+                          empty to allow any valid app in the project.
                         </span>
                       </div>
 
@@ -691,12 +718,15 @@ Content-Type: multipart/form-data`}
                         <input
                           type="text"
                           value={createAllowedDebugTokens}
-                          onChange={(e) => setCreateAllowedDebugTokens(e.target.value)}
+                          onChange={(e) =>
+                            setCreateAllowedDebugTokens(e.target.value)
+                          }
                           placeholder="e.g. mac-debug-secret-1, laptop-debug-secret-2"
                           className="w-full px-3 py-2 text-xs rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white font-mono"
                         />
                         <span className="text-[10px] text-zinc-400 mt-0.5 block">
-                          Comma-separated debug secrets for your Mac, Laptop, physical test phones or QA emulators.
+                          Comma-separated debug secrets for your Mac, Laptop,
+                          physical test phones or QA emulators.
                         </span>
                       </div>
                     </div>
@@ -741,7 +771,8 @@ Content-Type: multipart/form-data`}
                   App Check & Play Integrity Policy
                 </h3>
                 <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                  Configure hardware-backed mobile attestation for &apos;{editingSecurityKey.appName}&apos;.
+                  Configure hardware-backed mobile attestation for &apos;
+                  {editingSecurityKey.appName}&apos;.
                 </p>
               </div>
               <button
@@ -753,7 +784,10 @@ Content-Type: multipart/form-data`}
               </button>
             </div>
 
-            <form onSubmit={handleSaveSecurity} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <form
+              onSubmit={handleSaveSecurity}
+              className="flex-1 flex flex-col min-h-0 overflow-hidden"
+            >
               {/* Scrollable Form Body */}
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
                 {/* Enforce Switch */}
@@ -763,7 +797,8 @@ Content-Type: multipart/form-data`}
                       Enforce Firebase App Check
                     </span>
                     <span className="text-[11px] text-zinc-500 block">
-                      Blocks all requests missing a valid Google-signed JWT token.
+                      Blocks all requests missing a valid Google-signed JWT
+                      token.
                     </span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -790,7 +825,8 @@ Content-Type: multipart/form-data`}
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
-                    Ensures the App Check JWT audience matches your Firebase Project.
+                    Ensures the App Check JWT audience matches your Firebase
+                    Project.
                   </span>
                 </div>
 
@@ -807,7 +843,8 @@ Content-Type: multipart/form-data`}
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
-                    Comma-separated Firebase Android App IDs. Only requests from these apps will be approved.
+                    Comma-separated Firebase Android App IDs. Only requests from
+                    these apps will be approved.
                   </span>
                 </div>
 
@@ -824,7 +861,9 @@ Content-Type: multipart/form-data`}
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-900 dark:text-white font-mono resize-none"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
-                    Add debug tokens for your Mac, Laptop, or test devices. Rotate or update anytime dynamically with zero server restarts.
+                    Add debug tokens for your Mac, Laptop, or test devices.
+                    Rotate or update anytime dynamically with zero server
+                    restarts.
                   </span>
                 </div>
               </div>
@@ -877,7 +916,10 @@ Content-Type: multipart/form-data`}
               </button>
             </div>
 
-            <form onSubmit={handleSaveRouting} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+            <form
+              onSubmit={handleSaveRouting}
+              className="flex-1 flex flex-col min-h-0 overflow-hidden"
+            >
               {/* Scrollable Form Body */}
               <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4 overscroll-contain">
                 <div>

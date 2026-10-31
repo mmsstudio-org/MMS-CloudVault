@@ -462,7 +462,7 @@ export function SettingsForm({ initialSettings, userEmail }: SettingsFormProps) 
       {/* 5. TOTP Two-Factor Authentication Setup Card */}
       <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex flex-wrap-reverse items-center gap-2 mb-1">
             <span className="text-sm font-bold text-zinc-900 dark:text-white">
               Google Authenticator 2FA (TOTP)
             </span>
