@@ -24,6 +24,11 @@ export async function GET(request: NextRequest) {
         value: "mms_live_your_api_key_here",
         type: "string",
       },
+      {
+        key: "s3UploadUrl",
+        value: "https://your-storage-endpoint/bucket/key?X-Amz-Signature=...",
+        type: "string",
+      },
     ],
     auth: {
       type: "apikey",
@@ -115,7 +120,7 @@ export async function GET(request: NextRequest) {
             response: [],
           },
           {
-            name: "Request Direct Pre-signed Upload URL (Bypass 4.5MB Server Limit)",
+            name: "Direct Upload Step 1: Request S3 Pre-signed URL (Bypass 4.5MB Server Limit)",
             request: {
               method: "POST",
               header: [
@@ -147,12 +152,42 @@ export async function GET(request: NextRequest) {
                 path: ["api", "v1", "upload", "presigned"],
               },
               description:
-                "Generates a secure, 5-minute pre-signed PUT URL directly targeting Neon S3 or Cloudflare R2 bucket. Used for large files (10MB-50MB+) to bypass Vercel serverless body size limits.",
+                "Step 1: Generates a secure, 5-minute pre-signed PUT URL targeting Neon S3 or Cloudflare R2 bucket. Copy the 'upload_url' from response and use it in Step 2.",
             },
             response: [],
           },
           {
-            name: "Complete Direct Pre-signed Upload (Confirm & Save in DB)",
+            name: "Direct Upload Step 2: Binary PUT to S3 Pre-signed URL",
+            request: {
+              auth: {
+                type: "noauth",
+              },
+              method: "PUT",
+              header: [
+                {
+                  key: "Content-Type",
+                  value: "audio/mpeg",
+                  type: "text",
+                  description: "Must match the exact mime_type provided in Step 1",
+                },
+              ],
+              body: {
+                mode: "file",
+                file: {
+                  src: "",
+                },
+              },
+              url: {
+                raw: "{{s3UploadUrl}}",
+                host: ["{{s3UploadUrl}}"],
+              },
+              description:
+                "Step 2: Directly upload raw media binary to the pre-signed S3 URL. Paste upload_url from Step 1 into {{s3UploadUrl}} or the request bar, select your local audio/image file in Body > binary/file, and send. S3 returns HTTP 200 OK on success.",
+            },
+            response: [],
+          },
+          {
+            name: "Direct Upload Step 3: Complete & Register in Database",
             request: {
               method: "POST",
               header: [
@@ -186,7 +221,7 @@ export async function GET(request: NextRequest) {
                 path: ["api", "v1", "upload", "complete"],
               },
               description:
-                "Notifies server that client-side binary PUT to pre-signed S3 URL succeeded. Verifies key, registers metadata in Neon DB, and emits Telegram notification.",
+                "Step 3: Notifies server that binary PUT in Step 2 succeeded. Verifies key, registers metadata in Neon DB, and emits Telegram notification.",
             },
             response: [],
           },

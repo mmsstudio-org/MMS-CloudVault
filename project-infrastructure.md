@@ -157,7 +157,10 @@ flowchart TD
 - **Problem Solved**: Standard HTTP POST uploads buffer binary streams through Next.js serverless functions, hitting Vercel's strict `4.5 MB` payload ceiling. While client-side WebP compression handles images, high-fidelity audio tracks (10MB–50MB+) fail without direct cloud storage ingestion.
 - **Architectural Flow**:
   1. **Pre-signed Request (`POST /api/v1/upload/presigned`)**: Authenticates caller via API key / App Check, verifies MIME type, resolves target bucket (e.g. Neon S3 or Cloudflare R2), and calls `@aws-sdk/s3-request-presigner`'s `getSignedUrl(s3Client, putCommand, { expiresIn: 300 })`.
-  2. **Direct Binary PUT**: Client uploads file bytes directly to object storage endpoint (`HTTP PUT`). Zero bandwidth, memory, or CPU consumed on the Next.js server.
+  2. **Direct Binary PUT (`PUT <upload_url>`)**: Client uploads raw binary file bytes directly to object storage endpoint (`HTTP PUT` with matching `Content-Type: <mime_type>`). Zero bandwidth, memory, or CPU consumed on the Next.js server.
+     - Terminal: `curl -X PUT "<upload_url>" -H "Content-Type: audio/mpeg" --data-binary "@/path/to/audio.mp3"`
+     - Postman: Method `PUT`, Body `binary` (file selection), Header `Content-Type: audio/mpeg`.
+     - JavaScript: `await fetch(upload_url, { method: "PUT", headers: { "Content-Type": file.type }, body: file })`
   3. **Completion & Registration (`POST /api/v1/upload/complete`)**: Client passes asset metadata to server. Database checks for asset deduplication, replaces old storage keys if present, registers the new record, and fires Telegram notifications.
 
 ### 4.7 Multi-Factor Bulk Operations & Safe Key Governance

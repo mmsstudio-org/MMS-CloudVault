@@ -141,6 +141,11 @@ export async function POST(req: NextRequest) {
           info,
           mime_type: mimeType,
         },
+        instructions: {
+          step_1: "Done: Pre-signed PUT URL generated (valid for 5 minutes).",
+          step_2: `PUT binary file directly to upload_url with header 'Content-Type: ${mimeType}'. Example: curl -X PUT "${uploadUrl}" -H "Content-Type: ${mimeType}" --data-binary "@/path/to/file"`,
+          step_3: "POST to /api/v1/upload/complete with asset_id, storage_key, public_url, bucket_id to register in database.",
+        },
       },
     });
   } catch (err: unknown) {

@@ -304,7 +304,12 @@ Content-Type: multipart/form-data
 }
 ```
 
-### 2. Request Direct Pre-signed Upload URL (Bypass 4.5MB Server Limit)
+---
+
+## ⚡ Direct S3/Neon Pre-signed Upload Guide (3-Step Large Media Pipeline)
+For files larger than 4.5MB (e.g. 10MB to 50MB+ lossless audio, podcasts, voiceover stems), use this 3-step lifecycle to bypass Vercel serverless request limits completely:
+
+### Step 1: Request Direct Pre-signed Upload URL
 `POST /api/v1/upload/presigned`
 
 Generates a secure, 5-minute pre-signed S3 `PUT` URL directly targeting Neon S3 or Cloudflare R2 bucket for large audio files or assets (up to 50MB+).
@@ -347,7 +352,64 @@ Content-Type: application/json
 }
 ```
 
-### 3. Complete Direct Pre-signed Upload (Confirm & Save in DB)
+---
+
+### Step 2: Upload Binary Media Directly to S3 / Neon Pre-signed URL (HTTP PUT)
+`PUT <upload_url>`
+
+Execute an HTTP `PUT` request directly to the signed URL obtained in Step 1. The binary file stream is sent directly to the object storage bucket with zero Next.js server buffering and zero Vercel 4.5MB payload limitations.
+
+> ⚠️ **Critical Requirement**: The `Content-Type` header MUST match the exact `mime_type` specified in Step 1 (e.g., `audio/mpeg` or `image/webp`).
+
+#### Method A: cURL (Terminal / Shell)
+```bash
+curl -X PUT "<upload_url>" \
+  -H "Content-Type: audio/mpeg" \
+  --data-binary "@/path/to/your/audio_file.mp3"
+```
+*Note: Successful upload returns HTTP `200 OK` with an empty response body from S3/Neon.*
+
+#### Method B: JavaScript / Frontend (React / Next.js / Web)
+```javascript
+// 1. Take upload_url from Step 1 response
+const { upload_url, storage_key, public_url, bucket_id } = step1Data;
+const file = fileInputElement.files[0];
+
+// 2. Direct binary PUT to S3
+const s3Res = await fetch(upload_url, {
+  method: "PUT",
+  headers: {
+    "Content-Type": file.type, // e.g. "audio/mpeg"
+  },
+  body: file, // Raw File / Blob object
+});
+
+if (s3Res.ok) {
+  // Proceed to Step 3 (POST /api/v1/upload/complete)
+  console.log("File uploaded directly to S3! Now completing registration...");
+}
+```
+
+#### Method C: Postman
+1. **Method:** `PUT`
+2. **URL:** Paste the full `upload_url` from Step 1.
+3. **Headers:** Add `Content-Type: audio/mpeg`.
+4. **Body:** Select **`binary`** (not form-data or raw), then browse and select your file.
+5. **Send:** Returns status `200 OK`.
+
+#### Method D: Python (`requests`)
+```python
+import requests
+
+with open("podcast_audio.mp3", "rb") as f:
+    headers = {"Content-Type": "audio/mpeg"}
+    res = requests.put(upload_url, data=f, headers=headers)
+    assert res.status_code == 200, "S3 upload failed!"
+```
+
+---
+
+### Step 3: Complete Direct Pre-signed Upload (Confirm & Save in DB)
 `POST /api/v1/upload/complete`
 
 Called by the client immediately after successfully completing the direct HTTP `PUT` to the pre-signed S3 URL. Persists metadata in Neon DB, checks for previous asset deduplication, and emits real-time Telegram notification.

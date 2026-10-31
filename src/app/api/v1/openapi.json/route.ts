@@ -138,9 +138,18 @@ export async function GET() {
       },
       "/api/v1/upload/presigned": {
         post: {
-          summary: "Request authorized S3 Pre-signed URL for direct client PUT upload",
+          summary: "Step 1: Request S3 Pre-signed URL for direct large media PUT upload",
           description:
-            "Bypasses server body size limits for large audio tracks or assets (up to 50MB+). Returns a signed, time-limited direct upload URL targeting Neon S3 or Cloudflare R2 object storage.",
+            "### 3-Step Direct Upload Lifecycle\n\nBypasses server body size limits (e.g., Vercel's 4.5MB ceiling) for large audio tracks or assets (up to 50MB+).\n\n" +
+            "**Step 1:** Call this endpoint with `asset_id` and `mime_type` to receive a secure, 5-minute pre-signed S3 `upload_url`.\n\n" +
+            "**Step 2 (Direct S3 PUT):** Execute an HTTP `PUT` directly to `upload_url` with raw binary file in the request body.\n" +
+            "```bash\n" +
+            "curl -X PUT \"<upload_url>\" \\\n" +
+            "  -H \"Content-Type: audio/mpeg\" \\\n" +
+            "  --data-binary \"@/path/to/podcast.mp3\"\n" +
+            "```\n" +
+            "*Note: Header `Content-Type` must match the exact `mime_type` specified in Step 1. In Postman, select Method: PUT, Body: binary, and choose file.*\n\n" +
+            "**Step 3:** Call `/api/v1/upload/complete` with `asset_id`, `storage_key`, `public_url`, and `bucket_id` to register the asset in Neon PostgreSQL and fire Telegram alerts.",
           security: [{ ApiKeyAuth: [] }, { AppCheckAuth: [] }],
           requestBody: {
             required: true,
@@ -205,9 +214,9 @@ export async function GET() {
       },
       "/api/v1/upload/complete": {
         post: {
-          summary: "Confirm direct S3 Pre-signed upload and register in database",
+          summary: "Step 3: Confirm direct S3 Pre-signed upload and register in database",
           description:
-            "Called immediately after the client successfully PUTs the media file directly to the object storage pre-signed URL. Registers database metadata and triggers telegram notifications.",
+            "Final step of the Direct Pre-signed upload lifecycle. Called immediately after the client successfully PUTs the media file directly to the object storage pre-signed URL in Step 2. Registers database metadata, associates bucket ownership, executes deduplication/replacement of older assets if applicable, and triggers telegram notifications.",
           security: [{ ApiKeyAuth: [] }],
           requestBody: {
             required: true,
