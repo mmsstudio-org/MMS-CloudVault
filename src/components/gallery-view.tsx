@@ -54,6 +54,8 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
   const [editingAsset, setEditingAsset] = React.useState<MediaAsset | null>(null);
   const [editTitle, setEditTitle] = React.useState("");
   const [editFolder, setEditFolder] = React.useState("");
+  const [editUploaderName, setEditUploaderName] = React.useState("");
+  const [editInfo, setEditInfo] = React.useState("");
   const [isCustomEditFolder, setIsCustomEditFolder] = React.useState(false);
   const [customEditFolder, setCustomEditFolder] = React.useState("");
   const [isSavingMetadata, setIsSavingMetadata] = React.useState(false);
@@ -76,7 +78,9 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
       const matchSearch =
         !q ||
         asset.assetId.toLowerCase().includes(q) ||
-        (asset.title && asset.title.toLowerCase().includes(q));
+        (asset.title && asset.title.toLowerCase().includes(q)) ||
+        (asset.uploaderName && asset.uploaderName.toLowerCase().includes(q)) ||
+        (asset.info && asset.info.toLowerCase().includes(q));
 
       return matchApp && matchFolder && matchType && matchSearch;
     });
@@ -124,6 +128,8 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
     setEditingAsset(asset);
     setEditTitle(asset.title || "");
     setEditFolder(asset.folder || "general");
+    setEditUploaderName(asset.uploaderName || "");
+    setEditInfo(asset.info || "");
     setIsCustomEditFolder(false);
     setCustomEditFolder("");
   };
@@ -141,6 +147,8 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
       const updated = await actionUpdateAssetMetadata(editingAsset.id, {
         title: editTitle.trim(),
         folder: finalFolder || "general",
+        uploaderName: editUploaderName.trim(),
+        info: editInfo.trim(),
       });
       setAssets((prev) =>
         prev.map((a) => (a.id === updated.id ? updated : a))
@@ -386,6 +394,30 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                         </>
                       )}
                     </div>
+
+                    {/* Uploader Name & Short Info Tags */}
+                    {(asset.uploaderName || asset.info) && (
+                      <div className="mt-2 pt-1.5 border-t border-border/50 flex flex-wrap items-center gap-1.5 text-[10px]">
+                        {asset.uploaderName && (
+                          <span
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-muted text-foreground font-medium truncate max-w-[140px]"
+                            title={`Uploaded by: ${asset.uploaderName}`}
+                          >
+                            <span>👤</span>
+                            <span className="truncate">{asset.uploaderName}</span>
+                          </span>
+                        )}
+                        {asset.info && (
+                          <span
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-500 font-mono text-[10px] truncate max-w-[160px]"
+                            title={`Info: ${asset.info}`}
+                          >
+                            <span>ℹ️</span>
+                            <span className="truncate">{asset.info}</span>
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}
@@ -491,6 +523,30 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                         <p className="text-[11px] text-zinc-400 font-mono truncate" title={`ID: ${asset.assetId}`}>
                           ID: {asset.assetId} • {asset.width}x{asset.height} px • {asset.optimizedSizeKb} KB
                         </p>
+                      )}
+
+                      {/* Uploader Name & Short Info Tags for List View */}
+                      {(asset.uploaderName || asset.info) && (
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px]">
+                          {asset.uploaderName && (
+                            <span
+                              className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-muted text-foreground font-medium"
+                              title={`Uploaded by: ${asset.uploaderName}`}
+                            >
+                              <span>👤</span>
+                              <span>{asset.uploaderName}</span>
+                            </span>
+                          )}
+                          {asset.info && (
+                            <span
+                              className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-cyan-500/10 text-cyan-500 font-mono"
+                              title={`Info: ${asset.info}`}
+                            >
+                              <span>ℹ️</span>
+                              <span>{asset.info}</span>
+                            </span>
+                          )}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -713,6 +769,32 @@ export function GalleryView({ initialAssets, apps, folders }: GalleryViewProps) 
                     ))}
                   </select>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Uploader Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={editUploaderName}
+                  onChange={(e) => setEditUploaderName(e.target.value)}
+                  placeholder="e.g. John Doe / Client API"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Short Info / Remark (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={editInfo}
+                  onChange={(e) => setEditInfo(e.target.value)}
+                  placeholder="e.g. Profile banner, compressed for iOS app"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                />
               </div>
 
               <div className="p-3 rounded-xl bg-muted/50 border border-border text-[11px] text-zinc-500 space-y-1">

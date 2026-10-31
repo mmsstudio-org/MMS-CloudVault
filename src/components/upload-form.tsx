@@ -48,6 +48,8 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const [customFolder, setCustomFolder] = React.useState("");
   const [assetId, setAssetId] = React.useState("");
   const [title, setTitle] = React.useState("");
+  const [uploaderName, setUploaderName] = React.useState("");
+  const [info, setInfo] = React.useState("");
   const [compressAudio, setCompressAudio] = React.useState(false);
   const [audioBitrate, setAudioBitrate] = React.useState<"96k" | "128k" | "192k" | "256k">("192k");
   const [isUploading, setIsUploading] = React.useState(false);
@@ -176,6 +178,12 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
         formData.append("asset_id", item.assetId.trim());
         formData.append("title", item.title.trim());
         formData.append("folder", finalFolder || "general");
+        if (uploaderName.trim()) {
+          formData.append("uploader_name", uploaderName.trim());
+        }
+        if (info.trim()) {
+          formData.append("info", info.trim());
+        }
 
         const isAudio =
           item.file.type.startsWith("audio/") ||
@@ -259,6 +267,12 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       formData.append("asset_id", assetId.trim());
       formData.append("title", title.trim());
       formData.append("folder", finalFolder || "general");
+      if (uploaderName.trim()) {
+        formData.append("uploader_name", uploaderName.trim());
+      }
+      if (info.trim()) {
+        formData.append("info", info.trim());
+      }
 
       if (
         file.type.startsWith("audio/") ||
@@ -299,6 +313,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
     setPreviewUrl(null);
     setAssetId("");
     setTitle("");
+    setInfo("");
     setUploadedResult(null);
     setBatchQueue([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -638,6 +653,41 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                 </div>
               </div>
             )}
+
+            {/* Optional Uploader Name & Short Info */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Uploader Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={uploaderName}
+                  onChange={(e) => setUploaderName(e.target.value)}
+                  placeholder="Leave blank to use logged-in Admin name"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none"
+                />
+                <span className="text-[10px] text-zinc-400 mt-1 block">
+                  Defaults to active admin session user if empty.
+                </span>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">
+                  Short Note / Info (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={info}
+                  onChange={(e) => setInfo(e.target.value)}
+                  placeholder="e.g. Profile banner, compressed for iOS app"
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none"
+                />
+                <span className="text-[10px] text-zinc-400 mt-1 block">
+                  Additional context or remark saved with this media asset.
+                </span>
+              </div>
+            </div>
 
             {/* Audio Optimization & Compression Section */}
             {((file &&
