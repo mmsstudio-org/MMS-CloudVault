@@ -154,6 +154,14 @@ export async function GET(request: NextRequest) {
               description:
                 "Step 1: Generates a secure, 5-minute pre-signed PUT URL targeting Neon S3 or Cloudflare R2 bucket. Copy the 'upload_url' from response and use it in Step 2.",
             },
+            event: [{ listen: "test", script: { type: "text/javascript", exec: [
+              "const data = pm.response.json().data;",
+              "pm.collectionVariables.set('upload_url', data.upload_url);",
+              "pm.collectionVariables.set('upload_token', data.upload_token);",
+              "pm.collectionVariables.set('upload_storage_key', data.metadata.storage_key);",
+              "pm.collectionVariables.set('upload_public_url', data.public_url);",
+              "pm.collectionVariables.set('upload_bucket_id', data.metadata.bucket_id);",
+            ] } }],
             response: [],
           },
           {
@@ -202,8 +210,10 @@ export async function GET(request: NextRequest) {
                 raw: JSON.stringify(
                   {
                     asset_id: "podcast_ep_01",
-                    storage_key: "golpo-ghor/podcasts/podcast_ep_01.mp3",
-                    public_url: "https://media.sabbirmms.com/golpo-ghor/podcasts/podcast_ep_01.mp3",
+                    upload_token: "{{upload_token}}",
+                    bucket_id: "{{upload_bucket_id}}",
+                    storage_key: "{{upload_storage_key}}",
+                    public_url: "{{upload_public_url}}",
                     folder: "podcasts",
                     title: "Episode 1 Master Audio",
                     uploader_name: "Sabbir / Creator Studio",

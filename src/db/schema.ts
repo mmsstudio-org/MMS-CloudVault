@@ -8,6 +8,7 @@ import {
   serial,
   uniqueIndex,
   bigint,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 
@@ -199,3 +200,27 @@ export type NewMediaAsset = typeof mediaAssets.$inferInsert;
 
 export type AdminUser = typeof adminUsers.$inferSelect;
 export type NewAdminUser = typeof adminUsers.$inferInsert;
+
+// Durable Telegram events; payload contains metadata only, never bot credentials.
+export const telegramOutbox = pgTable("telegram_outbox", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  eventKey: text("event_key").unique().notNull(),
+  payload: jsonb("payload").notNull(),
+  status: text("status").default("pending").notNull(),
+  attempts: integer("attempts").default(0).notNull(),
+  nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).defaultNow().notNull(),
+  leaseUntil: timestamp("lease_until", { withTimezone: true }),
+  messageId: text("message_id"),
+  lastError: text("last_error"),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  sentAt: timestamp("sent_at", { withTimezone: true }),
+});
+
+export const storageCleanup = pgTable("storage_cleanup", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  bucketId: uuid("bucket_id").notNull().references(() => storageBuckets.id),
+  storageKey: text("storage_key").notNull(),
+  dueAt: timestamp("due_at", { withTimezone: true }).defaultNow().notNull(),
+  attempts: integer("attempts").default(0).notNull(),
+  lastError: text("last_error"),
+}, table => [uniqueIndex("storage_cleanup_bucket_key_idx").on(table.bucketId, table.storageKey)]);

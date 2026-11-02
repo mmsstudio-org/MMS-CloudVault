@@ -149,7 +149,7 @@ export async function GET() {
             "  --data-binary \"@/path/to/podcast.mp3\"\n" +
             "```\n" +
             "*Note: Header `Content-Type` must match the exact `mime_type` specified in Step 1. In Postman, select Method: PUT, Body: binary, and choose file.*\n\n" +
-            "**Step 3:** Call `/api/v1/upload/complete` with `asset_id`, `storage_key`, `public_url`, and `bucket_id` to register the asset in Neon PostgreSQL and fire Telegram alerts.",
+            "**Step 3:** Call `/api/v1/upload/complete` with `upload_token`, `asset_id`, `storage_key`, `public_url`, and `bucket_id` to register the asset in Neon PostgreSQL and fire Telegram alerts.",
           security: [{ ApiKeyAuth: [] }, { AppCheckAuth: [] }],
           requestBody: {
             required: true,
@@ -224,11 +224,15 @@ export async function GET() {
               "application/json": {
                 schema: {
                   type: "object",
-                  required: ["asset_id", "storage_key", "public_url"],
+                  required: ["upload_token", "asset_id", "storage_key", "public_url", "bucket_id"],
                   properties: {
                     asset_id: {
                       type: "string",
                       example: "large_podcast_01",
+                    },
+                    upload_token: {
+                      type: "string",
+                      description: "Copy data.upload_token from the presigned response. Bound to this app, asset and object; valid for 30 minutes.",
                     },
                     storage_key: {
                       type: "string",

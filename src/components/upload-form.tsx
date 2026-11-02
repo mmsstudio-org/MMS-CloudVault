@@ -7,12 +7,9 @@ import {
   CheckCircle2,
   Loader2,
   Music,
-  Headphones,
   Layers,
-  Trash2,
   X,
   AlertCircle,
-  FileText,
   Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -59,26 +56,57 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
   const [audioBitrate, setAudioBitrate] = React.useState<"96k" | "128k" | "192k" | "256k">("192k");
   const [isUploading, setIsUploading] = React.useState(false);
 
-  // Restore last selected application from localStorage on mount (with safe fallback if app was deleted)
+  const [preferencesReady, setPreferencesReady] = React.useState(false);
+  const autoTitle = React.useRef("");
+  const autoAssetId = React.useRef("");
+  const folderPreferences = React.useRef<Record<string, { folder: string; customFolder: string; isCustomFolder: boolean }>>({});
   React.useEffect(() => {
+    // Restoring browser preferences after hydration is an external-system sync.
+    /* eslint-disable react-hooks/set-state-in-effect */
     try {
       const savedApp = localStorage.getItem(STORAGE_LAST_APP_KEY);
-      if (savedApp && apps.some((app) => app.appId === savedApp)) {
-        setSelectedApp(savedApp);
-      } else {
-        setSelectedApp(apps[0]?.appId || "general");
+      const app = savedApp && apps.some((a) => a.appId === savedApp) ? savedApp : apps[0]?.appId || "general";
+      setSelectedApp(app);
+      const saved = JSON.parse(localStorage.getItem("mms-upload-preferences-v1") || "{}");
+      folderPreferences.current = {};
+      if (saved && typeof saved.folders === "object" && saved.folders) {
+        for (const [id, value] of Object.entries(saved.folders)) {
+          const pref = value as Record<string, unknown> | null;
+          if (!pref || typeof pref !== "object") continue;
+          folderPreferences.current[id] = { folder: typeof pref.folder === "string" && ["general", "covers", "banners", "audio", "media", ...existingFolders].includes(pref.folder) ? pref.folder : "general", customFolder: typeof pref.customFolder === "string" ? pref.customFolder : "", isCustomFolder: pref.isCustomFolder === true };
+        }
       }
-    } catch {
-      setSelectedApp(apps[0]?.appId || "general");
-    }
-  }, [apps]);
+      const pref = folderPreferences.current[app];
+      if (pref) {
+        const valid = ["general", "covers", "banners", "audio", "media", ...existingFolders].includes(pref.folder);
+        setFolder(valid ? pref.folder : "general");
+        setCustomFolder(typeof pref.customFolder === "string" ? pref.customFolder : "");
+        setIsCustomFolder(pref.isCustomFolder === true);
+      }
+      setCompressAudio(saved.compressAudio === true);
+      if (["96k", "128k", "192k", "256k"].includes(saved.audioBitrate)) setAudioBitrate(saved.audioBitrate);
+    } catch { /* Storage can be unavailable or contain invalid JSON. */ }
+    setPreferencesReady(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  // Restore once; subsequent renders must not overwrite user choices.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Handle application change and persist to localStorage
+  React.useEffect(() => {
+    if (!preferencesReady) return;
+    folderPreferences.current[selectedApp] = { folder, customFolder, isCustomFolder };
+    try {
+      localStorage.setItem(STORAGE_LAST_APP_KEY, selectedApp);
+      localStorage.setItem("mms-upload-preferences-v1", JSON.stringify({ folders: folderPreferences.current, compressAudio, audioBitrate }));
+    } catch { /* Upload remains usable without local storage. */ }
+  }, [preferencesReady, selectedApp, folder, customFolder, isCustomFolder, compressAudio, audioBitrate]);
+
   const handleAppChange = (newAppId: string) => {
     setSelectedApp(newAppId);
-    try {
-      localStorage.setItem(STORAGE_LAST_APP_KEY, newAppId);
-    } catch {}
+    const pref = folderPreferences.current[newAppId];
+    setFolder(pref?.folder || "general");
+    setCustomFolder(pref?.customFolder || "");
+    setIsCustomFolder(pref?.isCustomFolder === true);
   };
 
   // Multi-File Batch Queue State
@@ -106,19 +134,18 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
       setPreviewUrl(URL.createObjectURL(selected));
       setUploadedResult(null);
 
-      const isAudio =
-        selected.type.startsWith("audio/") ||
-        /\.(mp3|wav|ogg|m4a|aac|flac)$/i.test(selected.name);
-      if (isAudio && folder === "general") {
-        setFolder("audio");
-      }
+      const nextTitle = selected.name.replace(/\.[^/.]+$/, "");
+      if (!title || title === autoTitle.current) setTitle(nextTitle);
+      autoTitle.current = nextTitle;
 
-      if (!assetId) {
+      if (!assetId || assetId === autoAssetId.current) {
         const cleanName = selected.name
           .replace(/\.[^/.]+$/, "")
           .replace(/[^a-zA-Z0-9_-]/g, "_")
           .toLowerCase();
-        setAssetId(`asset_${cleanName}`);
+        const nextId = `asset_${/[a-z0-9]/i.test(cleanName) ? cleanName : crypto.randomUUID()}`;
+        setAssetId(nextId);
+        autoAssetId.current = nextId;
       }
       return;
     }
@@ -134,7 +161,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
         id: `${Date.now()}-${i}-${Math.random().toString(36).substring(2, 6)}`,
         file: f,
         previewUrl: f.type.startsWith("image/") ? URL.createObjectURL(f) : "",
-        assetId: `asset_${cleanName}`,
+        assetId: `asset_${/[a-z0-9]/i.test(cleanName) ? cleanName : crypto.randomUUID()}`,
         title: rawTitle,
         status: "pending",
       };
@@ -265,6 +292,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
       // Step 3: Complete and save in database
       const completed = await actionCompleteDashboardUpload({
+        uploadToken: presigned.uploadToken,
         appId: selectedApp,
         assetId: targetAssetId.trim(),
         storageKey: presigned.storageKey,
@@ -292,7 +320,6 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
 
     const finalFolder = isCustomFolder ? customFolder.trim() : folder;
     let successCount = 0;
-    let totalSaved = 0;
     setBatchProgress({ completed: 0, total: batchQueue.length });
 
     for (let i = 0; i < batchQueue.length; i++) {
@@ -315,7 +342,6 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
         );
 
         successCount++;
-        totalSaved += data.savedKb || 0;
 
         setBatchQueue((prev) =>
           prev.map((q, idx) =>
@@ -402,6 +428,8 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
     setPreviewUrl(null);
     setAssetId("");
     setTitle("");
+    autoTitle.current = "";
+    autoAssetId.current = "";
     setInfo("");
     setUploadedResult(null);
     setBatchQueue([]);
@@ -732,7 +760,7 @@ export function UploadForm({ apps, existingFolders }: UploadFormProps) {
                     className="w-full px-3 py-2 text-xs rounded-xl border border-border bg-muted text-foreground focus:outline-none font-mono"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
-                    Duplicate Asset IDs replace existing images automatically.
+                    App: {selectedApp} · Asset: {assetId.trim() || "—"}. Same app + asset replaces the existing file, even in another folder.
                   </span>
                 </div>
 

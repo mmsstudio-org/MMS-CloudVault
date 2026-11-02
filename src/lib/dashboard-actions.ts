@@ -1,13 +1,13 @@
 "use server";
 
+import { scheduleStorageCleanup } from "@/lib/storage-cleanup";
+import { createUploadTicket, verifyUploadTicket } from "./upload-ticket";
 import { db } from "@/db";
 import {
   siteSettings,
   apiKeys,
   mediaAssets,
-  adminUsers,
   storageBuckets,
-  ApiKey,
   StorageBucket,
 } from "@/db/schema";
 import { eq, desc, and, sql } from "drizzle-orm";
@@ -20,7 +20,7 @@ import {
   softDeleteAsset,
   deleteAssetPermanently,
 } from "./trash-manager";
-import { sendTelegramNotification } from "./telegram";
+import { sendTelegramNotification, enqueueTelegramNotification, drainTelegramOutbox } from "./telegram";
 import { processAndSaveAsset } from "./asset-manager";
 import {
   invalidateClientPool,
@@ -443,7 +443,7 @@ export async function actionUpdateStorageBucket(
   }
 
   // Ensure publicBaseUrl and notes can be explicitly cleared to null
-  const updatePayload: Record<string, any> = {
+  const updatePayload: Partial<typeof storageBuckets.$inferInsert> = {
     ...data,
     updatedAt: new Date(),
   };
@@ -983,7 +983,7 @@ export async function actionGetDashboardPresignedUrl(params: {
     ? "mp3"
     : "webp";
   const sanitizedAssetId = assetId.replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase();
-  const storageKey = `${appId}/${folder}/${sanitizedAssetId}.${ext}`;
+  const storageKey = `${appId}/${folder}/${sanitizedAssetId}-${crypto.randomUUID()}.${ext}`;
 
   // 3. Generate 10-minute Pre-signed URL (600s) for large audio / media
   const { uploadUrl, publicUrl } = await createPresignedUploadUrl(
@@ -993,7 +993,11 @@ export async function actionGetDashboardPresignedUrl(params: {
     600
   );
 
+  await scheduleStorageCleanup(db, targetBucket.id, storageKey, 86400);
+  const uploadToken = await createUploadTicket({ appId, assetId, storageKey, publicUrl, bucketId: targetBucket.id });
+
   return {
+    uploadToken,
     uploadUrl,
     publicUrl,
     storageKey,
@@ -1010,6 +1014,7 @@ export async function actionGetDashboardPresignedUrl(params: {
 }
 
 export async function actionCompleteDashboardUpload(params: {
+  uploadToken: string;
   appId: string;
   assetId: string;
   storageKey: string;
@@ -1038,36 +1043,40 @@ export async function actionCompleteDashboardUpload(params: {
     throw new Error("Asset ID, storage key, and public URL are required.");
   }
 
+  if (!bucketId || !await verifyUploadTicket(params.uploadToken, { appId, assetId, storageKey, publicUrl, bucketId })) {
+    throw new Error("Invalid or expired upload authorization.");
+  }
+
   // 1. Inspect S3 directly via HeadObject to get exact bytes
   const s3Meta = await headObject(storageKey, bucketId);
+  if (!s3Meta) throw new Error("Uploaded object could not be verified in storage.");
   const resolvedFileSizeKb =
     s3Meta?.contentLength && s3Meta.contentLength > 0
       ? Math.max(1, Math.round(s3Meta.contentLength / 1024))
       : params.fileSizeKb || 0;
   const resolvedMimeType = s3Meta?.contentType || mimeType;
 
+  const { existing, savedAsset, isReplaced } = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${JSON.stringify([appId, assetId])}, 0))`);
   // 2. Check existing asset for deduplication
-  const [existing] = await db
+  const [existing] = await tx
     .select()
     .from(mediaAssets)
     .where(and(eq(mediaAssets.appId, appId), eq(mediaAssets.assetId, assetId)))
     .limit(1);
 
-  if (existing) {
-    // If physical key changed, clean up previous file from S3
-    if (existing.storageKey && existing.storageKey !== storageKey) {
-      await deleteObject(existing.storageKey, existing.bucketId || undefined).catch(
-        (err) =>
-          console.warn("[Storage] Failed to delete previous file during direct upsert:", err)
-      );
-    }
+  const previousCompletion = await tx.execute(sql`SELECT id FROM telegram_outbox WHERE event_key = ${`upload:${appId}:${assetId}:${storageKey}`}`);
+  if (previousCompletion.rows.length) {
+    if (!existing) throw new Error("This upload was already completed and removed.");
+    if (existing.storageKey !== storageKey) await scheduleStorageCleanup(tx, bucketId, storageKey);
+    return { existing, savedAsset: existing, isReplaced: true };
   }
 
   let savedAsset;
   let isReplaced = false;
 
   if (existing) {
-    const updated = await db
+    const updated = await tx
       .update(mediaAssets)
       .set({
         bucketId: bucketId || existing.bucketId,
@@ -1091,7 +1100,7 @@ export async function actionCompleteDashboardUpload(params: {
     savedAsset = updated[0];
     isReplaced = true;
   } else {
-    const inserted = await db
+    const inserted = await tx
       .insert(mediaAssets)
       .values({
         appId,
@@ -1113,9 +1122,11 @@ export async function actionCompleteDashboardUpload(params: {
     savedAsset = inserted[0];
   }
 
-  // 3. Send Telegram notification
-  try {
-    await sendTelegramNotification({
+    if (existing?.bucketId && existing.storageKey !== storageKey) {
+      await scheduleStorageCleanup(tx, existing.bucketId, existing.storageKey);
+    }
+    await enqueueTelegramNotification(tx, {
+      eventKey: `upload:${appId}:${assetId}:${storageKey}`,
       event: isReplaced ? "ASSET_REPLACED" : "ASSET_UPLOADED",
       appName: appId === "general" ? "Studio Global" : appId,
       assetId,
@@ -1127,6 +1138,22 @@ export async function actionCompleteDashboardUpload(params: {
       sizeKb: resolvedFileSizeKb,
       mimeType: resolvedMimeType,
     });
+    return { existing, savedAsset, isReplaced };
+  });
+
+  if (existing) {
+    // If physical key changed, clean up previous file from S3
+    if (savedAsset.storageKey === storageKey && existing.storageKey && existing.storageKey !== storageKey) {
+      await deleteObject(existing.storageKey, existing.bucketId || undefined).catch(
+        (err) =>
+          console.warn("[Storage] Failed to delete previous file during direct upsert:", err)
+      );
+    }
+  }
+
+  // 3. Send Telegram notification
+  try {
+    await drainTelegramOutbox(1).catch((error) => console.warn("Telegram worker deferred", error));
   } catch {}
 
   safeRevalidate("/dashboard/gallery");
@@ -1140,4 +1167,17 @@ export async function actionCompleteDashboardUpload(params: {
     savedKb: 0,
     bucket: bucketId || "Default Bucket",
   };
+}
+
+export async function actionGetTelegramDeliveries() {
+  await requireAdminAuth();
+  const result = await db.execute(sql`SELECT id, event_key, status, attempts, message_id, last_error, created_at FROM telegram_outbox ORDER BY created_at DESC LIMIT 30`);
+  return result.rows;
+}
+
+export async function actionRetryTelegramDeliveries() {
+  await requireAdminAuth();
+  await db.execute(sql`UPDATE telegram_outbox SET status = 'pending', attempts = 0, next_attempt_at = now(), lease_until = NULL WHERE status = 'failed'`);
+  await drainTelegramOutbox(1);
+  safeRevalidate('/dashboard/settings');
 }

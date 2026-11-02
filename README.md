@@ -19,7 +19,7 @@
 | :--- | :--- | :--- |
 | **Full-Stack Framework** | **Next.js 16 (App Router) + Turbopack** | High-performance Server Components, Route Handlers, Server Actions, sub-second HMR. |
 | **Frontend & UI** | **React 19 + Tailwind CSS v4** | Modern Linear/Vercel styling, custom dark/light theme, Lucide icons, responsive drawer navigation. |
-| **Database & ORM** | **Neon Serverless PostgreSQL + Drizzle ORM** | Type-safe schema definition, composite unique constraints (`appId`, `assetId`), transactional migrations. |
+| **Database & ORM** | **Neon Serverless PostgreSQL + Drizzle ORM** | Type-safe schema definition, composite unique constraints (`appId`, `assetId`), schema synchronization via `db:push`. |
 | **Media Transformation** | **Sharp 0.35.5 (libvips) + BlurHash** | Automated WebP conversion, dimension capping (`withoutEnlargement`), progressive blur placeholders. |
 | **Object Storage** | **Cloudflare R2 + AWS S3 SDK v3** | Multi-cloud S3-compatible storage, $0 egress delivery, runtime multi-bucket routing for images & audio. |
 | **Caching Engine** | **In-Memory LRU Cache (`lru-cache` v11)** | Ultra-fast (0.03ms) API key authorization with auto TTL expiration and instant invalidation. |
@@ -509,3 +509,46 @@ For Android and mobile applications, MMS CloudVault offers bulletproof attestati
 ---
 
 © 2026 [MMS Studio](https://studio.sabbirmms.com). All rights reserved.
+
+### Reliable uploads and Telegram delivery
+
+Run `npm run db:push` before running this version to synchronize the database with
+`src/db/schema.ts`. `AUTH_SECRET` or `NEXTAUTH_SECRET` must be set.
+Direct upload clients must copy `data.upload_token` from the presigned response
+into `/api/v1/upload/complete`, together with the exact returned object metadata.
+Upload tokens expire after 30 minutes; presigned PUT URLs retain their shorter
+expiry. Existing direct-upload clients must be updated alongside the server.
+The Postman collection captures these values automatically.
+
+Asset identity is the exact, case-sensitive `(app_id, asset_id)` pair. Folder is
+metadata, never part of replacement matching. The server does not add an app
+prefix to `asset_id`; API clients and dashboard must supply the same asset ID.
+Object paths already include the app namespace and a unique upload identifier.
+
+Telegram events commit with uploaded media. Delivery history and manual retry
+of failed events are available in Dashboard Settings. A sent message ID confirms
+Telegram accepted it, not that a phone displayed a notification. Temporary
+failures retry with backoff, including Telegram's retry-after delay. After 10
+attempts the event stays failed until manually retried. A crash after Telegram
+accepts a message but before its DB acknowledgment may produce a duplicate;
+Telegram sendMessage does not provide an idempotency key.
+
+The included Vercel cron runs every minute (requires a plan supporting that
+frequency). Set `CRON_SECRET`; Vercel supplies it as Bearer authorization.
+For other hosts, schedule an authenticated GET or POST to
+`/api/v1/cron/telegram` every minute. Keep this worker enabled so events left
+pending during bursts or downtime are delivered. No bot credentials are stored
+in the outbox. Local integration tests use only the isolated database:
+
+```sh
+DATABASE_URL=postgresql://localhost:5432/mms_upload_reliability_test npx tsx --test tests/upload-reliability.test.ts
+```
+
+Use `npm run db:push` to synchronize the schema using `DATABASE_URL` from `.env.local`. For a fresh local test database, create
+`mms_upload_reliability_test`, then run `drizzle-kit push` with that DATABASE_URL.
+`DATABASE_URL=postgresql://localhost:5432/mms_upload_reliability_test npm run test:uploads`
+runs the database/S3-transport/Telegram integration checks. To run browser checks,
+start `next dev --port 3105` against that same isolated database with AUTH_URL,
+NEXTAUTH_URL and NEXT_PUBLIC_APP_URL set to `http://localhost:3105`, and a test
+AUTH_SECRET. Then run `npm run test:upload-form` (Google Chrome required).
+Run browser and database tests sequentially; database tests reset test fixtures.

@@ -35,7 +35,7 @@ export async function purgeTrash(options?: {
   for (const item of itemsToPurge) {
     if (item.storageKey) {
       const ok = await deleteObject(item.storageKey, item.bucketId || undefined);
-      if (!ok) errors++;
+      if (!ok) { errors++; continue; }
     }
     idsToDelete.push(item.id);
   }
@@ -46,7 +46,7 @@ export async function purgeTrash(options?: {
   }
 
   // 3. Dispatch Telegram alert
-  sendTelegramNotification({
+  await sendTelegramNotification({
     event: "TRASH_PURGED",
     appName: "MMS CloudVault System",
     assetId: "CLEANUP_JOB",
@@ -92,7 +92,7 @@ export async function softDeleteAsset(id: string): Promise<boolean> {
 
   if (result.length > 0) {
     const asset = result[0];
-    sendTelegramNotification({
+    await sendTelegramNotification({
       event: "ASSET_SOFT_DELETED",
       appName: asset.appId,
       assetId: asset.assetId,
@@ -129,14 +129,15 @@ export async function deleteAssetPermanently(
 
   // 1. Delete physical file from originating Object Storage bucket
   if (asset.storageKey) {
-    await deleteObject(asset.storageKey, asset.bucketId || undefined);
+    const deleted = await deleteObject(asset.storageKey, asset.bucketId || undefined);
+    if (!deleted) return { success: false, error: "Storage deletion failed; asset retained for retry." };
   }
 
   // 2. Delete database record
   await db.delete(mediaAssets).where(eq(mediaAssets.id, id));
 
   // 3. Dispatch Telegram alert
-  sendTelegramNotification({
+  await sendTelegramNotification({
     event: "ASSET_PERMANENTLY_DELETED",
     appName: asset.appId,
     assetId: asset.assetId,

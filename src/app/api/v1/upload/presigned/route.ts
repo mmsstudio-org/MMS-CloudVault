@@ -1,3 +1,6 @@
+import { db } from "@/db";
+import { scheduleStorageCleanup } from "@/lib/storage-cleanup";
+import { createUploadTicket } from "@/lib/upload-ticket";
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-cache";
 import { validateAppCheckToken } from "@/lib/app-check-validator";
@@ -107,7 +110,7 @@ export async function POST(req: NextRequest) {
       ? fileName.split(".").pop()?.toLowerCase() || (isAudio ? "mp3" : "webp")
       : (isAudio ? "mp3" : "webp");
     const sanitizedAssetId = assetId.replace(/[^a-zA-Z0-9_-]/g, "_").toLowerCase();
-    const storageKey = `${appId}/${folder}/${sanitizedAssetId}.${ext}`;
+    const storageKey = `${appId}/${folder}/${sanitizedAssetId}-${crypto.randomUUID()}.${ext}`;
 
     // 5. Generate Pre-signed URL (Valid for 5 minutes / 300s)
     const { uploadUrl, publicUrl } = await createPresignedUploadUrl(
@@ -117,11 +120,15 @@ export async function POST(req: NextRequest) {
       300
     );
 
+    await scheduleStorageCleanup(db, targetBucket.id, storageKey, 86400);
+  const uploadToken = await createUploadTicket({ appId, assetId, storageKey, publicUrl, bucketId: targetBucket.id });
+
     return NextResponse.json({
       success: true,
       message: "Direct upload pre-signed URL successfully generated. Issue an HTTP PUT directly to upload_url with file body.",
       data: {
         upload_url: uploadUrl,
+        upload_token: uploadToken,
         public_url: publicUrl,
         method: "PUT",
         headers: {
@@ -144,7 +151,7 @@ export async function POST(req: NextRequest) {
         instructions: {
           step_1: "Done: Pre-signed PUT URL generated (valid for 5 minutes).",
           step_2: `PUT binary file directly to upload_url with header 'Content-Type: ${mimeType}'. Example: curl -X PUT "${uploadUrl}" -H "Content-Type: ${mimeType}" --data-binary "@/path/to/file"`,
-          step_3: "POST to /api/v1/upload/complete with asset_id, storage_key, public_url, bucket_id to register in database.",
+          step_3: "POST to /api/v1/upload/complete with upload_token, asset_id, storage_key, public_url, bucket_id to register in database.",
         },
       },
     });

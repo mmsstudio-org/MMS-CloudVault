@@ -1,9 +1,12 @@
+import { scheduleStorageCleanup } from "@/lib/storage-cleanup";
+import { verifyUploadTicket } from "@/lib/upload-ticket";
 import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-cache";
+import { validateAppCheckToken } from "@/lib/app-check-validator";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
-import { sendTelegramNotification } from "@/lib/telegram";
+import { and, eq, sql } from "drizzle-orm";
+import { enqueueTelegramNotification, drainTelegramOutbox } from "@/lib/telegram";
 import { deleteObject, headObject } from "@/lib/storage";
 
 export async function POST(req: NextRequest) {
@@ -26,6 +29,11 @@ export async function POST(req: NextRequest) {
     }
 
     const { appId, appName } = auth.app;
+
+    if (auth.app.enforceAppCheck) {
+      const check = await validateAppCheckToken(req.headers.get("x-firebase-appcheck") || req.headers.get("x-app-check-token"), auth.app);
+      if (!check.isValid) return NextResponse.json({ success: false, error: "App Check validation failed." }, { status: 403 });
+    }
 
     // 2. Parse payload
     const body = await req.json().catch(() => null);
@@ -59,53 +67,41 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const uploadToken = typeof body.upload_token === "string" ? body.upload_token : "";
+    if (!bucketId || !await verifyUploadTicket(uploadToken, { appId, assetId, storageKey, publicUrl, bucketId })) {
+      return NextResponse.json({ success: false, error: "Invalid or expired upload_token. Request a new presigned upload." }, { status: 403 });
+    }
+
     // 2.5 Query storage directly to get actual file size and verify object exists
     const s3Meta = await headObject(storageKey, bucketId);
+    if (!s3Meta) return NextResponse.json({ success: false, error: "Uploaded object could not be verified." }, { status: 400 });
     const resolvedFileSizeKb =
       s3Meta?.contentLength && s3Meta.contentLength > 0
         ? Math.max(1, Math.round(s3Meta.contentLength / 1024))
         : fileSizeKb || 0;
-    const resolvedMimeType = mimeType || s3Meta?.contentType || "application/octet-stream";
+    const resolvedMimeType = s3Meta?.contentType || mimeType || "application/octet-stream";
 
+    const { existing, savedAsset, isReplaced } = await db.transaction(async (tx) => {
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${JSON.stringify([appId, assetId])}, 0))`);
     // 3. Check existing asset for deduplication / replacement
-    const [existing] = await db
+    const [existing] = await tx
       .select()
       .from(mediaAssets)
       .where(and(eq(mediaAssets.appId, appId), eq(mediaAssets.assetId, assetId)))
       .limit(1);
 
-    if (existing) {
-      // Idempotency check: If user repeated the exact same confirmation call without changing anything
-      const isIdentical =
-        existing.storageKey === storageKey &&
-        existing.publicUrl === publicUrl &&
-        existing.isDeleted === false &&
-        (uploaderName === undefined || existing.uploaderName === uploaderName) &&
-        (title === undefined || existing.title === title) &&
-        (info === undefined || existing.info === info);
+    const previousCompletion = await tx.execute(sql`SELECT id FROM telegram_outbox WHERE event_key = ${`upload:${appId}:${assetId}:${storageKey}`}`);
+  if (previousCompletion.rows.length) {
+    if (!existing) throw new Error("This upload was already completed and removed.");
+    if (existing.storageKey !== storageKey) await scheduleStorageCleanup(tx, bucketId, storageKey);
+    return { existing, savedAsset: existing, isReplaced: true };
+  }
 
-      if (isIdentical) {
-        return NextResponse.json({
-          success: true,
-          message: "Direct upload confirmation received. Asset is already registered and up-to-date in database.",
-          data: existing,
-          is_repeated_call: true,
-        });
-      }
-
-      // If the asset key or bucket changed, physically remove the older file to prevent orphaned cloud storage files!
-      if (existing.storageKey && existing.storageKey !== storageKey) {
-        await deleteObject(existing.storageKey, existing.bucketId || undefined).catch((err) =>
-          console.warn("[Storage] Failed to delete previous file during direct upsert:", err)
-        );
-      }
-    }
-
-    let savedAsset;
+  let savedAsset;
     let isReplaced = false;
 
     if (existing) {
-      const updated = await db
+      const updated = await tx
         .update(mediaAssets)
         .set({
           bucketId: bucketId || existing.bucketId,
@@ -130,7 +126,7 @@ export async function POST(req: NextRequest) {
       savedAsset = updated[0];
       isReplaced = true;
     } else {
-      const inserted = await db
+      const inserted = await tx
         .insert(mediaAssets)
         .values({
           appId,
@@ -154,10 +150,12 @@ export async function POST(req: NextRequest) {
       savedAsset = inserted[0];
     }
 
-    // 4. Send asynchronous Telegram notification
-    try {
-      await sendTelegramNotification({
-        event: isReplaced ? "ASSET_REPLACED" : "ASSET_UPLOADED",
+      if (existing?.bucketId && existing.storageKey !== storageKey) {
+      await scheduleStorageCleanup(tx, existing.bucketId, existing.storageKey);
+    }
+    await enqueueTelegramNotification(tx, {
+        eventKey: `upload:${appId}:${assetId}:${storageKey}`,
+      event: isReplaced ? "ASSET_REPLACED" : "ASSET_UPLOADED",
         appName,
         assetId,
         title: title || `Asset for ${assetId}`,
@@ -168,6 +166,21 @@ export async function POST(req: NextRequest) {
         sizeKb: resolvedFileSizeKb,
         mimeType: resolvedMimeType,
       });
+    return { existing, savedAsset, isReplaced };
+    });
+
+    if (existing) {
+      // If the asset key or bucket changed, physically remove the older file to prevent orphaned cloud storage files!
+      if (savedAsset.storageKey === storageKey && existing.storageKey && existing.storageKey !== storageKey) {
+        await deleteObject(existing.storageKey, existing.bucketId || undefined).catch((err) =>
+          console.warn("[Storage] Failed to delete previous file during direct upsert:", err)
+        );
+      }
+    }
+
+    // 4. Send asynchronous Telegram notification
+    try {
+      await drainTelegramOutbox(1).catch((error) => console.warn("Telegram worker deferred", error));
     } catch {}
 
     return NextResponse.json({

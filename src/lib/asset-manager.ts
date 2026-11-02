@@ -1,6 +1,7 @@
+import { scheduleStorageCleanup } from "@/lib/storage-cleanup";
 import { db } from "@/db";
 import { mediaAssets, MediaAsset, ApiKey, StorageBucket } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import {
   uploadObjectToBucket,
   deleteObjectFromBucket,
@@ -9,7 +10,7 @@ import {
 } from "./storage";
 import { optimizeImage, ImageOptimizationOptions } from "./image-optimizer";
 import { optimizeAudio, AudioOptimizationOptions } from "./audio-optimizer";
-import { sendTelegramNotification } from "./telegram";
+import { enqueueTelegramNotification, drainTelegramOutbox } from "./telegram";
 
 export interface ProcessAssetParams {
   appId: string;
@@ -132,32 +133,10 @@ export async function processAndSaveAsset(
   const sanitizedFolder =
     folder.toLowerCase().replace(/[^a-z0-9_-]/g, "-") || "general";
   const sanitizedAssetId = assetId.replace(/[^a-zA-Z0-9_-]/g, "_");
-  const timestamp = Date.now();
+  const timestamp = crypto.randomUUID();
   const storageKey = `apps/${appId}/${mediaCategory}/${sanitizedFolder}/${sanitizedAssetId}-${timestamp}.${ext}`;
 
-  // 4. Check for existing asset by composite key (appId + assetId)
-  const existingRecords = await db
-    .select()
-    .from(mediaAssets)
-    .where(and(eq(mediaAssets.appId, appId), eq(mediaAssets.assetId, assetId)))
-    .limit(1);
-
-  const existing = existingRecords[0];
-  let isReplaced = false;
-
-  if (existing) {
-    isReplaced = true;
-    // Hard delete previous physical asset from its originating bucket
-    if (existing.storageKey) {
-      const oldBucket = existing.bucketId
-        ? await getBucketById(existing.bucketId)
-        : targetBucket;
-
-      if (oldBucket) {
-        await deleteObjectFromBucket(oldBucket, existing.storageKey);
-      }
-    }
-  }
+  await scheduleStorageCleanup(db, targetBucket.id, storageKey, 86400);
 
   // 5. Upload buffer to the target Object Storage bucket
   const { publicUrl } = await uploadObjectToBucket(
@@ -167,11 +146,23 @@ export async function processAndSaveAsset(
     finalMime
   );
 
+  const { savedAsset, existing, isReplaced } = await db.transaction(async (tx) => {
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${JSON.stringify([appId, assetId])}, 0))`);
+  // 4. Check for existing asset by composite key (appId + assetId)
+  const existingRecords = await tx
+    .select()
+    .from(mediaAssets)
+    .where(and(eq(mediaAssets.appId, appId), eq(mediaAssets.assetId, assetId)))
+    .limit(1);
+
+  const existing = existingRecords[0];
+  const isReplaced = !!existing;
+
   let savedAsset: MediaAsset;
 
   // 6. Save or update database record
   if (existing) {
-    const updated = await db
+    const updated = await tx
       .update(mediaAssets)
       .set({
         bucketId: targetBucket.id,
@@ -196,7 +187,7 @@ export async function processAndSaveAsset(
 
     savedAsset = updated[0];
   } else {
-    const inserted = await db
+    const inserted = await tx
       .insert(mediaAssets)
       .values({
         appId,
@@ -221,9 +212,12 @@ export async function processAndSaveAsset(
     savedAsset = inserted[0];
   }
 
-  // 7. Trigger Telegram notification asynchronously (without blocking response)
-  sendTelegramNotification({
-    event: isReplaced ? "ASSET_REPLACED" : "ASSET_UPLOADED",
+    if (existing?.bucketId && existing.storageKey !== storageKey) {
+      await scheduleStorageCleanup(tx, existing.bucketId, existing.storageKey);
+    }
+    await enqueueTelegramNotification(tx, {
+    eventKey: `upload:${appId}:${assetId}:${storageKey}`,
+      event: isReplaced ? "ASSET_REPLACED" : "ASSET_UPLOADED",
     appName: appName || appId,
     assetId,
     title: title || savedAsset.title || "",
@@ -234,7 +228,21 @@ export async function processAndSaveAsset(
     sizeKb: optimizedSizeKb,
     savedKb,
     mimeType: finalMime,
-  }).catch((err) => console.warn("Telegram alert error:", err));
+  });
+    return { savedAsset, existing, isReplaced };
+  }).catch(async (error) => {
+    await deleteObjectFromBucket(targetBucket, storageKey).catch(() => {});
+    throw error;
+  });
+
+  // Keep the old object until the replacement and database write succeed.
+  if (existing?.storageKey && existing.storageKey !== storageKey) {
+    const oldBucket = existing.bucketId ? await getBucketById(existing.bucketId) : targetBucket;
+    if (oldBucket) await deleteObjectFromBucket(oldBucket, existing.storageKey).catch((error) => console.warn("Old asset cleanup failed", error));
+  }
+
+  // 7. Trigger Telegram notification asynchronously (without blocking response)
+  await drainTelegramOutbox(1).catch((error) => console.warn("Telegram worker deferred", error));
 
   return {
     asset: savedAsset,
