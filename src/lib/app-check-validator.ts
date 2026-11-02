@@ -74,52 +74,12 @@ export async function validateAppCheckToken(
     // Verify cryptographic signature against Google Firebase App Check JWKS
     const { payload } = await jwtVerify(cleanToken, JWKS, {
       algorithms: ["RS256"],
+      requiredClaims: ["iss", "aud", "sub", "iat", "exp"],
     });
 
-    const tokenAppId = (payload.sub as string) || (payload.app_id as string);
-    const audiences = Array.isArray(payload.aud)
-      ? payload.aud
-      : payload.aud
-      ? [payload.aud]
-      : [];
-
-    // Optional Project ID Audience check
-    if (options.firebaseProjectId && options.firebaseProjectId.trim() !== "") {
-      const targetProject = options.firebaseProjectId.trim();
-      const expectedAudience = `projects/${targetProject}`;
-
-      const matchedAudience = audiences.some((aud) =>
-        typeof aud === "string" && (aud === expectedAudience || aud.endsWith(targetProject))
-      );
-
-      if (!matchedAudience) {
-        return {
-          isValid: false,
-          error: `AppCheck token audience mismatch. Expected project: ${targetProject}`,
-        };
-      }
-    }
-
-    // Optional App ID whitelist check (e.g. Android App ID: "1:1234567890:android:34a0ec8763261a9b")
-    if (options.allowedAppIds && options.allowedAppIds.trim() !== "") {
-      const allowedList = options.allowedAppIds
-        .split(",")
-        .map((s) => s.trim().toLowerCase())
-        .filter(Boolean);
-
-      if (allowedList.length > 0) {
-        const normalizedTokenAppId = (tokenAppId || "").toLowerCase();
-        const isAppAllowed = allowedList.includes(normalizedTokenAppId);
-
-        if (!isAppAllowed) {
-          return {
-            isValid: false,
-            appId: tokenAppId,
-            error: `Unauthorized mobile App ID: '${tokenAppId}'. Must be in authorized app ID list.`,
-          };
-        }
-      }
-    }
+    const claimError = appCheckClaimError(payload, options);
+    if (claimError) return { isValid: false, error: claimError };
+    const tokenAppId = payload.sub as string;
 
     return {
       isValid: true,
@@ -133,4 +93,20 @@ export async function validateAppCheckToken(
       error: `AppCheck token validation failed: ${errorMsg}`,
     };
   }
+}
+
+
+/** The Firebase token uses the numeric project number, not the textual project ID. */
+export function appCheckClaimError(payload: { iss?: string; aud?: string | string[]; sub?: string }, options: AppCheckVerificationOptions): string | null {
+  const issuerMatch = /^https:\/\/firebaseappcheck\.googleapis\.com\/(\d+)$/.exec(payload.iss || "");
+  if (!issuerMatch) return "Invalid Firebase App Check issuer";
+  const project = issuerMatch[1];
+  const configuredProject = options.firebaseProjectId?.trim();
+  if (configuredProject && configuredProject !== project) return "App Check project number mismatch";
+  const audiences = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+  if (!audiences.includes(`projects/${project}`)) return "App Check audience mismatch";
+  if (!payload.sub) return "Missing App Check app ID";
+  const allowed = options.allowedAppIds?.split(",").map(value => value.trim()).filter(Boolean) || [];
+  if (allowed.length && !allowed.includes(payload.sub)) return "Unauthorized mobile app ID";
+  return null;
 }

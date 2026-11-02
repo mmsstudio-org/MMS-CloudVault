@@ -785,7 +785,7 @@ Content-Type: multipart/form-data`}
                     <div className="space-y-3 pt-2 border-t border-border">
                       <div>
                         <label className="block text-[11px] font-semibold text-foreground mb-1">
-                          Firebase Project ID (Optional)
+                          Firebase Project Number (Optional)
                         </label>
                         <input
                           type="text"
@@ -793,7 +793,7 @@ Content-Type: multipart/form-data`}
                           onChange={(e) =>
                             setCreateFirebaseProjectId(e.target.value)
                           }
-                          placeholder="e.g. mms-studio-media-vault"
+                          placeholder="e.g. 123456789012"
                           className="w-full px-3 py-2 text-xs rounded-lg border border-border bg-card text-foreground font-mono"
                         />
                         <span className="text-[10px] text-zinc-400 mt-0.5 block">
@@ -925,13 +925,13 @@ Content-Type: multipart/form-data`}
                 {/* Project ID */}
                 <div>
                   <label className="block text-xs font-semibold text-foreground mb-1">
-                    Firebase Project ID (Optional)
+                    Firebase Project Number (Optional)
                   </label>
                   <input
                     type="text"
                     value={editFirebaseProjectId}
                     onChange={(e) => setEditFirebaseProjectId(e.target.value)}
-                    placeholder="e.g. mms-studio-media-vault"
+                    placeholder="e.g. 123456789012"
                     className="w-full px-3.5 py-2 text-xs rounded-xl border border-border bg-muted text-foreground font-mono"
                   />
                   <span className="text-[10px] text-zinc-400 mt-1 block">
