@@ -149,7 +149,7 @@ mms-studio-storage/
 ## 🛠️ Getting Started (Local Development)
 
 ### 1. Prerequisites
-- Node.js 20+ (Node.js 24 recommended)
+- Node.js 24.x (required locally and on Vercel)
 - PostgreSQL installed locally or a free [Neon](https://neon.tech/) database instance.
 
 ### 2. Installation
@@ -552,3 +552,22 @@ start `next dev --port 3105` against that same isolated database with AUTH_URL,
 NEXTAUTH_URL and NEXT_PUBLIC_APP_URL set to `http://localhost:3105`, and a test
 AUTH_SECRET. Then run `npm run test:upload-form` (Google Chrome required).
 Run browser and database tests sequentially; database tests reset test fixtures.
+
+### Mobile gateway runtime
+
+`package.json` pins Node.js 24.x for Vercel builds and functions. Firebase Admin
+14 uses `jwks-rsa` 4 and ESM-only `jose` 6, which require native `require(esm)`
+support. An incompatible runtime or `--no-experimental-require-module` causes
+`ERR_REQUIRE_ESM` before the mobile route can check authentication.
+
+After deploying this revision, confirm Node.js 24.x in the Vercel build log and
+remove any `NODE_OPTIONS` setting that disables require(esm). Redeploy the new
+commit rather than an older deployment. Smoke check without credentials:
+
+```sh
+node -e "require('firebase-admin/auth'); require('firebase-admin/app-check'); console.log('Admin modules loaded')"
+curl -i -X POST https://cloud.sabbirmms.com/api/mobile/v1/upload
+```
+
+The POST must return JSON HTTP 401, not an empty 500. This checks startup only;
+Firebase Auth, App Check, and an authenticated upload still need live testing.
