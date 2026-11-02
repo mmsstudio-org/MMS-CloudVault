@@ -5,7 +5,9 @@ import sharp from 'sharp';
 import { db } from '../src/db';
 import { sql } from 'drizzle-orm';
 import { processAndSaveAsset } from '../src/lib/asset-manager';
-import { DELETE as deleteAsset } from '../src/app/api/v1/assets/[asset_id]/route';
+import { POST as uploadAsset } from '../src/app/api/v1/upload/route';
+import { invalidateApiKeyCache } from '../src/lib/api-cache';
+import { GET as getAsset, DELETE as deleteAsset } from '../src/app/api/v1/assets/[asset_id]/route';
 import { POST as completeUpload } from '../src/app/api/v1/upload/complete/route';
 import { NextRequest } from 'next/server';
 import { createUploadTicket } from '../src/lib/upload-ticket';
@@ -123,4 +125,44 @@ test('real direct completion rejects missing objects/tampered tickets and matche
   assert.equal((await deletion(newFields.publicUrl)).status,200);
   assert.equal((await db.execute(sql`SELECT is_deleted FROM media_assets WHERE app_id='direct-app'`)).rows[0].is_deleted,true);
 
+});
+
+
+test('shared API respects per-key App Check for upload, read and delete across clients',async()=>{
+  await db.execute(sql`INSERT INTO api_keys(app_name,app_id,secret_key,default_bucket_id,enforce_app_check,allowed_debug_tokens) VALUES
+    ('Open','open-app','open-test-key',${bucketId}::uuid,false,null),
+    ('Enforced','checked-app','checked-test-key',${bucketId}::uuid,true,'explicit-test-device')`);
+  const image=await sharp({create:{width:8,height:8,channels:3,background:'#00f'}}).png().toBuffer();
+  const upload=(key:string,token?:string,folder='first')=>{
+    const form=new FormData();form.set('asset_id','shared-cover');form.set('folder',folder);
+    form.set('uploader_name','Writer');form.set('file',new File([new Uint8Array(image)],'cover.png',{type:'image/png'}));
+    const headers:Record<string,string>={'x-api-key':key};if(token) headers['X-Firebase-AppCheck']=token;
+    return uploadAsset(new NextRequest('http://localhost/api/v1/upload',{method:'POST',headers,body:form}));
+  };
+  const assetRequest=(key:string,token?:string,method='GET',expected?:string)=>{
+    const headers:Record<string,string>={'x-api-key':key};if(token) headers['X-Firebase-AppCheck']=token;
+    return new NextRequest('http://localhost/api/v1/assets/shared-cover?soft=true'+(expected?'&expected_url='+encodeURIComponent(expected):''),{method,headers});
+  };
+  const params={params:Promise.resolve({asset_id:'shared-cover'})};
+  assert.equal((await upload('unknown-key')).status,401);
+  assert.equal((await upload('checked-test-key')).status,403);
+  assert.equal((await upload('checked-test-key','invalid')).status,403);
+  assert.equal((await getAsset(assetRequest('checked-test-key'),params)).status,403);
+  assert.equal((await deleteAsset(assetRequest('checked-test-key',undefined,'DELETE'),params)).status,403);
+  assert.equal((await upload('open-test-key')).status,200); // no App Check token required
+  const first=await upload('checked-test-key','explicit-test-device');assert.equal(first.status,200);
+  const before=(await first.json()).data;
+  const second=await upload('checked-test-key','explicit-test-device','different-folder');assert.equal(second.status,200);
+  const current=(await second.json()).data;assert.equal(current.id,before.id);
+  assert.equal((await db.execute(sql`SELECT count(*) FROM media_assets WHERE asset_id='shared-cover'`)).rows[0].count,'2');
+  assert.equal((await getAsset(assetRequest('checked-test-key','explicit-test-device'),params)).status,200);
+  assert.equal((await deleteAsset(assetRequest('checked-test-key','explicit-test-device','DELETE',before.public_url),params)).status,409);
+  assert.equal((await deleteAsset(assetRequest('checked-test-key','explicit-test-device','DELETE',current.public_url),params)).status,200);
+  // Exercise changing the same key's dashboard policy, including cache invalidation.
+  await db.execute(sql`UPDATE api_keys SET enforce_app_check=true WHERE app_id='open-app'`);
+  invalidateApiKeyCache('open-test-key');
+  assert.equal((await upload('open-test-key')).status,403);
+  await db.execute(sql`UPDATE api_keys SET enforce_app_check=false WHERE app_id='open-app'`);
+  invalidateApiKeyCache('open-test-key');
+  assert.equal((await upload('open-test-key')).status,200);
 });

@@ -136,6 +136,7 @@ export const mediaAssets = pgTable(
     title: text("title"),
     folder: text("folder").default("general").notNull(),
     uploaderName: text("uploader_name"),
+    // Retained unused nullable column to avoid dropping existing data.
     uploaderUid: text("uploader_uid"),
     info: text("info"),
     storageKey: text("storage_key").notNull(),

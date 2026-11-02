@@ -553,21 +553,17 @@ NEXTAUTH_URL and NEXT_PUBLIC_APP_URL set to `http://localhost:3105`, and a test
 AUTH_SECRET. Then run `npm run test:upload-form` (Google Chrome required).
 Run browser and database tests sequentially; database tests reset test fixtures.
 
-### Mobile gateway runtime
+### Shared upload API
 
-`package.json` pins Node.js 24.x for Vercel builds and functions. Firebase Admin
-14 uses `jwks-rsa` 4 and ESM-only `jose` 6, which require native `require(esm)`
-support. An incompatible runtime or `--no-experimental-require-module` causes
-`ERR_REQUIRE_ESM` before the mobile route can check authentication.
+Android, web portals, and other clients use the same `/api/v1/upload` and
+`/api/v1/assets/{asset_id}` endpoints with `x-api-key`. Each key controls App Check
+enforcement in the existing dashboard: disabled accepts the API key alone;
+enabled also requires a valid `X-Firebase-AppCheck` token (or an explicitly
+configured development token). Firebase JWT verification checks signature, expiry,
+issuer, numeric project number, audience, and allowed app IDs. No Firebase Admin
+service account or extra endpoint is required.
 
-After deploying this revision, confirm Node.js 24.x in the Vercel build log and
-remove any `NODE_OPTIONS` setting that disables require(esm). Redeploy the new
-commit rather than an older deployment. Smoke check without credentials:
-
-```sh
-node -e "require('firebase-admin/auth'); require('firebase-admin/app-check'); console.log('Admin modules loaded')"
-curl -i -X POST https://cloud.sabbirmms.com/api/mobile/v1/upload
-```
-
-The POST must return JSON HTTP 401, not an empty 500. This checks startup only;
-Firebase Auth, App Check, and an authenticated upload still need live testing.
+Asset identity is App ID + Asset ID, independent of folder. Replacement keeps that
+identity; delayed cleanup supplies `expected_url` so it cannot delete a newer image.
+The existing nullable `uploader_uid` database column is unused and retained to avoid
+a destructive schema change. No migration or database push is needed.
