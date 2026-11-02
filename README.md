@@ -557,8 +557,10 @@ Run browser and database tests sequentially; database tests reset test fixtures.
 
 `package.json` pins Node.js 24.x for Vercel builds and functions. Firebase Admin
 14 uses `jwks-rsa` 4 and ESM-only `jose` 6, which require native `require(esm)`
-support. An incompatible runtime or `--no-experimental-require-module` causes
-`ERR_REQUIRE_ESM` before the mobile route can check authentication.
+support. The scoped npm override keeps JOSE 5 (CommonJS-compatible) only beneath
+`jwks-rsa`; the application and NextAuth retain JOSE 6. This avoids the observed
+`ERR_REQUIRE_ESM` even when the host disables native `require(esm)`.
+`npm run test:mobile` tests that loader mode and real signing-key conversion.
 
 After deploying this revision, confirm Node.js 24.x in the Vercel build log and
 remove any `NODE_OPTIONS` setting that disables require(esm). Redeploy the new
