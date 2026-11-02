@@ -5,6 +5,7 @@ import sharp from 'sharp';
 import { db } from '../src/db';
 import { sql } from 'drizzle-orm';
 import { processAndSaveAsset } from '../src/lib/asset-manager';
+import { DELETE as deleteAsset } from '../src/app/api/v1/assets/[asset_id]/route';
 import { POST as completeUpload } from '../src/app/api/v1/upload/complete/route';
 import { NextRequest } from 'next/server';
 import { createUploadTicket } from '../src/lib/upload-ticket';
@@ -116,4 +117,10 @@ test('real direct completion rejects missing objects/tampered tickets and matche
   const current=(await db.execute(sql`SELECT storage_key FROM media_assets WHERE app_id='direct-app'`)).rows[0];
   assert.equal(current.storage_key,newKey);
   assert.ok(objects.has(newKey));
+  const deletion=(expected:string)=>deleteAsset(new NextRequest('http://localhost/api/v1/assets/cover?soft=true&expected_url='+encodeURIComponent(expected),{method:'DELETE',headers:{'x-api-key':'test-key'}}),{params:Promise.resolve({asset_id:'cover'})});
+  assert.equal((await deletion(publicUrl)).status,409);
+  assert.equal((await db.execute(sql`SELECT is_deleted FROM media_assets WHERE app_id='direct-app'`)).rows[0].is_deleted,false);
+  assert.equal((await deletion(newFields.publicUrl)).status,200);
+  assert.equal((await db.execute(sql`SELECT is_deleted FROM media_assets WHERE app_id='direct-app'`)).rows[0].is_deleted,true);
+
 });

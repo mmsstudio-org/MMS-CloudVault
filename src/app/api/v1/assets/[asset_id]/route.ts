@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { validateApiKey } from "@/lib/api-cache";
 import { db } from "@/db";
 import { mediaAssets } from "@/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { softDeleteAsset, deleteAssetPermanently } from "@/lib/trash-manager";
 import { validateAppCheckToken } from "@/lib/app-check-validator";
 
@@ -176,7 +176,10 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       }
     }
 
-    const records = await db
+    return await db.transaction(async tx => {
+      // Same lock as uploads: an old cleanup request cannot trash a newer upsert.
+      await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtextextended(${JSON.stringify([appId, assetId])}, 0))`);
+    const records = await tx
       .select()
       .from(mediaAssets)
       .where(
@@ -198,10 +201,15 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
+    const expectedUrl = req.nextUrl.searchParams.get("expected_url");
+    if (expectedUrl && records[0].publicUrl !== expectedUrl) {
+      return NextResponse.json({ success: false, error: "Asset changed; obsolete cleanup skipped." }, { status: 409 });
+    }
+
     const isSoft = req.nextUrl.searchParams.get("soft") === "true";
 
     if (isSoft) {
-      await softDeleteAsset(records[0].id);
+      if (!await softDeleteAsset(records[0].id)) throw new Error("Asset could not be moved to trash");
       return NextResponse.json({
         success: true,
         message: `Media asset '${assetId}' moved to trash.`,
@@ -209,12 +217,14 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       });
     }
 
-    await deleteAssetPermanently(records[0].id);
+    const deletion = await deleteAssetPermanently(records[0].id);
+    if (!deletion.success) throw new Error(deletion.error || "Deletion failed");
 
     return NextResponse.json({
       success: true,
       message: `Media asset '${assetId}' permanently deleted from object storage and database.`,
       asset_id: assetId,
+    });
     });
   } catch (err: unknown) {
     console.error("API /v1/assets/[asset_id] DELETE error:", err);
