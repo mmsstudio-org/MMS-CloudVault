@@ -13,7 +13,8 @@
     "db:fresh": "tsx src/db/reset.ts && drizzle-kit push && tsx src/db/seed.ts",
     "db:studio": "drizzle-kit studio",
     "test:uploads": "tsx --test --test-concurrency=1 tests/upload-flow.test.ts tests/upload-reliability.test.ts",
-    "test:upload-form": "node tests/upload-form.browser.mjs"
+    "test:upload-form": "node tests/upload-form.browser.mjs",
+    "test:mobile": "tsx --test --test-concurrency=1 tests/mobile-auth.test.ts tests/mobile-gateway.test.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1161.0",
@@ -23,6 +24,7 @@
     "clsx": "^2.1.1",
     "dotenv": "^18.0.9",
     "drizzle-orm": "^0.45.4",
+    "firebase-admin": "^14.5.0",
     "jose": "^6.2.14",
     "lru-cache": "^11.5.3",
     "lucide-react": "^1.65.0",
