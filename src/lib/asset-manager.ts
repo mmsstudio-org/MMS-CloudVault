@@ -13,8 +13,6 @@ import { optimizeAudio, AudioOptimizationOptions } from "./audio-optimizer";
 import { enqueueTelegramNotification, drainTelegramOutbox } from "./telegram";
 
 export interface ProcessAssetParams {
-  ownerUid?: string;
-  allowOwnerOverride?: boolean;
   appId: string;
   assetId: string;
   title?: string;
@@ -158,8 +156,6 @@ export async function processAndSaveAsset(
     .limit(1);
 
   const existing = existingRecords[0];
-  if (params.ownerUid && existing?.uploaderUid && existing.uploaderUid !== params.ownerUid && !params.allowOwnerOverride)
-    throw new Error("Asset ownership changed");
   const isReplaced = !!existing;
 
   let savedAsset: MediaAsset;
@@ -170,7 +166,6 @@ export async function processAndSaveAsset(
       .update(mediaAssets)
       .set({
         bucketId: targetBucket.id,
-        uploaderUid: existing.uploaderUid || params.ownerUid || null,
         title: title || existing.title,
         folder: sanitizedFolder,
         uploaderName: uploaderName !== undefined ? uploaderName : existing.uploaderName,
@@ -196,7 +191,6 @@ export async function processAndSaveAsset(
       .insert(mediaAssets)
       .values({
         appId,
-        uploaderUid: params.ownerUid || null,
         assetId,
         bucketId: targetBucket.id,
         title: title || `${isAudio ? "Audio" : "Asset"} for ${assetId}`,

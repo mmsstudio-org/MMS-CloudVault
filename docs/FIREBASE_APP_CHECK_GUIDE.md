@@ -1,6 +1,6 @@
 # 🛡️ Firebase App Check & Play Integrity Guide (MMS CloudVault)
 
-> **Complete Operational Manual**: How to collect your Firebase Project ID, Mobile App IDs, and Device Debug Tokens, configure Google Play Integrity, and implement bulletproof hardware-backed attestation for your mobile apps.
+> **Complete Operational Manual**: How to collect your Firebase Project Number, Mobile App IDs, and Device Debug Tokens, configure Google Play Integrity, and implement bulletproof hardware-backed attestation for your mobile apps.
 
 ---
 
@@ -25,7 +25,7 @@ sequenceDiagram
     Google-->>User: Issues Signed App Check JWT (RS256)
     User->>Vault: POST /api/v1/upload (x-api-key + X-Firebase-AppCheck)
     Vault->>Google: Fetch Public JWKS (firebaseappcheck.googleapis.com)
-    Vault->>Vault: Verify Signature, Audience (Project ID), App ID & Expiry
+    Vault->>Vault: Verify Signature, Audience (Project Number), App ID & Expiry
     alt Token Valid OR Matches Debug Secret
         Vault->>Storage: Optimize & Write WebP / Audio
         Vault-->>User: 200 OK (Asset Stored & CDN URL)
@@ -38,12 +38,12 @@ sequenceDiagram
 
 ## 🔑 ২. কীভাবে মানগুলো সংগ্রহ (Collect) করবেন?
 
-### স্টেপ ১: Firebase Project ID সংগ্রহ
+### স্টেপ ১: Firebase Project Number সংগ্রহ
 1. [Firebase Console](https://console.firebase.google.com/) এ লগইন করুন।
 2. আপনার প্রোজেক্টটি ওপেন করুন।
 3. বাম পাশের মেনুর উপরে গিয়ার আইকনে ⚙️ ক্লিক করে **Project settings**-এ যান।
-4. **General** ট্যাবের ভেতরে **Project ID** দেখতে পাবেন (যেমন: `mms-studio-media-vault` বা `my-app-84920`)।
-5. এই নামটি কপি করে MMS CloudVault ড্যাশবোর্ডে **Firebase Project ID** বক্সে পেস্ট করুন।
+4. **General** ট্যাবের ভেতরে **Project number** দেখতে পাবেন (যেমন: `360194673797`)।
+5. এই সংখ্যাটি কপি করে MMS CloudVault ড্যাশবোর্ডে **Firebase Project Number** বক্সে পেস্ট করুন।
 
 ---
 
@@ -285,7 +285,7 @@ curl -X POST http://localhost:3000/api/v1/upload \
 
 | আইটেম | কোথায় পাবেন? | ক্লাউডভল্ট ড্যাশবোর্ডে ব্যবহার |
 |---|---|---|
-| **Firebase Project ID** | Firebase Console -> Project Settings -> General | `Firebase Project ID` ফিল্ড |
+| **Firebase Project Number** | Firebase Console -> Project Settings -> General | `Firebase Project Number` ফিল্ড |
 | **Mobile App ID** | Firebase Console -> Project Settings -> Your Apps -> App ID | `Whitelisted Mobile App IDs` ফিল্ড |
 | **Play Integrity Provider** | Firebase Console -> App Check -> Apps -> Android | ফায়ারবেসে রেজিস্টার করতে হবে |
 | **Debug Secret Token** | Android Studio Logcat (`AppCheck`) | `Device Debug Secrets / Test Tokens` ফিল্ড |
@@ -293,3 +293,13 @@ curl -X POST http://localhost:3000/api/v1/upload \
 ---
 
 © 2026 MMS CloudVault. Designed for High-Security Mobile Media Ecosystems.
+
+## Shared API for Android and web clients
+
+Use the same `/api/v1/upload` and `/api/v1/assets/{asset_id}` routes everywhere.
+App Check enforcement is configured per API key. If disabled, the API key alone
+is sufficient; if enabled, the client must also provide an accepted App Check
+token. Register the appropriate Firebase attestation provider for each client
+(Android or web) and include its Firebase App ID in the allowed list. The
+`firebaseProjectId` API/database field name remains unchanged for compatibility,
+but its value is the numeric Firebase project number, not the textual project ID.
